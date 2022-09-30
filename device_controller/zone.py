@@ -2,11 +2,6 @@
 
 import datetime
 import constants
-import jsonpickle
-
-# >>> datetime.datetime.today()
-# datetime.datetime(2012, 3, 23, 23, 24, 55, 173504)
-# >>> datetime.datetime.today().weekday()
 
 class zone:
     name = "Default"
