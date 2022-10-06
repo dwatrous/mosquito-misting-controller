@@ -27,7 +27,7 @@ dayofweekmap = {0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thur
 # defaults
 
 default_nozzlecount = 30
-default_sprayduration = 45
+default_sprayduration_ms = 45000
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
@@ -35,11 +35,11 @@ def generate_default_sprayoccurrences ():
             default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": datetime.time(hourofday)}})
     return default_sprayoccurrences
 
-valve_initial_opening_offset_ms = 500
-valve_open_interval = 5000
+default_valve_first_open_offset_ms = 500
+default_valve_activation_interval_ms = 5000
 
-valve_timing = {}
-valve_timing[CHEMICALCLASS4] = {5: 250,
+VALVE_OPEN_DURATION = {}
+VALVE_OPEN_DURATION[CHEMICALCLASS4] = {5: 250,
 10: 500,
 15: 750,
 20: 1000,
@@ -64,7 +64,7 @@ valve_timing[CHEMICALCLASS4] = {5: 250,
 115: 5000,
 120: 5000}
 
-valve_timing[CHEMICALCLASS3] = {5: 150,
+VALVE_OPEN_DURATION[CHEMICALCLASS3] = {5: 150,
 10: 350,
 15: 550,
 20: 750,
@@ -89,7 +89,7 @@ valve_timing[CHEMICALCLASS3] = {5: 150,
 115: 4400,
 120: 4600}
 
-valve_timing[CHEMICALCLASS2] = {5: 100,
+VALVE_OPEN_DURATION[CHEMICALCLASS2] = {5: 100,
 10: 200,
 15: 300,
 20: 450,
@@ -114,7 +114,7 @@ valve_timing[CHEMICALCLASS2] = {5: 100,
 115: 2750,
 120: 2850}
 
-valve_timing[CHEMICALCLASS1] = {5: 100,
+VALVE_OPEN_DURATION[CHEMICALCLASS1] = {5: 100,
 10: 150,
 15: 300,
 20: 350,
