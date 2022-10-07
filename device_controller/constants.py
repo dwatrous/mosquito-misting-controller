@@ -8,6 +8,9 @@ CHEMICALCLASS2 = 2  # RipTide, Sector and Eco MC (do not use emulsifier)
 CHEMICALCLASS3 = 3  # NoTox and Eco Exempt IC2
 CHEMICALCLASS4 = 4  # Pyronyl 303 or Vampyre
 
+VALVE_WATER = 1
+VALVE_CHEMICAL = 2
+
 configfilename = "device_config.json"
 
 def get_chemical_class_description(classnumber):
