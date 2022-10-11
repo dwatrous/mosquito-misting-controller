@@ -7,29 +7,42 @@ import sched, time
 import multiprocessing
 
 class zone:
-    name = "Default"
-    nozzlecount = 30
-    chemicalclass = constants.CHEMICALCLASS2
-    sprayduration_ms = 45000
-    # [
-    #   {
-    #       "dayofweek": INT[0-6], 
-    #       "timeofday": 
-    #           {
-    #               "type": "fixedtime|relativetime",
-    #               "value": 
-    #                   datetime.time
-    # OR
-    #                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
-    #           }
-    #   },
-    # ...]
-    sprayoccurrences = []
-    # valve timing
-    valve_first_open_offset_ms = 500
-    valve_activation_interval_ms = 5000
-    valve_scheduler = sched.scheduler()
     ms_in_second = 1000
+    valve_scheduler = sched.scheduler()
+
+    def __init__(self, zonedefinition=None) -> None:
+
+        if zonedefinition == None:
+            self.name = "Default"
+            self.nozzlecount = 30
+            self.chemicalclass = constants.CHEMICALCLASS2
+            self.sprayduration_ms = 45000
+            # [
+            #   {
+            #       "dayofweek": INT[0-6], 
+            #       "timeofday": 
+            #           {
+            #               "type": "fixedtime|relativetime",
+            #               "value": 
+            #                   datetime.time
+            # OR
+            #                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
+            #           }
+            #   },
+            # ...]
+            self.sprayoccurrences = constants.generate_default_sprayoccurrences()
+            # valve timing
+            self.valve_first_open_offset_ms = 500
+            self.valve_activation_interval_ms = 5000
+        else:
+            self.name = zonedefinition["name"]
+            self.nozzlecount = zonedefinition["nozzlecount"]
+            self.chemicalclass = zonedefinition["chemicalclass"]
+            self.sprayduration_ms = zonedefinition["sprayduration_ms"]
+            self.sprayoccurrences = zonedefinition["sprayoccurrences"]
+            self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
+            self.valve_activation_interval_ms = ["valve_activation_interval_ms"]
+
 
     def calculate_valve_openings(self):
         # return array of open times and duration [(open_time_ms, open_duration_ms), ...]
@@ -106,13 +119,20 @@ class zone:
         if occurrence not in self.sprayoccurrences:
             self.sprayoccurrences.append(occurrence)
     
-    def add_spray_occurrences_all_days (self, timeofday):
+    def add_sprayoccurrences_all_days (self, timeofday):
         for dayofweek in range(7):
             self.add_spray_occurrence(dayofweek, timeofday)
 
-    def add_spray_occurrences_weekdays (self, timeofday):
+    def add_sprayoccurrences_weekdays (self, timeofday):
         for dayofweek in range(1,6):
             self.add_spray_occurrence(dayofweek, timeofday)
+    
+    def remove_sprayoccurrence(self, sprayoccurrence_remove):
+        for i in range(len(self.sprayoccurrences)):
+            if sprayoccurrence_remove == self.sprayoccurrences[i]:
+                return self.sprayoccurrences.pop(i)
+        return None
+
 
     # Functions to generate valid timeofday values
     def generate_fixedtime (self, hourofday):
@@ -122,7 +142,7 @@ class zone:
         return {"type": "relativetime", "value": {"sunevent": sunevent, "sunposition": sunposition, "deltaminutes": deltaminutes}}
 
     # clear sprayoccurrences
-    def clear_spray_occurrences (self):
+    def clear_sprayoccurrences (self):
         self.sprayoccurrences = []
     
     # reset everything to defaults

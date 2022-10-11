@@ -39,4 +39,5 @@ myzone.valve_activation_interval_ms = 15000
 assert myzone.calculate_valve_openings() == [(7500, 700), (22500, 700), (37500, 700)]
 
 # assert no error execution
-myzone.execute_spray()
+if __name__ == '__main__':
+    myzone.execute_spray()
