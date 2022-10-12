@@ -26,6 +26,12 @@ assert myzone.remove_sprayoccurrence({'dayofweek': 0, 'timeofday': {'type': 'fix
 assert len(myzone.sprayoccurrences) == len(default_sprayoccurrences)-1
 assert myzone.sprayoccurrences == [{'dayofweek': 0, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 0, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 0, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 1, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 1, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 1, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 1, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 2, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 2, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 2, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 2, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 3, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 3, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 3, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 3, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 4, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 4, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 4, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 4, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 5, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 5, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 5, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 5, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}, {'dayofweek': 6, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(0, 0)}}, {'dayofweek': 6, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(6, 0)}}, {'dayofweek': 6, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(18, 0)}}, {'dayofweek': 6, 'timeofday': {'type': 'fixedtime', 'value': datetime.time(20, 0)}}]
 
+# test new timing
+myzone.valve_first_open_offset_ms = 7500
+myzone.valve_activation_interval_ms = 15000
+assert myzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
+# test savestate
+zonedefinition = myzone.get_zonedefinition()
 
 # assert reset to defaults
 myzone.reset_to_defaults()
@@ -33,11 +39,13 @@ assert myzone.nozzlecount == constants.default_nozzlecount
 assert myzone.chemicalclass == constants.CHEMICALCLASS2
 assert myzone.calculate_valve_openings() == expected_default_timing
 
-# test new timing
-myzone.valve_first_open_offset_ms = 7500
-myzone.valve_activation_interval_ms = 15000
-assert myzone.calculate_valve_openings() == [(7500, 700), (22500, 700), (37500, 700)]
+# load from zonedefinition
+newzone = zone.zone(zonedefinition=zonedefinition)
+assert newzone.valve_first_open_offset_ms == 7500
+assert newzone.valve_activation_interval_ms == 15000
+assert newzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
 
 # assert no error execution
 if __name__ == '__main__':
     myzone.execute_spray()
+    newzone.execute_spray()

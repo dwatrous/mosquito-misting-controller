@@ -14,26 +14,7 @@ class zone:
 
         if zonedefinition == None:
             self.name = "Default"
-            self.nozzlecount = 30
-            self.chemicalclass = constants.CHEMICALCLASS2
-            self.sprayduration_ms = 45000
-            # [
-            #   {
-            #       "dayofweek": INT[0-6], 
-            #       "timeofday": 
-            #           {
-            #               "type": "fixedtime|relativetime",
-            #               "value": 
-            #                   datetime.time
-            # OR
-            #                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
-            #           }
-            #   },
-            # ...]
-            self.sprayoccurrences = constants.generate_default_sprayoccurrences()
-            # valve timing
-            self.valve_first_open_offset_ms = 500
-            self.valve_activation_interval_ms = 5000
+            self.reset_to_defaults()
         else:
             self.name = zonedefinition["name"]
             self.nozzlecount = zonedefinition["nozzlecount"]
@@ -41,8 +22,19 @@ class zone:
             self.sprayduration_ms = zonedefinition["sprayduration_ms"]
             self.sprayoccurrences = zonedefinition["sprayoccurrences"]
             self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
-            self.valve_activation_interval_ms = ["valve_activation_interval_ms"]
+            self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
 
+    def get_zonedefinition(self):
+        zonedefinition = {
+            "name": self.name,
+            "nozzlecount": self.nozzlecount,
+            "chemicalclass": self.chemicalclass,
+            "sprayduration_ms": self.sprayduration_ms,
+            "sprayoccurrences": self.sprayoccurrences,
+            "valve_first_open_offset_ms": self.valve_first_open_offset_ms,
+            "valve_activation_interval_ms": self.valve_activation_interval_ms
+        }
+        return zonedefinition
 
     def calculate_valve_openings(self):
         # return array of open times and duration [(open_time_ms, open_duration_ms), ...]
@@ -87,7 +79,7 @@ class zone:
         compressor_start_time = time.time()*self.ms_in_second
         print("start compressor")
         time.sleep(close_after_ms/self.ms_in_second)
-        print("shutoff_compressor")
+        print("shutoff compressor")
         compressor_shutoff_time = time.time()*self.ms_in_second
         print("compressor started at %d and closed at %d for a total of %d" % (compressor_start_time, compressor_shutoff_time, compressor_shutoff_time-compressor_start_time))
 

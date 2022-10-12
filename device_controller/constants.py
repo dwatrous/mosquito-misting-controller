@@ -31,6 +31,20 @@ dayofweekmap = {0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thur
 
 default_nozzlecount = 30
 default_sprayduration_ms = 45000
+# sprayoccurrence
+# [
+#   {
+#       "dayofweek": INT[0-6], 
+#       "timeofday": 
+#           {
+#               "type": "fixedtime|relativetime",
+#               "value": 
+#                   datetime.time
+# OR
+#                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
+#           }
+#   },
+# ...]
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
