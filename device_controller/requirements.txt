@@ -1,1 +1,3 @@
 requests
+astral
+noaa_sdk
