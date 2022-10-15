@@ -32,11 +32,10 @@ assert myzone.sprayoccurrences == [{'dayofweek': 0, 'timeofday': {'type': 'fixed
 myzone.valve_first_open_offset_ms = 7500
 myzone.valve_activation_interval_ms = 15000
 assert myzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
-# test savestate
-zonedefinition = myzone.get_zonedefinition()
-zonedefinition_json = json.dumps(zonedefinition)
+
+# test save zonedefinition
 with open(zonedefinition_filename, "w") as savedfile:
-    savedfile.write(zonedefinition_json)
+    savedfile.write(myzone.get_zonedefinition_json())
 
 # assert reset to defaults
 myzone.reset_to_defaults()
@@ -47,8 +46,7 @@ assert myzone.calculate_valve_openings() == expected_default_timing
 # load from zonedefinition
 with open(zonedefinition_filename, "r") as savedfile:
     new_zonedefinition_json = savedfile.read()
-new_zonedefinition = json.loads(new_zonedefinition_json)
-newzone = zone.zone(zonedefinition=new_zonedefinition)
+newzone = zone.zone(zonedefinition=new_zonedefinition_json)
 assert newzone.valve_first_open_offset_ms == 7500
 assert newzone.valve_activation_interval_ms == 15000
 assert newzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]

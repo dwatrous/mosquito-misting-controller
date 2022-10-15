@@ -5,6 +5,7 @@ import constants
 from math import floor
 import sched, time
 import multiprocessing
+import json
 
 class zone:
     ms_in_second = 1000
@@ -15,14 +16,20 @@ class zone:
         if zonedefinition == None:
             self.name = "Default"
             self.reset_to_defaults()
-        else:
-            self.name = zonedefinition["name"]
-            self.nozzlecount = zonedefinition["nozzlecount"]
-            self.chemicalclass = zonedefinition["chemicalclass"]
-            self.sprayduration_ms = zonedefinition["sprayduration_ms"]
-            self.sprayoccurrences = zonedefinition["sprayoccurrences"]
-            self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
-            self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
+            return
+
+        # if a JSON was passed directly, change it to a dict
+        if type(zonedefinition) is not dict:
+            zonedefinition = json.loads(zonedefinition)
+    
+        # hydrate based on zonedefinition
+        self.name = zonedefinition["name"]
+        self.nozzlecount = zonedefinition["nozzlecount"]
+        self.chemicalclass = zonedefinition["chemicalclass"]
+        self.sprayduration_ms = zonedefinition["sprayduration_ms"]
+        self.sprayoccurrences = zonedefinition["sprayoccurrences"]
+        self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
+        self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
 
     def get_zonedefinition(self):
         zonedefinition = {
@@ -35,6 +42,9 @@ class zone:
             "valve_activation_interval_ms": self.valve_activation_interval_ms
         }
         return zonedefinition
+
+    def get_zonedefinition_json(self):
+        return json.dumps(self.get_zonedefinition())
 
     def calculate_valve_openings(self):
         # return array of open times and duration [(open_time_ms, open_duration_ms), ...]
