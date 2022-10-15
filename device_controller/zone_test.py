@@ -1,6 +1,5 @@
 import constants
-import zone
-import json
+from zone import zone
 import os
 
 # test zone creation and functionality
@@ -9,7 +8,7 @@ expected_80nozzle_chemclass4_timing = [(500, 4000), (5500, 4000), (10500, 4000),
 zonedefinition_filename = "zonedefinition.json"
 
 # create zone instance
-myzone = zone.zone()
+myzone = zone()
 
 # assert timing
 assert myzone.calculate_valve_openings() == expected_default_timing
@@ -46,7 +45,7 @@ assert myzone.calculate_valve_openings() == expected_default_timing
 # load from zonedefinition
 with open(zonedefinition_filename, "r") as savedfile:
     new_zonedefinition_json = savedfile.read()
-newzone = zone.zone(zonedefinition=new_zonedefinition_json)
+newzone = zone(zonedefinition=new_zonedefinition_json)
 assert newzone.valve_first_open_offset_ms == 7500
 assert newzone.valve_activation_interval_ms == 15000
 assert newzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
