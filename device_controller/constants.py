@@ -8,6 +8,7 @@ weatherstack_access_key = "d5099d79ea6a22ecef06425cc373bcce"
 # use zipcode and state for MosquitoMax office
 default_zip = 77449
 default_state = "TX"
+default_environment_city = "Houston"    # must be in https://astral.readthedocs.io/en/latest/index.html#cities
 
 # zone constants
 CHEMICALCLASS1 = 1  # unused
