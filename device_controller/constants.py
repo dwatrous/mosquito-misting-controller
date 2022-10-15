@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # Copyright MosquitoMax 2022, all rights reserved
 
-import datetime
+# device constants
+# use zipcode and state for MosquitoMax office
+default_zip = 77449
+default_state = "TX"
 
+# zone constants
 CHEMICALCLASS1 = 1  # unused
 CHEMICALCLASS2 = 2  # RipTide, Sector and Eco MC (do not use emulsifier)
 CHEMICALCLASS3 = 3  # NoTox and Eco Exempt IC2
