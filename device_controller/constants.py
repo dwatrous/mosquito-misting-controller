@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # Copyright MosquitoMax 2022, all rights reserved
 
+# API Credentials TODO: Move these into a more secure place later
+weatherstack_access_key = "d5099d79ea6a22ecef06425cc373bcce"
+
 # device constants
 # use zipcode and state for MosquitoMax office
 default_zip = 77449
@@ -14,6 +17,11 @@ CHEMICALCLASS4 = 4  # Pyronyl 303 or Vampyre
 
 VALVE_WATER = 1
 VALVE_CHEMICAL = 2
+VALVE_ZONE_0 = 10
+VALVE_ZONE_1 = 11
+VALVE_ZONE_2 = 12
+VALVE_ZONE_3 = 13
+VALVE_ZONE_4 = 14
 
 configfilename = "device_config.json"
 
