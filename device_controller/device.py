@@ -1,11 +1,14 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
+import sched
 import zone
 import constants
 import json
+import time
+import datetime
 
 class device:
-    zones = []
+    zone_scheduler = sched.scheduler()
 
     def __init__(self, devicedefinition=None) -> None:
         self.zones = []
@@ -15,6 +18,7 @@ class device:
             self.city = None
             self.state = constants.default_state
             self.zip = constants.default_zip
+            self.environment_city = constants.default_environment_city
             self.zones.append(zone.zone())
             return
 
@@ -47,7 +51,32 @@ class device:
     def get_all_sprayoccurrences():
         pass
 
-    # spray
+    def open_zone_valve(self, valve, close_after_ms=700):
+        # record start time in ms
+        open_time = time.time()*self.ms_in_second
+        # open valve
+        print("zone valve open [%d]" % valve)
+        
+        # leave valve open for close_after_ms
+        time.sleep(close_after_ms/self.ms_in_second)
+
+        print("zone valve close [%d]" % valve)
+
+        # record close time in ms
+        close_time = time.time()*self.ms_in_second
+        print("valve %d opened at %d and closed at %d for a total of %.1f" % (valve, open_time, close_time, close_time-open_time))
+
+    # schedule sprays
+    def schedule_spray_all_zones_24hrs(self):
+        now = datetime.datetime.now()
+        currenthour = now.hour
+        currentday = now.weekday()
+        (sunrise, sunset) = self.
+        for spray_zone in self.zones:
+            for sprayoccurence in spray_zone.sprayoccurrences:
+                if sprayoccurence["dayofweek"] = currentday and sprayoccurence[""]
+
+
 
     # app/online connection
 
