@@ -7,6 +7,9 @@ from astral.geocoder import database, lookup
 from noaa_sdk import NOAA
 import json
 import constants
+import itertools
+
+# https://graphical.weather.gov/xml/xml_fields_icon_weather_conditions.php
 
 class environment:
 
@@ -23,6 +26,14 @@ class environment:
         self.weather_observations_24hr = self.get_hourly_weather_observations_24hr()
         self.sundata = self.get_sundata()
 
+    # utility functions
+    def meters_to_inches(self, value_m):
+        return value_m * 39.37
+
+    def centigrade_to_fahrenheit(self, temp_c):
+        return (temp_c * 9/5) + 32
+
+    # getters
     def get_forecast_24hr(self):
         return self.weather_forecast_24hr
 
@@ -52,15 +63,37 @@ class environment:
 
     def get_hourly_weather_observations_24hr(self):
         observations = self.noaaapi.get_observations(self.zip, 'US')
-        return observations
+        return itertools.islice(observations, 24) 
     
     # calculations
-    def get_rain_next_24hr(self):
-        pass
+    def get_rain_next_24hr_percentage(self):
+        rain_percentage = 0
+        rain_indicator_keywords = ["showers", "thunderstorms", "rain"]
+        rain_reducer_keywords = ["chance", "likely", "slight"]
+        reducer_skip = False
+        rain_references = 0
+        for item in self.get_forecast_24hr():
+            if any(indicator in item["shortForecast"].lower() for indicator in rain_indicator_keywords):
+                rain_percentage = 100
+                if not reducer_skip and any(reducer in item["shortForecast"].lower() for reducer in rain_reducer_keywords):
+                    rain_references = rain_references + 0.5
+                else:
+                    reducer_skip = True
+        if reducer_skip:
+            return rain_percentage
+        else:
+            return rain_references/len(self.get_forecast_24hr())
+
+    def get_rain_past_24hr_inches(self):
+        rain_inches = 0
+        for observation in self.get_observations_24hr():
+            if observation["precipitationLastHour"]["value"] is not None:
+                rain_inches = rain_inches + self.meters_to_inches(observation["precipitationLastHour"]["value"])
+        return rain_inches
+
 
 if __name__ == '__main__':
     env = environment()
     print(env.get_sundata())
-    print(env.get_forecast_24hr())
-    for observation in env.get_observations_24hr():
-        print(json.dumps(observation, indent=2))
+    print(env.get_rain_past_24hr_inches())
+    print(env.get_rain_next_24hr_percentage())
