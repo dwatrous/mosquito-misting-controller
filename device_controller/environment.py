@@ -63,7 +63,7 @@ class environment:
 
     def get_hourly_weather_observations_24hr(self):
         observations = self.noaaapi.get_observations(self.zip, 'US')
-        return itertools.islice(observations, 24) 
+        return [observation for observation in itertools.islice(observations, 24)]
     
     # calculations
     def get_rain_next_24hr_percentage(self):
@@ -84,16 +84,38 @@ class environment:
         else:
             return rain_references/len(self.get_forecast_24hr())
 
-    def get_rain_past_24hr_inches(self):
+    def get_rain_last_24hr_inches(self):
         rain_inches = 0
         for observation in self.get_observations_24hr():
             if observation["precipitationLastHour"]["value"] is not None:
                 rain_inches = rain_inches + self.meters_to_inches(observation["precipitationLastHour"]["value"])
         return rain_inches
 
+    def get_low_high_temp_last_24hr_f(self):
+        temps = []
+        for observation in self.get_observations_24hr():
+            if observation["temperature"]["unitCode"] == "wmoUnit:degC":
+                temps.append(self.centigrade_to_fahrenheit(observation["temperature"]["value"]))
+            else:
+                temps.append(observation["temperature"]["value"])
+        return (min(temps), max(temps))
+
+    def get_low_high_temp_next_24hr_f(self):
+        temps = []
+        for item in self.get_forecast_24hr():
+            if item["temperatureUnit"] == "F":
+                temps.append(item["temperature"])
+            else:
+                temps.append(self.centigrade_to_fahrenheit(item["temperature"]))
+        return (min(temps), max(temps))
+
+
+
 
 if __name__ == '__main__':
     env = environment()
     print(env.get_sundata())
-    print(env.get_rain_past_24hr_inches())
+    print(env.get_rain_last_24hr_inches())
     print(env.get_rain_next_24hr_percentage())
+    print(env.get_low_high_temp_last_24hr_f())
+    print(env.get_low_high_temp_next_24hr_f())
