@@ -10,6 +10,8 @@ default_zip = 77449
 default_state = "TX"
 default_environment_city = "Houston"    # must be in https://astral.readthedocs.io/en/latest/index.html#cities
 
+# winter/summer options
+
 # zone constants
 CHEMICALCLASS1 = 1  # unused
 CHEMICALCLASS2 = 2  # RipTide, Sector and Eco MC (do not use emulsifier)
@@ -61,7 +63,7 @@ default_sprayduration_ms = 45000
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
-        for hourofday in [0, 6, 18, 20]:
+        for hourofday in [0, 6, 18, 20]:    # TODO change 0 to 22 for midnight optoin
             default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": hourofday}})
     return default_sprayoccurrences
 
