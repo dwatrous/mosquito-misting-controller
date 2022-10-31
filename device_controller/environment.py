@@ -94,11 +94,12 @@ class environment:
     def get_low_high_temp_last_24hr_f(self):
         temps = []
         for observation in self.get_observations_24hr():
-            if observation["temperature"]["unitCode"] == "wmoUnit:degC":
-                temps.append(self.centigrade_to_fahrenheit(observation["temperature"]["value"]))
-            else:
-                temps.append(observation["temperature"]["value"])
-        return (min(temps), max(temps))
+            if observation["temperature"]["value"] is not None:
+                if observation["temperature"]["unitCode"] == "wmoUnit:degC":
+                    temps.append(self.centigrade_to_fahrenheit(observation["temperature"]["value"]))
+                else:
+                    temps.append(observation["temperature"]["value"])
+        return {"lowtemp": min(temps), "hightemp": max(temps)}
 
     def get_low_high_temp_next_24hr_f(self):
         temps = []
@@ -107,7 +108,7 @@ class environment:
                 temps.append(item["temperature"])
             else:
                 temps.append(self.centigrade_to_fahrenheit(item["temperature"]))
-        return (min(temps), max(temps))
+        return {"lowtemp": min(temps), "hightemp": max(temps)}
 
 
 
