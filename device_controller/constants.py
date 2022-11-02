@@ -2,7 +2,18 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
 # API Credentials TODO: Move these into a more secure place later
-weatherstack_access_key = "d5099d79ea6a22ecef06425cc373bcce"
+virtualcrossing_apiKey = "KGU7KGVS8UBX2UTEWNZ8U3RRM"
+
+# virtualcrossing weather integration values
+virtualcrossing_api = {
+    "scheme": "https",
+    "host": "weather.visualcrossing.com",
+    "path": "/VisualCrossingWebServices/rest/services/timeline/$location/$startdate/$enddate",
+    "unitGroup": "us",
+    "contentType": "json",
+    "data_elements": "datetime,datetimeEpoch,tempmax,tempmin,temp,precip,precipprob,precipcover,preciptype,windgust,windspeed,winddir,sunrise,sunset,conditions,description,icon",
+    "data_granularity": "hours,days"
+}
 
 # device constants
 # use zipcode and state for MosquitoMax office
