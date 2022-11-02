@@ -2,36 +2,37 @@
 #See https://www.visualcrossing.com/resources/blog/how-to-load-historical-weather-data-using-python-without-scraping/ for more information.
 
 import time
-import codecs
+import constants
 import requests
 from urllib.parse import urlunsplit, urlencode
-import sys
+from string import Template
 
-# Collect
-scheme = "https"
-host = "weather.visualcrossing.com"
+class virtualcrossing:
 
-apikey="KGU7KGVS8UBX2UTEWNZ8U3RRM"
-#UnitGroup sets the units of the output - us or metric
-unitgroup="us"
-contentType="json"
+    def __init__(self, location=None) -> None:
+        if location == None:
+            self.location = constants.default_zip
 
-data_elements="datetime,datetimeEpoch,tempmax,tempmin,temp,precip,precipprob,precipcover,preciptype,windgust,windspeed,winddir,sunrise,sunset,conditions,description,icon"
-data_granularity="hours,days,current"
+    def generate_request_url(self, location, startdate, enddate):
+        path_template = Template(constants.virtualcrossing_api["path"])
+        path = path_template.substitute(location=location, startdate=startdate, enddate=enddate)
+        query = urlencode({
+            "unitGroup": constants.virtualcrossing_api["unitGroup"], 
+            "include": constants.virtualcrossing_api["data_granularity"], 
+            "elements": constants.virtualcrossing_api["data_elements"], 
+            "key": constants.virtualcrossing_apiKey, 
+            "contentType": constants.virtualcrossing_api["contentType"]})
+        return urlunsplit((constants.virtualcrossing_api["scheme"], constants.virtualcrossing_api["host"], path, query, ""))
 
-#Location for the weather data
-location="77070"
+    def fetch_weather_data(self):
+        starttime = int(time.time()-86400)
+        endtime = int(time.time()+86400)
 
-def build_api_url(location, startdate, enddate):
-    path = f"/VisualCrossingWebServices/rest/services/timeline/{location}/{startdate}/{enddate}"
-    query = urlencode({"unitGroup": unitgroup, "include": data_granularity, "elements": data_elements, "key": apikey, "contentType": contentType})
-    return urlunsplit((scheme, host, path, query, ""))
+        request_url = self.generate_request_url(self.location, starttime, endtime)
+        weather_response = requests.get(request_url)
+        return weather_response.json()
 
-starttime = int(time.time()-86400)
-endtime = int(time.time()+86400)
-
-request_url = build_api_url("77070",starttime ,endtime)
-
-response = requests.get(request_url)
-
-print(response.json())
+if __name__ == '__main__':
+    vc = virtualcrossing()
+    weather_data = vc.fetch_weather_data()
+    print(weather_data)
