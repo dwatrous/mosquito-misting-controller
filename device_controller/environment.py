@@ -28,10 +28,18 @@ class environment:
 
     # utility functions
     def meters_to_inches(self, value_m):
-        return value_m * 39.37
+        try:
+            return value_m * 39.37
+        except TypeError as err:
+            print("Error: %s" % err)
+            return 0
 
     def centigrade_to_fahrenheit(self, temp_c):
-        return (temp_c * 9/5) + 32
+        try:
+            return (temp_c * 9/5) + 32
+        except TypeError as err:
+            print("Error: %s" % err)
+            return 0
 
     # getters
     def get_forecast_24hr(self):
