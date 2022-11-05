@@ -1,15 +1,13 @@
 # https://astral.readthedocs.io/en/latest/index.html
 
 import datetime
+import time
 from astral import LocationInfo
 from astral.sun import sun
 from astral.geocoder import database, lookup
-from noaa_sdk import NOAA
 import json
 import constants
-import itertools
-
-# https://graphical.weather.gov/xml/xml_fields_icon_weather_conditions.php
+from visualcrossing import visualcrossing
 
 class environment:
 
@@ -18,38 +16,10 @@ class environment:
             self.zip = constants.default_zip
         if city == None:
             self.city = constants.default_environment_city
-
-        self.noaaapi = NOAA()
-
-        # generate and fetch
-        self.weather_forecast_24hr = self.get_hourly_weather_forcast_24hr()
-        self.weather_observations_24hr = self.get_hourly_weather_observations_24hr()
-        self.sundata = self.get_sundata()
-
-    # utility functions
-    def meters_to_inches(self, value_m):
-        try:
-            return value_m * 39.37
-        except TypeError as err:
-            print("Error: %s" % err)
-            return 0
-
-    def centigrade_to_fahrenheit(self, temp_c):
-        try:
-            return (temp_c * 9/5) + 32
-        except TypeError as err:
-            print("Error: %s" % err)
-            return 0
-
-    # getters
-    def get_forecast_24hr(self):
-        return self.weather_forecast_24hr
-
-    def get_observations_24hr(self):
-        return self.weather_observations_24hr
-    
-    def get_sundata(self):
-        return self.sundata
+        self.viscross = visualcrossing(location=zip)
+        self.weather_data = None
+        self.weather_data_refreshed = datetime.datetime.now()
+        self.refresh_threshold_seconds = 60 * 60 * 6
 
     # generate and fetch data
     def get_sundata(self):
@@ -65,66 +35,46 @@ class environment:
         }
         return sundata
         
-    def get_hourly_weather_forcast_24hr(self):
-        forecast = self.noaaapi.get_forecasts(self.zip, 'US', hourly=True)
-        return forecast[0:24]
+    def refresh_weather_data(self):
+        time_delta = datetime.datetime.now() - self.weather_data_refreshed
+        if self.weather_data is None or time_delta.total_seconds() > self.refresh_threshold_seconds:
+            self.weather_data = self.viscross.fetch_weather_data()
 
-    def get_hourly_weather_observations_24hr(self):
-        observations = self.noaaapi.get_observations(self.zip, 'US')
-        return [observation for observation in itertools.islice(observations, 24)]
-    
-    # calculations
-    def get_rain_next_24hr_percentage(self):
-        rain_percentage = 0
-        rain_indicator_keywords = ["showers", "thunderstorms", "rain"]
-        rain_reducer_keywords = ["chance", "likely", "slight"]
-        reducer_skip = False
-        rain_references = 0
-        for item in self.get_forecast_24hr():
-            if any(indicator in item["shortForecast"].lower() for indicator in rain_indicator_keywords):
-                rain_percentage = 100
-                if not reducer_skip and any(reducer in item["shortForecast"].lower() for reducer in rain_reducer_keywords):
-                    rain_references = rain_references + 0.5
-                else:
-                    reducer_skip = True
-        if reducer_skip:
-            return rain_percentage
-        else:
-            return rain_references/len(self.get_forecast_24hr())
+    def get_low_temp_next_24hr(self):
+        # refresh
+        self.refresh_weather_data()
+        # get current time
+        today = time.strftime("%Y-%m-%d")
+        tomorrow = (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        currenthour = time.strftime("%H:00:00")
+        hours = 0
+        low_temp = None
+        firsttemp = False
+        # loop through forecast and find low temp
+        for day in self.weather_data["days"]:
+            if day["datetime"] in [today, tomorrow]:
+                for hour in day["hours"]:
+                    if not firsttemp:
+                        if hour["datetime"] == currenthour:
+                            firsttemp = True
+                            low_temp = hour["temp"]
+                            hours = hours + 1
+                    if firsttemp and hours < 24:
+                        if hour["temp"] < low_temp: low_temp = hour["temp"]
+                        hours = hours + 1
+        return low_temp
 
-    def get_rain_last_24hr_inches(self):
-        rain_inches = 0
-        for observation in self.get_observations_24hr():
-            if observation["precipitationLastHour"]["value"] is not None:
-                rain_inches = rain_inches + self.meters_to_inches(observation["precipitationLastHour"]["value"])
-        return rain_inches
+    def get_low_temp_last_24hr(self):
+        pass
 
-    def get_low_high_temp_last_24hr_f(self):
-        temps = []
-        for observation in self.get_observations_24hr():
-            if observation["temperature"]["value"] is not None:
-                if observation["temperature"]["unitCode"] == "wmoUnit:degC":
-                    temps.append(self.centigrade_to_fahrenheit(observation["temperature"]["value"]))
-                else:
-                    temps.append(observation["temperature"]["value"])
-        return {"lowtemp": min(temps), "hightemp": max(temps)}
+    def get_max_wind_next_24hr(self):
+        pass
 
-    def get_low_high_temp_next_24hr_f(self):
-        temps = []
-        for item in self.get_forecast_24hr():
-            if item["temperatureUnit"] == "F":
-                temps.append(item["temperature"])
-            else:
-                temps.append(self.centigrade_to_fahrenheit(item["temperature"]))
-        return {"lowtemp": min(temps), "hightemp": max(temps)}
-
-
+    def get_rain_prob_next_24hr(self):
+        pass
 
 
 if __name__ == '__main__':
     env = environment()
     print(env.get_sundata())
-    print(env.get_rain_last_24hr_inches())
-    print(env.get_rain_next_24hr_percentage())
-    print(env.get_low_high_temp_last_24hr_f())
-    print(env.get_low_high_temp_next_24hr_f())
+    print(env.get_low_temp_next_24hr())
