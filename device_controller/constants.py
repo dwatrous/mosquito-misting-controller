@@ -14,6 +14,7 @@ visualcrossing_api = {
     "data_elements": "datetime,datetimeEpoch,tempmax,tempmin,temp,precip,precipprob,precipcover,preciptype,windgust,windspeed,winddir,sunrise,sunset,conditions,description,icon",
     "data_granularity": "hours"
 }
+visualcrossing_refresh_threshold = 60 * 60 * 6  # 6 hours in seconds
 
 # device constants
 # use zipcode and state for MosquitoMax office
