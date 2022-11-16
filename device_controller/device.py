@@ -6,12 +6,16 @@ import constants
 import json
 import time
 import datetime
+import environment
+from threading import Thread
 
 class device:
     zone_scheduler = sched.scheduler()
 
     def __init__(self, devicedefinition=None) -> None:
         self.zones = []
+        self.env = environment()
+
         if devicedefinition == None:
             self.street1 = None
             self.street2 = None
@@ -32,6 +36,7 @@ class device:
         self.city = devicedefinition["city"]
         self.state = devicedefinition["state"]
         self.zip = devicedefinition["zip"]
+        self.environment_city = devicedefinition["environment_city"]
         self.zones = devicedefinition["zones"]
 
     def get_devicedefinition(self):
@@ -41,6 +46,7 @@ class device:
             "city": self.city,
             "state": self.state,
             "zip": self.zip,
+            "environment_city": self.environment_city,
             "zones": self.zones
         }
     
@@ -69,32 +75,52 @@ class device:
     # schedule sprays
     def schedule_spray_all_zones_24hrs(self):
         now = datetime.datetime.now()
-        currenthour = now.hour
+        priority = 0
         currentday = now.weekday()
-        (sunrise, sunset) = self.
+        sundata = self.env.get_sundata()
         for spray_zone in self.zones:
+            priority = priority + 1
             for sprayoccurence in spray_zone.sprayoccurrences:
-                if sprayoccurence["dayofweek"] = currentday and sprayoccurence[""]
-
-
+                if sprayoccurence["dayofweek"] == currentday:
+                    # handle absolute time
+                    if sprayoccurence["type"] == "fixedtime":
+                        scheduled = datetime.datetime(now.year, now.month, now.day, sprayoccurence["value"][0], sprayoccurence["value"][1])
+                        self.zone_scheduler.enterabs(time.mktime(scheduled.timetuple()), priority, spray_zone.execute_spray)
+                    # handle relative time
+                    elif sprayoccurence["type"] == "relativetime":
+                        # see environment for structure of sundata and constants.py for structure of sprayoccurrence
+                        suntime = sundata[sprayoccurence["value"]["sunevent"]]
+                        deltaminutes = datetime.timedelta(minutes=sprayoccurence["value"]["deltaminutes"])
+                        # adjust suntime for timedelta
+                        if sprayoccurence["value"]["sunposition"] == "before":
+                            spraytime = suntime - deltaminutes
+                        elif sprayoccurence["value"]["sunposition"] == "after":
+                            spraytime = suntime + deltaminutes
+                        else:
+                            pass # TODO handle error
+                        # create scheduled based on adjusted spraytime
+                        scheduled = datetime.datetime(
+                            spraytime.year, 
+                            spraytime.month, 
+                            spraytime.day, 
+                            spraytime.hour, 
+                            spraytime.minute
+                        )
+                        self.zone_scheduler.enterabs(time.mktime(scheduled.timetuple()), priority, spray_zone.execute_spray)
+                    else:
+                        pass # TODO handle error
+                    
 
     # app/online connection
 
     # integrations
-    def get_rain_actual(self):
-        pass
-
-    def get_temp_forecast(self):
-        pass
-
-    def schedule_24_hours(self):
-        pass
+    def fetch_environment_data(self):
+        self.weather_forecast_24hr = environment.get_hourly_weather_forcast_24hr()
+        self.weather_observations_24hr = environment.get_hourly_weather_observations_24hr()
+        self.sundata = environment.get_sundata()
 
     # on board sensors
     def read_current_line_pressure(self):
-        pass
-
-    def read_current_temp(self):
         pass
 
     def read_current_vacuum_pressure(self):
