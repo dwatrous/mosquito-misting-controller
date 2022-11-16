@@ -38,8 +38,9 @@ class environment:
     def get_low_temp_next_24hr(self):
         return self.viscross.get_high_low_temp_last_24hr()["low_temp"]    
 
-    def get_rain_prob_next_24hr(self):
-        return self.viscross.get_rain_probability_next_24hr()
+    def get_rain_prediction_next_24hr(self):
+        prediction = {"probability": self.viscross.get_rain_probability_next_24hr(), "inches": self.viscross.get_rain_inches_next_24hr()}
+        return prediction
     
     def get_rain_actual_last_24hr(self):
         return self.viscross.get_rain_actual_last_24hr()
@@ -50,4 +51,4 @@ if __name__ == '__main__':
     print(env.get_low_temp_next_24hr())
     print(env.get_low_temp_last_24hr())
     print(env.get_rain_actual_last_24hr())
-    print(env.get_rain_prob_next_24hr())
+    print(env.get_rain_prediction_next_24hr())

@@ -32,6 +32,8 @@ class visualcrossing:
             "contentType": self.api_specs["contentType"]})
         return urlunsplit((self.api_specs["scheme"], self.api_specs["host"], path, query, ""))
 
+    # include=current
+
     def fetch_weather_data(self):
         # 86400 seconds in a day, so this is 24 hours back and forward from now in Unix epoch
         starttime = int(time.time()-86400)
@@ -61,6 +63,7 @@ class visualcrossing:
         hours = 0
         temps = []
         rain_prob = []
+        rain_inches = []
         firsttemp = False
         # loop through forecast and find low temp
         for hour in self.weather_data_hourly:
@@ -70,13 +73,17 @@ class visualcrossing:
                         firsttemp = True
                         temps.append(hour["temp"])
                         rain_prob.append(hour["precipprob"])
+                        rain_inches.append(hour["precip"])
                         hours = hours + 1
                 if firsttemp and hours < 24:
                     temps.append(hour["temp"])
                     rain_prob.append(hour["precipprob"])
+                    rain_inches.append(hour["precip"])
                     hours = hours + 1
         self.high_low_temps_next_24hr = {"high_temp": max(temps), "low_temp": min(temps)}
         self.rain_probability_next_24hr = max(rain_prob)
+        self.rain_inches_next_24hr = max(rain_inches)
+
 
     def find_data_last_24hr(self):
         # get current time
@@ -128,6 +135,10 @@ class visualcrossing:
         self.refresh_weather_data()
         return self.rain_probability_next_24hr
 
+    def get_rain_inches_next_24hr(self):
+        self.refresh_weather_data()
+        return self.rain_inches_next_24hr
+
     def get_rain_actual_last_24hr(self):
         self.refresh_weather_data()
         return self.rain_actual_last_24hr
@@ -142,4 +153,5 @@ if __name__ == '__main__':
     print(vc.get_high_low_temp_next_24hr())
     print(vc.get_high_low_temp_last_24hr())
     print(vc.get_rain_probability_next_24hr())
+    print(vc.get_rain_inches_next_24hr())
     print(vc.get_rain_actual_last_24hr())
