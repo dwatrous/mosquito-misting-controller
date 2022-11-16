@@ -66,7 +66,7 @@ default_sprayduration_ms = 45000
 #           {
 #               "type": "fixedtime|relativetime",
 #               "value": 
-#                   0-23 (military time)
+#                   (0-23, 0-59) (military time [hours, minutes])
 # OR
 #                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
 #           }
@@ -75,8 +75,8 @@ default_sprayduration_ms = 45000
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
-        for hourofday in [0, 6, 18, 20]:    # TODO change 0 to 22 for midnight optoin
-            default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": hourofday}})
+        for timeofday in [[22,0], [6,0], [18,0], [20,0]]:
+            default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": timeofday}})
     return default_sprayoccurrences
 
 default_valve_first_open_offset_ms = 500
