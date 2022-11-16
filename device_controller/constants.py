@@ -56,6 +56,8 @@ dayofweekmap = {0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday", 4: "Thur
 
 # defaults
 
+default_low_temp_threshold = 50 # degrees F
+default_rain_threshold = 0.5    # inches
 default_nozzlecount = 30
 default_sprayduration_ms = 45000
 # sprayoccurrence

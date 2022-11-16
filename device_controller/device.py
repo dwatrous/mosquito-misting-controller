@@ -23,6 +23,8 @@ class device:
             self.state = constants.default_state
             self.zip = constants.default_zip
             self.environment_city = constants.default_environment_city
+            self.low_temp_threshold = constants.default_low_temp_threshold
+            self.rain_threshold = constants.default_rain_threshold
             self.zones.append(zone.zone())
             return
 
@@ -37,6 +39,8 @@ class device:
         self.state = devicedefinition["state"]
         self.zip = devicedefinition["zip"]
         self.environment_city = devicedefinition["environment_city"]
+        self.low_temp_threshold = devicedefinition["low_temp_threshold"]
+        self.rain_threshold = devicedefinition["rain_threshold"]
         self.zones = devicedefinition["zones"]
 
     def get_devicedefinition(self):
@@ -47,6 +51,8 @@ class device:
             "state": self.state,
             "zip": self.zip,
             "environment_city": self.environment_city,
+            "low_temp_threshold": self.low_temp_threshold,
+            "rain_threshold": self.rain_threshold,
             "zones": self.zones
         }
     
@@ -74,6 +80,11 @@ class device:
 
     # schedule sprays
     def schedule_spray_all_zones_24hrs(self):
+        # decide whether to spray at all
+        if self.env.get_low_temp_last_24hr() < self.low_temp_threshold or self.env.get_low_temp_next_24hr() < self.low_temp_threshold:
+            pass # TODO handle temperature skip
+        if self.env.get_rain_prediction_next_24hr()["inches"] > self.rain_threshold:
+            pass # TODO handle rain skip
         now = datetime.datetime.now()
         priority = 0
         currentday = now.weekday()
