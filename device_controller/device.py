@@ -1,12 +1,12 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
-import sched
+import schedule
 import zone
 import constants
 import json
 import time
 import datetime
-import environment
+from environment import environment
 from threading import Thread
 
 class device:
@@ -94,18 +94,18 @@ class device:
             for sprayoccurence in spray_zone.sprayoccurrences:
                 if sprayoccurence["dayofweek"] == currentday:
                     # handle absolute time
-                    if sprayoccurence["type"] == "fixedtime":
-                        scheduled = datetime.datetime(now.year, now.month, now.day, sprayoccurence["value"][0], sprayoccurence["value"][1])
+                    if sprayoccurence["timeofday"]["type"] == "fixedtime":
+                        scheduled = datetime.datetime(now.year, now.month, now.day, sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
                         self.zone_scheduler.enterabs(time.mktime(scheduled.timetuple()), priority, spray_zone.execute_spray)
                     # handle relative time
-                    elif sprayoccurence["type"] == "relativetime":
+                    elif sprayoccurence["timeofday"]["type"] == "relativetime":
                         # see environment for structure of sundata and constants.py for structure of sprayoccurrence
-                        suntime = sundata[sprayoccurence["value"]["sunevent"]]
-                        deltaminutes = datetime.timedelta(minutes=sprayoccurence["value"]["deltaminutes"])
+                        suntime = sundata[sprayoccurence["timeofday"]["value"]["sunevent"]]
+                        deltaminutes = datetime.timedelta(minutes=sprayoccurence["timeofday"]["value"]["deltaminutes"])
                         # adjust suntime for timedelta
-                        if sprayoccurence["value"]["sunposition"] == "before":
+                        if sprayoccurence["timeofday"]["value"]["sunposition"] == "before":
                             spraytime = suntime - deltaminutes
-                        elif sprayoccurence["value"]["sunposition"] == "after":
+                        elif sprayoccurence["timeofday"]["value"]["sunposition"] == "after":
                             spraytime = suntime + deltaminutes
                         else:
                             pass # TODO handle error
@@ -120,15 +120,11 @@ class device:
                         self.zone_scheduler.enterabs(time.mktime(scheduled.timetuple()), priority, spray_zone.execute_spray)
                     else:
                         pass # TODO handle error
-                    
+
+        t = Thread(target=self.zone_scheduler.run)
+        t.start()
 
     # app/online connection
-
-    # integrations
-    def fetch_environment_data(self):
-        self.weather_forecast_24hr = environment.get_hourly_weather_forcast_24hr()
-        self.weather_observations_24hr = environment.get_hourly_weather_observations_24hr()
-        self.sundata = environment.get_sundata()
 
     # on board sensors
     def read_current_line_pressure(self):
