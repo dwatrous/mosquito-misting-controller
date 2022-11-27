@@ -20,7 +20,8 @@ class environment:
 
     # generate and fetch data
     def get_sundata(self):
-        # must be in https://astral.readthedocs.io/en/latest/index.html#cities
+        
+        # city must be in https://astral.readthedocs.io/en/latest/index.html#cities
         location = lookup(self.city, database())
         s = sun(location.observer, date=datetime.date.today(), tzinfo=location.timezone)
         sundata = {
