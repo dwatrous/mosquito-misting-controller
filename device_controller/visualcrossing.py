@@ -6,20 +6,20 @@ from urllib.parse import urlunsplit, urlencode
 from string import Template
 
 class visualcrossing:
+    weather_data = None
+    weather_data_refreshed = datetime.datetime.min
+    weather_data_hourly = []
+    refresh_threshold_seconds = constants.visualcrossing_refresh_threshold
+    high_low_temps_next_24hr = None
+    high_low_temps_last_24hr = None
+    rain_probability_next_24hr = None
+    rain_actual_last_24hr = None
 
     def __init__(self, location=None, api_specs=None) -> None:
         if location == None:
             self.location = constants.default_zip
         if api_specs == None:
             self.api_specs = constants.visualcrossing_api
-        self.weather_data = None
-        self.weather_data_hourly = []
-        self.weather_data_refreshed = datetime.datetime.min
-        self.refresh_threshold_seconds = constants.visualcrossing_refresh_threshold
-        self.high_low_temps_next_24hr = None
-        self.high_low_temps_last_24hr = None
-        self.rain_probability_next_24hr = None
-        self.rain_actual_last_24hr = None
 
     def generate_request_url(self, location, startdate, enddate):
         path_template = Template(self.api_specs["path"])
