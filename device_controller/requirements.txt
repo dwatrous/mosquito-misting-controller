@@ -2,3 +2,4 @@ requests
 astral
 noaa_sdk
 schedule
+freezegun
