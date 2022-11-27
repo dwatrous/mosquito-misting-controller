@@ -6,12 +6,14 @@ from math import floor
 import sched, time
 import multiprocessing
 import json
+from environment import environment
 
 class zone:
     ms_in_second = 1000
     valve_scheduler = sched.scheduler()
 
     def __init__(self, zonedefinition=None) -> None:
+        self.env = environment()
 
         if zonedefinition == None:
             self.name = "Default"
@@ -30,6 +32,8 @@ class zone:
         self.sprayoccurrences = zonedefinition["sprayoccurrences"]
         self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
         self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
+        self.low_temp_threshold_f = zonedefinition["low_temp_threshold_f"]
+        self.rain_threshold_in = zonedefinition["rain_threshold_in"]
 
     def get_zonedefinition(self):
         zonedefinition = {
@@ -39,7 +43,9 @@ class zone:
             "sprayduration_ms": self.sprayduration_ms,
             "sprayoccurrences": self.sprayoccurrences,
             "valve_first_open_offset_ms": self.valve_first_open_offset_ms,
-            "valve_activation_interval_ms": self.valve_activation_interval_ms
+            "valve_activation_interval_ms": self.valve_activation_interval_ms,
+            "low_temp_threshold_f": self.low_temp_threshold_f,
+            "rain_threshold_in": self.rain_threshold_in
         }
         return zonedefinition
 
@@ -95,6 +101,12 @@ class zone:
 
     # execute spray
     def execute_spray(self):
+        # decide whether to spray at all
+        if self.env.get_low_temp_last_24hr() < self.low_temp_threshold_f or self.env.get_low_temp_next_24hr() < self.low_temp_threshold_f:
+            pass # TODO handle temperature skip
+        if self.env.get_rain_prediction_next_24hr()["inches"] > self.rain_threshold_in:
+            pass # TODO handle rain skip
+
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
         # start compressor
@@ -155,3 +167,5 @@ class zone:
         self.sprayoccurrences = constants.generate_default_sprayoccurrences()
         self.valve_first_open_offset_ms = constants.default_valve_first_open_offset_ms
         self.valve_activation_interval_ms = constants.default_valve_activation_interval_ms
+        self.low_temp_threshold_f = constants.default_low_temp_threshold_f
+        self.rain_threshold_in = constants.default_rain_threshold_in
