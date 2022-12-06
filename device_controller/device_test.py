@@ -18,11 +18,11 @@ assert len(mydevice.zones) == 1
 mydevice_zone0 = mydevice.zones[0]
 assert mydevice_zone0.calculate_valve_openings() == zone_test.expected_default_timing
 
-trigger_now = datetime.datetime.now().replace(hour=6, minute=0, second=0, microsecond=0)
+trigger_now = datetime.datetime.now().replace(hour=5, minute=59, second=3, microsecond=0)
 
 if __name__ == '__main__':
-    with freeze_time(trigger_now):
+    with freeze_time(trigger_now, tick=True):
         mydevice.schedule_sprays()
         while True:
             print("waiting 1 minute at ", datetime.datetime.now())
-            sleep(60)
+            sleep(5)
