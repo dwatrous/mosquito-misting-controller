@@ -81,7 +81,7 @@ class device:
         print("valve %d opened at %d and closed at %d for a total of %.1f" % (valve, open_time, close_time, close_time-open_time))
 
     # schedule sprays
-    def schedule_sprays(self, interval=1):
+    def schedule_sprays(self, interval=60):
         self.schedule_fixed_spray_times()
         self.schedule_relative_scheduler()
         # https://schedule.readthedocs.io/en/stable/background-execution.html
