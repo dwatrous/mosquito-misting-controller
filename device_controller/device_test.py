@@ -25,7 +25,7 @@ if __name__ == '__main__':
     with freeze_time(trigger_now, tick=True):
         scheduler = mydevice.schedule_sprays()
         while True:
-            print("waiting 1 minute at ", datetime.datetime.now())
-            sleep(5)
+            print("waiting 15 seconds at ", datetime.datetime.now())
+            sleep(15)
             if datetime.datetime.now() - test_duration > datetime.timedelta(minutes=3): break
         scheduler.set()
