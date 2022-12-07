@@ -136,10 +136,10 @@ class device:
                     # note that it doesn't really mattere when this sprayoccurence is 
                     # since we're not scheduling the actual spray right now
                     suntime = sundata["dawn"] - datetime.timedelta(hours=1, minutes=5)
-                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.min)
+                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.minute)
                     schedule.every().day.at(schedule_time).do(self.schedule_relative_spray)
                     suntime = sundata["sunset"] - datetime.timedelta(hours=1, minutes=5)
-                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.min)
+                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.minute)
                     schedule.every().day.at(schedule_time).do(self.schedule_relative_spray)
                     # since we found a relative time, we only need the schedulers, so we can break
                     break
