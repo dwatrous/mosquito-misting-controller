@@ -77,8 +77,9 @@ default_sprayduration_ms = 45000
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
-        for timeofday in [[22,0], [6,0], [18,0], [20,0]]:
-            default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": timeofday}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": [23,0]}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dawn", "sunposition": "after", "deltaminutes": "5"}}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": "5"}}})
     return default_sprayoccurrences
 
 default_valve_first_open_offset_ms = 500
