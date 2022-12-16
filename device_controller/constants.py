@@ -21,6 +21,8 @@ visualcrossing_refresh_threshold = 60 * 60 * 6  # 6 hours in seconds
 default_zip = 77449
 default_state = "TX"
 default_environment_city = "Houston"    # must be in https://astral.readthedocs.io/en/latest/index.html#cities
+default_timezone = "US/Central"     # https://schedule.readthedocs.io/en/latest/timezones.html
+DEVICE_SCHEDULE_AHEAD_THRESHOLD_SECONDS = 10800 # three hours in seconds
 
 # winter/summer options
 
@@ -70,7 +72,7 @@ default_sprayduration_ms = 45000
 #               "value": 
 #                   [0-23, 0-59] (military time [hours, minutes])
 # OR
-#                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": "XX in minutes"}
+#                   {"sunevent": "sunrise|sunset", "sunposition": "before|after", "deltaminutes": XX in minutes}
 #           }
 #   },
 # ...]
@@ -78,8 +80,8 @@ def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
         default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": [23,0]}})
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dawn", "sunposition": "after", "deltaminutes": "5"}}})
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": "5"}}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dawn", "sunposition": "after", "deltaminutes": 5}}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": 5}}})
     return default_sprayoccurrences
 
 default_valve_first_open_offset_ms = 500
