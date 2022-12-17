@@ -1,6 +1,5 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
-import sched
 import threading
 import schedule
 import zone
@@ -13,11 +12,11 @@ from threading import Thread
 from pytz import timezone
 
 class device:
-    zone_scheduler = sched.scheduler(timefunc=time.time)
 
     def __init__(self, devicedefinition=None) -> None:
         self.zones = []
         self.env = environment()
+        self.schedule_thread_kill_signal = threading.Event()
 
         if devicedefinition == None:
             self.street1 = None
@@ -30,23 +29,26 @@ class device:
             self.rain_threshold_in = constants.default_rain_threshold_in
             self.timezone = constants.default_timezone
             self.zones.append(zone.zone())
-            return
+        else:
+            # if a JSON was passed directly, change it to a dict
+            if type(devicedefinition) is not dict:
+                devicedefinition = json.loads(devicedefinition)
+        
+            # hydrate based on devicedefinition
+            self.street1 = devicedefinition["street1"]
+            self.street2 = devicedefinition["street2"]
+            self.city = devicedefinition["city"]
+            self.state = devicedefinition["state"]
+            self.zip = devicedefinition["zip"]
+            self.environment_city = devicedefinition["environment_city"]
+            self.low_temp_threshold_f = devicedefinition["low_temp_threshold_f"]
+            self.rain_threshold_in = devicedefinition["rain_threshold_in"]
+            self.timezone = devicedefinition["timezone"]
+            self.zones = devicedefinition["zones"]
 
-        # if a JSON was passed directly, change it to a dict
-        if type(devicedefinition) is not dict:
-            devicedefinition = json.loads(devicedefinition)
-    
-        # hydrate based on devicedefinition
-        self.street1 = devicedefinition["street1"]
-        self.street2 = devicedefinition["street2"]
-        self.city = devicedefinition["city"]
-        self.state = devicedefinition["state"]
-        self.zip = devicedefinition["zip"]
-        self.environment_city = devicedefinition["environment_city"]
-        self.low_temp_threshold_f = devicedefinition["low_temp_threshold_f"]
-        self.rain_threshold_in = devicedefinition["rain_threshold_in"]
-        self.timezone = devicedefinition["timezone"]
-        self.zones = devicedefinition["zones"]
+        # schedule sprays and start schedule thread
+        self.schedule_sprays()
+        self.start_schedule_thread()
 
     def get_devicedefinition(self):
         devicedefinition = {
@@ -85,106 +87,62 @@ class device:
         print("valve %d opened at %d and closed at %d for a total of %.1f" % (valve, open_time, close_time, close_time-open_time))
 
     # schedule sprays
-    def schedule_sprays(self, interval=60):
-        self.schedule_fixed_spray_times()
-        self.schedule_relative_scheduler()
-        # https://schedule.readthedocs.io/en/stable/background-execution.html
-        cease_continuous_run = threading.Event()
+    # https://schedule.readthedocs.io/en/stable/background-execution.html
+    def start_schedule_thread(self, interval=60):
 
         class ScheduleThread(threading.Thread):
             @classmethod
             def run(cls):
-                while not cease_continuous_run.is_set():
+                while not self.schedule_thread_kill_signal.is_set():
                     schedule.run_pending()
                     time.sleep(interval)
 
         continuous_thread = ScheduleThread()
         continuous_thread.start()
-        return cease_continuous_run
+
+    def schedule_dayofweek(self, daynumber, spraytime, dofunc, tag):
+        if daynumber == 0:
+            schedule.every().sunday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 1:
+            schedule.every().monday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 2:
+            schedule.every().tuesday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 3:
+            schedule.every().wednesday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 4:
+            schedule.every().thursday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 5:
+            schedule.every().friday.at(spraytime, self.timezone).do(dofunc).tag(tag)
+        if daynumber == 6:
+            schedule.every().saturday.at(spraytime, self.timezone).do(dofunc).tag(tag)
 
 
-    def schedule_fixed_spray_times(self):
+    def schedule_sprays(self):
+        # clear existing schedule and thread as a reset
+        schedule.clear()
         for spray_zone in self.zones:
             # TODO: may need offset for zones that spray at the same time
             for sprayoccurence in spray_zone.sprayoccurrences:
                 # handle each day (see constants.py dayofweekmap)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 0:
+                if sprayoccurence["timeofday"]["type"] == "fixedtime":
                     spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().sunday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 1:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().monday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 2:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().tuesday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 3:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().wednesday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 4:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().thursday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 5:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().friday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-                if sprayoccurence["timeofday"]["type"] == "fixedtime" and sprayoccurence["dayofweek"] == 6:
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
-                    schedule.every().saturday.at(spraytime, self.timezone).do(spray_zone.execute_spray)
-
-    # start relative time scheduler
-    def schedule_relative_scheduler(self):
-        sundata = self.env.get_sundata()
-        for spray_zone in self.zones:
-            for sprayoccurence in spray_zone.sprayoccurrences:
+                    self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "fixedtime")
+                # handle only relative time
                 if sprayoccurence["timeofday"]["type"] == "relativetime":
-                    # need a scheduler to run an hour or so before each possible event
-                    # note that it doesn't really mattere when this sprayoccurence is 
-                    # since we're not scheduling the actual spray right now
-                    suntime = sundata["dawn"] - datetime.timedelta(hours=1, minutes=5)
-                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.minute)
-                    schedule.every().day.at(schedule_time, self.timezone).do(self.schedule_relative_spray)
-                    suntime = sundata["sunset"] - datetime.timedelta(hours=1, minutes=5)
-                    schedule_time = "%02d:%02d" % (suntime.hour, suntime.minute)
-                    schedule.every().day.at(schedule_time, self.timezone).do(self.schedule_relative_spray)
-                    # since we found a relative time, we only need the schedulers, so we can break
-                    break
-        
-    def schedule_relative_spray(self):
-        now = datetime.datetime.now(tz=timezone(self.timezone))
-        # use priority to offset zones that spray at the same time
-        priority = 0
-        currentday = now.weekday()
-        sundata = self.env.get_sundata()
-        for spray_zone in self.zones:
-            priority = priority + 1
-            for sprayoccurence in spray_zone.sprayoccurrences:
-                if sprayoccurence["dayofweek"] == currentday:
-                    # handle only relative time
-                    if sprayoccurence["timeofday"]["type"] == "relativetime":
-                        # see environment for structure of sundata and constants.py for structure of sprayoccurrence
-                        suntime = sundata[sprayoccurence["timeofday"]["value"]["sunevent"]]
-                        deltaminutes = datetime.timedelta(minutes=sprayoccurence["timeofday"]["value"]["deltaminutes"])
-                        # adjust suntime for timedelta
-                        if sprayoccurence["timeofday"]["value"]["sunposition"] == "before":
-                            spraytime = suntime - deltaminutes
-                        elif sprayoccurence["timeofday"]["value"]["sunposition"] == "after":
-                            spraytime = suntime + deltaminutes
-                        else:
-                            pass # TODO handle error
-                        # create scheduled based on adjusted spraytime
-                        time_until_spraytime = spraytime - now
-                        if time_until_spraytime.total_seconds() < constants.DEVICE_SCHEDULE_AHEAD_THRESHOLD_SECONDS:
-                            scheduled = datetime.datetime(
-                                spraytime.year, 
-                                spraytime.month, 
-                                spraytime.day, 
-                                spraytime.hour, 
-                                spraytime.minute,
-                                tzinfo=timezone(self.timezone)
-                            )
-                            self.zone_scheduler.enterabs(time.mktime(scheduled.timetuple()), priority, spray_zone.execute_spray)
-
-        t = Thread(target=self.zone_scheduler.run)
-        t.start()
+                    # see environment for structure of sundata and constants.py for structure of sprayoccurrence
+                    sundata = self.env.get_sundata()
+                    suntime = sundata[sprayoccurence["timeofday"]["value"]["sunevent"]]
+                    deltaminutes = datetime.timedelta(minutes=sprayoccurence["timeofday"]["value"]["deltaminutes"])
+                    # adjust suntime for timedelta
+                    if sprayoccurence["timeofday"]["value"]["sunposition"] == "before":
+                        spraytime_dt = suntime - deltaminutes
+                    elif sprayoccurence["timeofday"]["value"]["sunposition"] == "after":
+                        spraytime_dt = suntime + deltaminutes
+                    else:
+                        pass # TODO handle error
+                    # create scheduled based on adjusted spraytime
+                    spraytime = "%02d:%02d" % (spraytime_dt.hour, spraytime_dt.minute)
+                    self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "relativetime")
 
     # app/online connection
 

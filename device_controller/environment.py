@@ -19,11 +19,11 @@ class environment:
         self.viscross = visualcrossing(location=zip)
 
     # generate and fetch data
-    def get_sundata(self):
+    def get_sundata(self, sundate=datetime.date.today()):
         
         # city must be in https://astral.readthedocs.io/en/latest/index.html#cities
         location = lookup(self.city, database())
-        s = sun(location.observer, date=datetime.date.today(), tzinfo=location.timezone)
+        s = sun(location.observer, date=sundate, tzinfo=location.timezone)
         sundata = {
             "dawn": s["dawn"],
             "sunrise": s["sunrise"],
