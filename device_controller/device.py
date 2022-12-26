@@ -44,7 +44,7 @@ class device:
             self.low_temp_threshold_f = devicedefinition["low_temp_threshold_f"]
             self.rain_threshold_in = devicedefinition["rain_threshold_in"]
             self.timezone = devicedefinition["timezone"]
-            self.zones = devicedefinition["zones"]
+            self.zones = [zone.zone(devicezone) for devicezone in devicedefinition["zones"]]
 
         # schedule sprays and start schedule thread
         self.schedule_sprays()
@@ -61,8 +61,9 @@ class device:
             "low_temp_threshold_f": self.low_temp_threshold_f,
             "rain_threshold_in": self.rain_threshold_in,
             "timezone": self.timezone,
-            "zones": self.zones
+            "zones": [devicezone.get_zonedefinition() for devicezone in self.zones]
         }
+        return devicedefinition
     
     def get_devicedefinition_json(self):
         return json.dumps(self.get_devicedefinition())

@@ -10,8 +10,11 @@ from device import device
 import time_machine
 from pytz import timezone
 
+devicedefinition_filename = "devicedefinition.json"
+env = environment()
+
 if __name__ == '__main__':
-    # create zone instance
+    # create device instance
     mydevice = device()
 
     # assert default values
@@ -22,7 +25,23 @@ if __name__ == '__main__':
     mydevice_zone0 = mydevice.zones[0]
     assert mydevice_zone0.calculate_valve_openings() == zone_test.expected_default_timing
 
-    env = environment()
+    # test save devicedefinition
+    with open(devicedefinition_filename, "w") as savedfile:
+        savedfile.write(mydevice.get_devicedefinition_json())
+
+    # load from devicedefinition
+    with open(devicedefinition_filename, "r") as savedfile:
+        new_devicedefinition_json = savedfile.read()
+    newdevice = device(devicedefinition=new_devicedefinition_json)
+    # assert default values
+    assert mydevice.state == constants.default_state
+    assert mydevice.zip == constants.default_zip
+    assert len(mydevice.zones) == 1
+
+    if os.path.exists(devicedefinition_filename):
+        os.remove(devicedefinition_filename)
+    else:
+        print("The file does not exist")
 
     # run a fixed time spray
     trigger_now = datetime.datetime.now(tz=timezone(constants.default_timezone)).replace(hour=22, minute=59, second=37, microsecond=0)
@@ -36,7 +55,7 @@ if __name__ == '__main__':
     # run a relative time spray
     sundata = env.get_sundata()
     # , timezone=timezone(constants.default_timezone)
-    trigger_schedule = sundata["dawn"] + datetime.timedelta(minutes=4, seconds=29)
+    trigger_schedule = sundata["sunrise"] - datetime.timedelta(minutes=5, seconds=37)
     with time_machine.travel(trigger_schedule, tick=True):
         scheduler = mydevice.schedule_sprays()
         next_run = schedule.next_run()

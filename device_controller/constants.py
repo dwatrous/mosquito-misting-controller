@@ -79,7 +79,7 @@ def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
         default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": [23,0]}})
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dawn", "sunposition": "after", "deltaminutes": 5}}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "sunrise", "sunposition": "before", "deltaminutes": 5}}})
         default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": 5}}})
     return default_sprayoccurrences
 
