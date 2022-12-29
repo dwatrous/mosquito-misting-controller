@@ -3,13 +3,19 @@
 
 # This is the main controller file
 
+import datetime
+from pytz import timezone
+import constants
 import json
 from os.path import exists
+from time import sleep
 from device import device
 
 import firebase_admin
 from firebase_admin import firestore
 from pathlib import Path
+
+wait_time = 60
 
 # Application Default credentials are automatically created.
 app = firebase_admin.initialize_app()
@@ -47,24 +53,18 @@ except:
 deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
 with deviceconfigfile.open("w") as configwriter:
     configwriter.write(json.dumps(device_config))
-# if WiFi unavailable, do ???
-
+# if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
 # create the device instance
+this_device = device(account["devices"][config["device_name"]])
 
-# while True
-# listen for messages from the cloud
-# handle message
-# MESSAGES: reload configuration, spray now, skip next spray, get device status
-# check and send device status (hourly?) (may include error state that will be handled from the cloud)
+while True:
+    # listen for messages from the cloud
+    # handle message
+    # MESSAGES: reload configuration, spray now, skip next spray, get device status
+    # check and send device status (hourly?) (may include error state that will be handled from the cloud)
 
-# periodically refresh schedule (daily should be fine)
-
-# with open(constants.configfilename, "w") as text_file:
-#     print(frozen, file=text_file)
-
-# file = open("save.json", "r") 
-# loaded_objects = jsonpickle.decode(file.read())
-
-# https://docs.python.org/3/library/sched.html
+    # periodically refresh schedule (daily should be fine)
+    print("waiting ", wait_time, " seconds at ", datetime.datetime.now(tz=timezone(constants.default_timezone)))
+    sleep(wait_time)
 
