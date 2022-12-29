@@ -19,6 +19,7 @@ class device:
         self.schedule_thread_kill_signal = threading.Event()
 
         if devicedefinition == None:
+            self.name = "My Device"
             self.street1 = None
             self.street2 = None
             self.city = None
@@ -35,6 +36,7 @@ class device:
                 devicedefinition = json.loads(devicedefinition)
         
             # hydrate based on devicedefinition
+            self.name = devicedefinition["name"]
             self.street1 = devicedefinition["street1"]
             self.street2 = devicedefinition["street2"]
             self.city = devicedefinition["city"]
@@ -52,6 +54,7 @@ class device:
 
     def get_devicedefinition(self):
         devicedefinition = {
+            "name": self.name,
             "street1": self.street1,
             "street2": self.street2,
             "city": self.city,
