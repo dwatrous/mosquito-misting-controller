@@ -3,6 +3,21 @@
 
 # This is the main controller file
 
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+logFile = 'controller.log'
+
+my_handler = TimedRotatingFileHandler(logFile, when="M", interval=10, backupCount=10, encoding='utf-8')
+my_handler.setFormatter(log_formatter)
+my_handler.setLevel(logging.DEBUG)
+
+app_log = logging.getLogger('root')
+app_log.setLevel(logging.DEBUG)
+
+app_log.addHandler(my_handler)
+
 import datetime
 from pytz import timezone
 import constants
@@ -10,16 +25,12 @@ import json
 from os.path import exists
 from time import sleep
 from device import device
+import schedule
+import cloud
 
-import firebase_admin
-from firebase_admin import firestore
 from pathlib import Path
 
 wait_time = 60
-
-# Application Default credentials are automatically created.
-app = firebase_admin.initialize_app()
-db = firestore.client()
 
 # load in configuration
 configfile = Path(__file__).with_name("config.json")
@@ -32,7 +43,7 @@ with configfile.open("r") as configreader:
 # write initial account configuration file
 
 # Connect to cloud to check for existing device configuration
-account_ref = db.collection(u"accounts").document(config["account_id"])
+account_ref = cloud.db.collection(u"accounts").document(config["account_id"])
 account_doc = account_ref.get()
 if account_doc.exists:
     account = account_doc.to_dict()
@@ -55,16 +66,19 @@ with deviceconfigfile.open("w") as configwriter:
     configwriter.write(json.dumps(device_config))
 # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
-# create the device instance
-this_device = device(account["devices"][config["device_name"]])
+if __name__ == '__main__':
 
-while True:
-    # listen for messages from the cloud
-    # handle message
-    # MESSAGES: reload configuration, spray now, skip next spray, get device status
-    # check and send device status (hourly?) (may include error state that will be handled from the cloud)
+    # create the device instance
+    this_device = device(account["devices"][config["device_name"]])
 
-    # periodically refresh schedule (daily should be fine)
-    print("waiting ", wait_time, " seconds at ", datetime.datetime.now(tz=timezone(constants.default_timezone)))
-    sleep(wait_time)
+    while True:
+        # listen for messages from the cloud
+        # handle message
+        # MESSAGES: reload configuration, spray now, skip next spray, get device status
+        # check and send device status (hourly?) (may include error state that will be handled from the cloud)
+
+        # periodically refresh schedule (daily should be fine)
+        app_log.info("Next spray {0}".format(schedule.next_run()))
+        app_log.info("waiting {0} seconds at {1}".format(wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
+        sleep(wait_time)
 

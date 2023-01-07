@@ -1,5 +1,6 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
+import logging
 import threading
 import schedule
 import zone
@@ -71,10 +72,7 @@ class device:
     def get_devicedefinition_json(self):
         return json.dumps(self.get_devicedefinition())
 
-    # zones
-    def get_all_sprayoccurrences():
-        pass
-
+    # currently unused
     def open_zone_valve(self, valve, close_after_ms=700):
         # record start time in ms
         open_time = time.time()*self.ms_in_second
@@ -105,6 +103,7 @@ class device:
         continuous_thread.start()
 
     def schedule_dayofweek(self, daynumber, spraytime, dofunc, tag):
+        logging.info({"schedule_dayofweek": {"daynumber": daynumber, "spraytime": spraytime, "dofunc": dofunc, "tag": tag}})
         if daynumber == 0:
             schedule.every().sunday.at(spraytime, self.timezone).do(dofunc).tag(tag)
         if daynumber == 1:
