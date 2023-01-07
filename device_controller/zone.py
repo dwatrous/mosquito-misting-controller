@@ -8,15 +8,9 @@ import sched, time
 import multiprocessing
 import json
 from environment import environment
-
-import firebase_admin
-from firebase_admin import firestore
+import cloud
 
 class zone:
-    # Application Default credentials are automatically created.
-    app = firebase_admin.initialize_app()
-    db = firestore.client()
-
     ms_in_second = 1000
     valve_scheduler = sched.scheduler()
 
@@ -44,13 +38,6 @@ class zone:
         self.low_temp_threshold_f = zonedefinition["low_temp_threshold_f"]
         self.rain_threshold_in = zonedefinition["rain_threshold_in"]
 
-    def write_to_cloud(func):
-        def execute_and_write(self):
-            logging.info("Ready to run spray execution and log in cloud")
-            func(self)
-            doc_ref = self.db.collection(u'sprayoccurrences').document()
-            doc_ref.set(self.spraydata)
-        return execute_and_write
 
     def get_zonedefinition(self):
         zonedefinition = {
@@ -133,7 +120,7 @@ class zone:
         logging.info(self.spraydata["compressor_timing"])
 
     # execute spray
-    @write_to_cloud
+    @cloud.write_to_cloud
     def execute_spray(self):
         # clear and begin capturing data
         self.spraydata = {
