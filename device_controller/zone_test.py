@@ -1,6 +1,8 @@
 import constants
 from zone import zone
 import os
+import logging
+logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG)
 
 # test zone creation and functionality
 expected_default_timing = [(500, 700), (5500, 700), (10500, 700), (15500, 700), (20500, 700), (25500, 700), (30500, 700), (35500, 700), (40500, 700)]
@@ -58,4 +60,6 @@ else:
 # assert no error execution
 if __name__ == '__main__':
     myzone.execute_spray()
+    print(myzone.spraydata)
     newzone.execute_spray()
+    print(newzone.spraydata)

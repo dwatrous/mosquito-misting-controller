@@ -1,5 +1,6 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
+import logging
 import datetime
 import constants
 from math import floor
@@ -14,6 +15,7 @@ class zone:
 
     def __init__(self, zonedefinition=None) -> None:
         self.env = environment()
+        self.spraydata = {}
 
         if zonedefinition == None:
             self.name = "Default"
@@ -74,7 +76,7 @@ class zone:
         elif valve == constants.VALVE_CHEMICAL:
             print("chemical valve open")
         else:
-            print("Invalid valve", valve)
+            logging.error("Invalid valve (open_value): ", valve)
             return
         
         # leave valve open for close_after_ms
@@ -85,11 +87,18 @@ class zone:
         elif valve == constants.VALVE_CHEMICAL:
             print("chemical valve close")
         else:
-            print("Invalid valve (shouldn't happen)", valve)
+            logging.error("Invalid valve (shouldn't happen): ", valve)
 
         # record close time in ms
         close_time = time.time()*self.ms_in_second
-        print("valve %d opened at %d and closed at %d for a total of %.1f" % (valve, open_time, close_time, close_time-open_time))
+        valve_opening = {
+            "valve": valve,
+            "open_time": open_time,
+            "close_time": close_time,
+            "total_valve_time": close_time-open_time
+        }
+        self.spraydata["valve_executions"].append(valve_opening)
+        logging.info(valve_opening)
 
     def run_compressor(self, close_after_ms):
         compressor_start_time = time.time()*self.ms_in_second
@@ -97,18 +106,39 @@ class zone:
         time.sleep(close_after_ms/self.ms_in_second)
         print("shutoff compressor")
         compressor_shutoff_time = time.time()*self.ms_in_second
-        print("compressor started at %d and closed at %d for a total of %d" % (compressor_start_time, compressor_shutoff_time, compressor_shutoff_time-compressor_start_time))
+        self.spraydata["compressor_timing"] = {
+            "compressor_start_time": compressor_start_time,
+            "compressor_shutoff_time": compressor_shutoff_time,
+            "total_compressor_run_time": compressor_shutoff_time-compressor_start_time
+        }
+        logging.info(self.spraydata["compressor_timing"])
 
     # execute spray
     def execute_spray(self):
+        # clear and begin capturing data
+        self.spraydata = {
+            "start_time": datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
+            "valve_executions": []
+        }
         # decide whether to spray at all
-        if self.env.get_low_temp_last_24hr() < self.low_temp_threshold_f or self.env.get_low_temp_next_24hr() < self.low_temp_threshold_f:
-            pass # TODO handle temperature skip
-        if self.env.get_rain_prediction_next_24hr()["inches"] > self.rain_threshold_in:
-            pass # TODO handle rain skip
+        low_temp_last_24hr = self.env.get_low_temp_last_24hr()
+        low_temp_next_24hr = self.env.get_low_temp_next_24hr()
+        rain_prediction_next_24hr = self.env.get_rain_prediction_next_24hr()["inches"]
+        self.spraydata["low_temp_last_24hr"] = low_temp_last_24hr
+        self.spraydata["low_temp_next_24hr"] = low_temp_next_24hr
+        self.spraydata["rain_prediction_next_24hr"] = rain_prediction_next_24hr
+        if low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f:
+            # handle temperature skip
+            self.spraydata["skip_temperature"] = True
+            return
+        if rain_prediction_next_24hr > self.rain_threshold_in:
+            # handle rain skip
+            self.spraydata["skip_rain"] = True
+            return
 
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
+        self.spraydata["valve_openings"] = valve_openings
         # start compressor
         spray_start_time = time.time()*self.ms_in_second
         activate_compressor = multiprocessing.Process(target=self.run_compressor, kwargs={"close_after_ms": self.sprayduration_ms})
@@ -125,7 +155,12 @@ class zone:
         activate_compressor.join()
         activate_watervalve.join()
         spray_end_time = time.time()*self.ms_in_second
-        print("spray started at %d and closed at %d for a total of %d" % (spray_start_time, spray_end_time, spray_end_time-spray_start_time))
+        self.spraydata["spray_timing"] = {
+            "spray_start_time": spray_start_time,
+            "spray_end_time": spray_end_time,
+            "total_spray_time": spray_end_time-spray_start_time
+        }
+        logging.info(self.spraydata["spray_timing"])
 
     # Functions to add sprayoccurrences
     def add_spray_occurrence (self, dayofweek, timeofday):
