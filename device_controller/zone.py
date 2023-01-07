@@ -9,7 +9,14 @@ import multiprocessing
 import json
 from environment import environment
 
+import firebase_admin
+from firebase_admin import firestore
+
 class zone:
+    # Application Default credentials are automatically created.
+    app = firebase_admin.initialize_app()
+    db = firestore.client()
+
     ms_in_second = 1000
     valve_scheduler = sched.scheduler()
 
@@ -37,6 +44,14 @@ class zone:
         self.low_temp_threshold_f = zonedefinition["low_temp_threshold_f"]
         self.rain_threshold_in = zonedefinition["rain_threshold_in"]
 
+    def write_to_cloud(func):
+        def execute_and_write(self):
+            logging.info("Ready to run spray execution and log in cloud")
+            func(self)
+            doc_ref = self.db.collection(u'sprayoccurrences').document()
+            doc_ref.set(self.spraydata)
+        return execute_and_write
+
     def get_zonedefinition(self):
         zonedefinition = {
             "name": self.name,
@@ -60,11 +75,15 @@ class zone:
         # get milliseconds to open based on chemical class and nozzle quantity
         valve_open_duration_ms = constants.VALVE_OPEN_DURATION[self.chemicalclass][self.nozzlecount]
         # add first open time and duration
-        valve_openings.append((self.valve_first_open_offset_ms, valve_open_duration_ms))
+        valve_openings.append({"open_at": self.valve_first_open_offset_ms, "open_for": valve_open_duration_ms})
         # add remaining times based on 
         number_valve_openings = floor(self.sprayduration_ms/self.valve_activation_interval_ms)
         for opening in range(1, number_valve_openings):
-            valve_openings.append((self.valve_activation_interval_ms * opening + self.valve_first_open_offset_ms, valve_open_duration_ms)) 
+            valve_opening = {
+                "open_at": self.valve_activation_interval_ms * opening + self.valve_first_open_offset_ms,
+                "open_for": valve_open_duration_ms
+            }
+            valve_openings.append(valve_opening) 
         return valve_openings
 
     def open_valve(self, valve, close_after_ms=700):
@@ -114,6 +133,7 @@ class zone:
         logging.info(self.spraydata["compressor_timing"])
 
     # execute spray
+    @write_to_cloud
     def execute_spray(self):
         # clear and begin capturing data
         self.spraydata = {
@@ -146,7 +166,7 @@ class zone:
         # schedule valve openings
         for valve_opening in valve_openings:
             # the multiple of self.ms_in_second are to convert between seconds and milliseconds
-            self.valve_scheduler.enter(valve_opening[0]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening[1]})
+            self.valve_scheduler.enter(valve_opening["open_at"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for"]})
         # start everything
         activate_compressor.start()
         activate_watervalve.start()

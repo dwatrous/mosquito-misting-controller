@@ -5,8 +5,8 @@ import logging
 logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG)
 
 # test zone creation and functionality
-expected_default_timing = [(500, 700), (5500, 700), (10500, 700), (15500, 700), (20500, 700), (25500, 700), (30500, 700), (35500, 700), (40500, 700)]
-expected_80nozzle_chemclass4_timing = [(500, 4000), (5500, 4000), (10500, 4000), (15500, 4000), (20500, 4000), (25500, 4000), (30500, 4000), (35500, 4000), (40500, 4000), (45500, 4000), (50500, 4000), (55500, 4000)]
+expected_default_timing = [{'open_at': 500, 'open_for': 700}, {'open_at': 5500, 'open_for': 700}, {'open_at': 10500, 'open_for': 700}, {'open_at': 15500, 'open_for': 700}, {'open_at': 20500, 'open_for': 700}, {'open_at': 25500, 'open_for': 700}, {'open_at': 30500, 'open_for': 700}, {'open_at': 35500, 'open_for': 700}, {'open_at': 40500, 'open_for': 700}]
+expected_80nozzle_chemclass4_timing = [{'open_at': 500, 'open_for': 4000}, {'open_at': 5500, 'open_for': 4000}, {'open_at': 10500, 'open_for': 4000}, {'open_at': 15500, 'open_for': 4000}, {'open_at': 20500, 'open_for': 4000}, {'open_at': 25500, 'open_for': 4000}, {'open_at': 30500, 'open_for': 4000}, {'open_at': 35500, 'open_for': 4000}, {'open_at': 40500, 'open_for': 4000}, {'open_at': 45500, 'open_for': 4000}, {'open_at': 50500, 'open_for': 4000}, {'open_at': 55500, 'open_for': 4000}]
 zonedefinition_filename = "zonedefinition.json"
 
 # create zone instance
@@ -32,7 +32,7 @@ assert myzone.sprayoccurrences == [{'dayofweek': 0, 'timeofday': {'type': 'relat
 # test new timing
 myzone.valve_first_open_offset_ms = 7500
 myzone.valve_activation_interval_ms = 15000
-assert myzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
+assert myzone.calculate_valve_openings() == [{'open_at': 7500, 'open_for': 4000}, {'open_at': 22500, 'open_for': 4000}, {'open_at': 37500, 'open_for': 4000}, {'open_at': 52500, 'open_for': 4000}]
 
 # test save zonedefinition
 with open(zonedefinition_filename, "w") as savedfile:
@@ -50,7 +50,7 @@ with open(zonedefinition_filename, "r") as savedfile:
 newzone = zone(zonedefinition=new_zonedefinition_json)
 assert newzone.valve_first_open_offset_ms == 7500
 assert newzone.valve_activation_interval_ms == 15000
-assert newzone.calculate_valve_openings() == [(7500, 4000), (22500, 4000), (37500, 4000), (52500, 4000)]
+assert newzone.calculate_valve_openings() == [{'open_at': 7500, 'open_for': 4000}, {'open_at': 22500, 'open_for': 4000}, {'open_at': 37500, 'open_for': 4000}, {'open_at': 52500, 'open_for': 4000}]
 
 if os.path.exists(zonedefinition_filename):
   os.remove(zonedefinition_filename)
