@@ -10,6 +10,21 @@ import json
 from environment import environment
 import cloud
 
+import sys, os
+if sys.platform == 'linux':
+    if os.uname().nodename == 'raspberrypi':
+        onpi = True
+        import RPi.GPIO as GPIO
+        GPIO.setmode(GPIO.BCM)             # choose BCM or BOARD
+        GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT)
+        GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
+        GPIO.setup(constants.GPIO_COMPRESSOR, GPIO.OUT)
+else:
+    onpi = False
+    GPIO = object
+
+logging.info("On Raspberry Pi: ", onpi)
+
 class zone:
     ms_in_second = 1000
     valve_scheduler = sched.scheduler()
@@ -76,24 +91,33 @@ class zone:
     def open_valve(self, valve, close_after_ms=700):
         # record start time in ms
         open_time = time.time()*self.ms_in_second
-        # open valve
-        if valve == constants.VALVE_WATER:
-            print("water valve open")
-        elif valve == constants.VALVE_CHEMICAL:
-            print("chemical valve open")
-        else:
-            logging.error("Invalid valve (open_value): ", valve)
-            return
-        
-        # leave valve open for close_after_ms
-        time.sleep(close_after_ms/self.ms_in_second)
+        try:
+            # open valve
+            if valve == constants.VALVE_WATER and onpi:
+                GPIO.output(constants.GPIO_WATER_VALVE, 1)
+            elif valve == constants.VALVE_CHEMICAL and onpi:
+                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
+            else:
+                if onpi:
+                    logging.error("Invalid valve: %d" % valve)
+                else:
+                    logging.info("Opened valve %d (not on pi)" % valve)
+            
+            # leave valve open for close_after_ms
+            time.sleep(close_after_ms/self.ms_in_second)
 
-        if valve == constants.VALVE_WATER:
-            print("water valve close")
-        elif valve == constants.VALVE_CHEMICAL:
-            print("chemical valve close")
-        else:
-            logging.error("Invalid valve (shouldn't happen): ", valve)
+            if valve == constants.VALVE_WATER and onpi:
+                GPIO.output(constants.GPIO_WATER_VALVE, 0)
+            elif valve == constants.VALVE_CHEMICAL and onpi:
+                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
+            else:
+                if onpi:
+                    logging.error("Invalid valve: %d" % valve)
+                else:
+                    logging.info("Closed valve %d (not on pi)" % valve)
+        except:
+            GPIO.output(constants.GPIO_WATER_VALVE, 0)
+            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
 
         # record close time in ms
         close_time = time.time()*self.ms_in_second
@@ -108,9 +132,14 @@ class zone:
 
     def run_compressor(self, close_after_ms):
         compressor_start_time = time.time()*self.ms_in_second
-        print("start compressor")
-        time.sleep(close_after_ms/self.ms_in_second)
-        print("shutoff compressor")
+
+        try:
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
+            time.sleep(close_after_ms/self.ms_in_second)
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
+        except:
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
+
         compressor_shutoff_time = time.time()*self.ms_in_second
         self.spraydata["compressor_timing"] = {
             "compressor_start_time": compressor_start_time,
@@ -137,11 +166,19 @@ class zone:
         if low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f:
             # handle temperature skip
             self.spraydata["skip_temperature"] = True
+            logging.info("SKIP: Temperature")
+            logging.info(self.spraydata["low_temp_last_24hr"])
+            logging.info(self.spraydata["low_temp_next_24hr"])
             return
         if rain_prediction_next_24hr > self.rain_threshold_in:
             # handle rain skip
             self.spraydata["skip_rain"] = True
+            logging.info("SKIP: Rain")
+            logging.info(self.spraydata["rain_prediction_next_24hr"])
             return
+        if False:   # TODO implement wind skip
+            # handle wind skip
+            pass
 
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()

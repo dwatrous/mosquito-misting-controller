@@ -2,7 +2,7 @@ import constants
 from zone import zone
 import os
 import logging
-logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG)
+logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG, force=True)
 
 # test zone creation and functionality
 expected_default_timing = [{'open_at': 500, 'open_for': 700}, {'open_at': 5500, 'open_for': 700}, {'open_at': 10500, 'open_for': 700}, {'open_at': 15500, 'open_for': 700}, {'open_at': 20500, 'open_for': 700}, {'open_at': 25500, 'open_for': 700}, {'open_at': 30500, 'open_for': 700}, {'open_at': 35500, 'open_for': 700}, {'open_at': 40500, 'open_for': 700}]

@@ -9,7 +9,7 @@ from logging.handlers import TimedRotatingFileHandler
 log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 logFile = 'controller.log'
 
-my_handler = TimedRotatingFileHandler(logFile, when="M", interval=10, backupCount=10, encoding='utf-8')
+my_handler = TimedRotatingFileHandler(logFile, when="D", interval=1, backupCount=10, encoding='utf-8')
 my_handler.setFormatter(log_formatter)
 my_handler.setLevel(logging.DEBUG)
 

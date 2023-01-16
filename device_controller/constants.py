@@ -39,6 +39,11 @@ VALVE_ZONE_2 = 12
 VALVE_ZONE_3 = 13
 VALVE_ZONE_4 = 14
 
+# GPIO pin assignments see https://app.diagrams.net/#G1WQeF1I6ggE7zajPLvekrFTin8tPEHoUg
+GPIO_COMPRESSOR = 22
+GPIO_WATER_VALVE = 27
+GPIO_CHEMICAL_VALVE = 17
+
 configfilename = "device_config.json"
 
 def get_chemical_class_description(classnumber):
