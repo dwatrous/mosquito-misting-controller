@@ -9,6 +9,7 @@ import sched, time
 import multiprocessing
 import json
 from environment import environment
+from firebase_admin import firestore
 import cloud
 
 import sys, os
@@ -155,7 +156,7 @@ class zone:
     def execute_spray(self):
         # clear and begin capturing data
         self.spraydata = {
-            "start_time": datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"),
+            "start_time": firestore.SERVER_TIMESTAMP,
             "valve_executions": []
         }
         # decide whether to spray at all
