@@ -1,5 +1,6 @@
 # cloud interactions
 from firebase_admin import firestore
+# on Raspberry pi may need sudo apt-get install build-essential libssl-dev libffi-dev python3-dev cargo before installing python requirements
 import firebase_admin
 app = firebase_admin.initialize_app()
 db = firestore.client()
