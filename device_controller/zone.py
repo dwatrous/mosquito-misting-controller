@@ -1,6 +1,7 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
 import logging
+import atexit
 import datetime
 import constants
 from math import floor
@@ -19,6 +20,7 @@ if sys.platform == 'linux':
         GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_COMPRESSOR, GPIO.OUT)
+        atexit.register(GPIO.cleanup)
 else:
     onpi = False
     GPIO = object
@@ -94,9 +96,9 @@ class zone:
         try:
             # open valve
             if valve == constants.VALVE_WATER and onpi:
-                GPIO.output(constants.GPIO_WATER_VALVE, 1)
+                GPIO.output(constants.GPIO_WATER_VALVE, 0)
             elif valve == constants.VALVE_CHEMICAL and onpi:
-                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
+                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
             else:
                 if onpi:
                     logging.error("Invalid valve: %d" % valve)
@@ -107,17 +109,17 @@ class zone:
             time.sleep(close_after_ms/self.ms_in_second)
 
             if valve == constants.VALVE_WATER and onpi:
-                GPIO.output(constants.GPIO_WATER_VALVE, 0)
+                GPIO.output(constants.GPIO_WATER_VALVE, 1)
             elif valve == constants.VALVE_CHEMICAL and onpi:
-                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
+                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
             else:
                 if onpi:
                     logging.error("Invalid valve: %d" % valve)
                 else:
                     logging.info("Closed valve %d (not on pi)" % valve)
         except:
-            GPIO.output(constants.GPIO_WATER_VALVE, 0)
-            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
+            GPIO.output(constants.GPIO_WATER_VALVE, 1)
+            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
 
         # record close time in ms
         close_time = time.time()*self.ms_in_second
@@ -134,11 +136,11 @@ class zone:
         compressor_start_time = time.time()*self.ms_in_second
 
         try:
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
             time.sleep(close_after_ms/self.ms_in_second)
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
         except:
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
+            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
 
         compressor_shutoff_time = time.time()*self.ms_in_second
         self.spraydata["compressor_timing"] = {

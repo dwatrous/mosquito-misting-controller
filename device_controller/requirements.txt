@@ -4,3 +4,4 @@ noaa_sdk
 schedule
 time-machine
 pytz
+firebase_admin
