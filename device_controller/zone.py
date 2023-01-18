@@ -154,10 +154,14 @@ class zone:
         logging.info(self.spraydata["compressor_timing"])
 
     # capture data from all sensors
-    def capture_sensor_data(self, signal, sensordata):
-        readings = []
+    def capture_sensor_data(self, signal, sensordata, spray_start_time):
+        readings = {
+            "start_time": spray_start_time,
+            "capture_interval": constants.SENSOR_CAPTURE_INTERVAL_SECONDS,
+            "readings": []
+        }
         while not signal.is_set():
-            readings.append(
+            readings["readings"].append(
                 {
                     "pressure_line_in": device_sensors.read_current_line_in_pressure(),
                     "pressure_line_out": device_sensors.read_current_line_out_pressure(),
@@ -172,8 +176,9 @@ class zone:
     @cloud.write_to_cloud
     def execute_spray(self):
         # clear and begin capturing data
+        spray_start_time = firestore.SERVER_TIMESTAMP
         self.spraydata = {
-            "start_time": firestore.SERVER_TIMESTAMP,
+            "start_time": spray_start_time,
             "valve_executions": []
         }
         sensorreadings = multiprocessing.Queue()
@@ -207,7 +212,7 @@ class zone:
         self.spraydata["valve_openings"] = valve_openings
         # start compressor
         spray_start_time = time.time()*self.ms_in_second
-        capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings))
+        capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings, spray_start_time))
         activate_compressor = multiprocessing.Process(target=self.run_compressor, kwargs={"close_after_ms": self.sprayduration_ms})
         activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms})
         # schedule valve openings
