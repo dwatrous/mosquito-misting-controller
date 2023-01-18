@@ -5,4 +5,3 @@ schedule
 time-machine
 pytz
 firebase_admin
-hx711
