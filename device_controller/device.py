@@ -149,13 +149,6 @@ class device:
 
     # app/online connection
 
-    # on board sensors
-    def read_current_line_pressure(self):
-        pass
-
-    def read_current_vacuum_pressure(self):
-        pass
-
 if __name__ == '__main__':
     mydevice = device()
     mydevice.schedule_sprays()

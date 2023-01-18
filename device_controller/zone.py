@@ -4,6 +4,7 @@ import logging
 import atexit
 import datetime
 import constants
+import device_sensors
 from math import floor
 import sched, time
 import multiprocessing
@@ -17,7 +18,7 @@ if sys.platform == 'linux':
     if os.uname().nodename == 'raspberrypi':
         onpi = True
         import RPi.GPIO as GPIO
-        GPIO.setmode(GPIO.BCM)             # choose BCM or BOARD
+        GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
         GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_COMPRESSOR, GPIO.OUT)
@@ -35,6 +36,7 @@ class zone:
     def __init__(self, zonedefinition=None) -> None:
         self.env = environment()
         self.spraydata = {}
+        self.sensordata = []
 
         if zonedefinition == None:
             self.name = "Default"
@@ -151,6 +153,21 @@ class zone:
         }
         logging.info(self.spraydata["compressor_timing"])
 
+    # capture data from all sensors
+    def capture_sensor_data(self, signal, sensordata):
+        readings = []
+        while not signal.is_set():
+            readings.append(
+                {
+                    "pressure_line_in": device_sensors.read_current_line_in_pressure(),
+                    "pressure_line_out": device_sensors.read_current_line_out_pressure(),
+                    "vacuum": device_sensors.read_current_vacuum_pressure(),
+                    "weight": device_sensors.read_current_weight()
+                }
+            )
+            time.sleep(constants.SENSOR_CAPTURE_INTERVAL_SECONDS)
+        sensordata.put(readings)
+
     # execute spray
     @cloud.write_to_cloud
     def execute_spray(self):
@@ -159,6 +176,8 @@ class zone:
             "start_time": firestore.SERVER_TIMESTAMP,
             "valve_executions": []
         }
+        sensorreadings = multiprocessing.Queue()
+        stop_reading_sensors = multiprocessing.Event()
         # decide whether to spray at all
         low_temp_last_24hr = self.env.get_low_temp_last_24hr()
         low_temp_next_24hr = self.env.get_low_temp_next_24hr()
@@ -188,6 +207,7 @@ class zone:
         self.spraydata["valve_openings"] = valve_openings
         # start compressor
         spray_start_time = time.time()*self.ms_in_second
+        capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings))
         activate_compressor = multiprocessing.Process(target=self.run_compressor, kwargs={"close_after_ms": self.sprayduration_ms})
         activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms})
         # schedule valve openings
@@ -195,6 +215,8 @@ class zone:
             # the multiple of self.ms_in_second are to convert between seconds and milliseconds
             self.valve_scheduler.enter(valve_opening["open_at"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for"]})
         # start everything
+        capture_sensors.start()
+        time.sleep(constants.SENSOR_CAPTURE_BUFFER_SECONDS)   # let the sensors capture some data before everything starts
         activate_compressor.start()
         activate_watervalve.start()
         self.valve_scheduler.run()  # runs synchronously
@@ -202,10 +224,15 @@ class zone:
         activate_compressor.join()
         activate_watervalve.join()
         spray_end_time = time.time()*self.ms_in_second
+        time.sleep(constants.SENSOR_CAPTURE_BUFFER_SECONDS)   # let the sensors capture some data before everything finishes
+        stop_reading_sensors.set()
+        sensordata = sensorreadings.get()
+        capture_sensors.join()
         self.spraydata["spray_timing"] = {
             "spray_start_time": spray_start_time,
             "spray_end_time": spray_end_time,
-            "total_spray_time": spray_end_time-spray_start_time
+            "total_spray_time": spray_end_time-spray_start_time,
+            "sensor_data": sensordata
         }
         logging.info(self.spraydata["spray_timing"])
 

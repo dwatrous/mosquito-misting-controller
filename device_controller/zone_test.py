@@ -60,6 +60,6 @@ else:
 # assert no error execution
 if __name__ == '__main__':
     myzone.execute_spray()
-    print(myzone.spraydata)
+    # print(myzone.spraydata)
     newzone.execute_spray()
-    print(newzone.spraydata)
+    # print(newzone.spraydata)
