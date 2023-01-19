@@ -48,8 +48,6 @@ GPIO_WEIGHT_SCK = 6
 ADC_CHANNEL_LINE_IN_PRESSURE = 0
 ADC_CHANNEL_LINE_OUT_PRESSURE = 1
 ADC_CHANNEL_VACUUM = 2
-SENSOR_CAPTURE_BUFFER_SECONDS = 2
-SENSOR_CAPTURE_INTERVAL_SECONDS = 0.25
 
 configfilename = "device_config.json"
 
@@ -97,6 +95,8 @@ def generate_default_sprayoccurrences ():
 
 default_valve_first_open_offset_ms = 500
 default_valve_activation_interval_ms = 5000
+default_sensor_capture_buffer_seconds = 2
+default_sensor_capture_interval_seconds = 0.25
 
 VALVE_OPEN_DURATION = {}
 VALVE_OPEN_DURATION[CHEMICALCLASS4] = {5: 250,

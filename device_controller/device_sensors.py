@@ -5,7 +5,6 @@ import atexit
 import time
 
 import sys, os
-adc_gain = 2/3
 if sys.platform == 'linux':
     if os.uname().nodename == 'raspberrypi':
         onpi = True
@@ -27,28 +26,45 @@ else:
     adc = object
     hx = object
 
+# Pressure sensor details
+# Range: 0-300 PSI
+# Input: 5V DC
+# Output: 0.5-4.5 V
+# Given ADS1115 reads based on input from 0-4.096 V, a gain of 0.9 achieves +/- 4.5444 V
+ADC_GAIN = 4.096/4.5
+# Given ADS1115 outputs -32768 to 32767, it should be expected that the 
+# lowest input value of 0.5 V will product a floor of about (0.5/4.5) * 32767 = 3641
+SENSOR_MAX_ADC = 32767
+SENSOR_ZERO = 0.5/4.5 * SENSOR_MAX_ADC
+# PSI calculation should be (OUT - 3641)/(32767-3641)
+SENSOR_PRESSURE_MAX_PSI = 300
+SENSOR_VACUUM_MAX_NEG_KPA = 40
+
 # on board sensors
-def read_current_line_in_pressure():
+def read_current_line_in_pressure_psi():
     if onpi:
-        return adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=adc_gain)
+        current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
+        return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX_ADC-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
     else:
         return -1
 
-def read_current_line_out_pressure():
+def read_current_line_out_pressure_psi():
     if onpi:
-        return adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=adc_gain)
+        current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
+        return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX_ADC-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
     else:
         return -1
 
-def read_current_vacuum_pressure():
+def read_current_vacuum_pressure_kpa():
     if onpi:
-        return adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=adc_gain)
+        current_vacuum = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
+        return (current_vacuum - SENSOR_ZERO)/(SENSOR_MAX_ADC-SENSOR_ZERO)*SENSOR_VACUUM_MAX_NEG_KPA
     else:
         return -1
 
 def read_current_weight():
     if onpi:
-        weight = hx.get_weight(5)
+        weight = hx.get_weight(5)   # TODO not sure if this needs to be configurable at some point
         hx.reset()
         time.sleep(0.1)
         return weight

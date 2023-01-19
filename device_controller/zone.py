@@ -48,6 +48,7 @@ class zone:
             zonedefinition = json.loads(zonedefinition)
     
         # hydrate based on zonedefinition
+        # TODO: in the case of new values, existing stored values may not be present causing KeyError
         self.name = zonedefinition["name"]
         self.nozzlecount = zonedefinition["nozzlecount"]
         self.chemicalclass = zonedefinition["chemicalclass"]
@@ -57,6 +58,8 @@ class zone:
         self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
         self.low_temp_threshold_f = zonedefinition["low_temp_threshold_f"]
         self.rain_threshold_in = zonedefinition["rain_threshold_in"]
+        self.sensor_capture_buffer_s = zonedefinition["sensor_capture_buffer_s"]
+        self.sensor_capture_interval_s = zonedefinition["sensor_capture_interval_s"]
 
 
     def get_zonedefinition(self):
@@ -69,7 +72,9 @@ class zone:
             "valve_first_open_offset_ms": self.valve_first_open_offset_ms,
             "valve_activation_interval_ms": self.valve_activation_interval_ms,
             "low_temp_threshold_f": self.low_temp_threshold_f,
-            "rain_threshold_in": self.rain_threshold_in
+            "rain_threshold_in": self.rain_threshold_in,
+            "sensor_capture_buffer_s": self.sensor_capture_buffer_s,
+            "sensor_capture_interval_s": self.sensor_capture_interval_s
         }
         return zonedefinition
 
@@ -157,19 +162,19 @@ class zone:
     def capture_sensor_data(self, signal, sensordata, spray_start_time):
         readings = {
             "start_time": spray_start_time,
-            "capture_interval": constants.SENSOR_CAPTURE_INTERVAL_SECONDS,
+            "capture_interval": self.sensor_capture_interval_s,
             "readings": []
         }
         while not signal.is_set():
             readings["readings"].append(
                 {
-                    "pressure_line_in": device_sensors.read_current_line_in_pressure(),
-                    "pressure_line_out": device_sensors.read_current_line_out_pressure(),
-                    "vacuum": device_sensors.read_current_vacuum_pressure(),
+                    "pressure_line_in_psi": device_sensors.read_current_line_in_pressure_psi(),
+                    "pressure_line_out_psi": device_sensors.read_current_line_out_pressure_psi(),
+                    "vacuum_kpa": device_sensors.read_current_vacuum_pressure_kpa(),
                     "weight": device_sensors.read_current_weight()
                 }
             )
-            time.sleep(constants.SENSOR_CAPTURE_INTERVAL_SECONDS)
+            time.sleep(self.sensor_capture_interval_s)
         sensordata.put(readings)
 
     # execute spray
@@ -192,20 +197,22 @@ class zone:
         self.spraydata["rain_prediction_next_24hr"] = rain_prediction_next_24hr
         if low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f:
             # handle temperature skip
-            self.spraydata["skip_temperature"] = True
-            logging.info("SKIP: Temperature")
-            logging.info(self.spraydata["low_temp_last_24hr"])
-            logging.info(self.spraydata["low_temp_next_24hr"])
+            self.spraydata["skip"] = True
+            self.spraydata["skip_reason"] = "temperature"
+            logging.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
             return
         if rain_prediction_next_24hr > self.rain_threshold_in:
             # handle rain skip
-            self.spraydata["skip_rain"] = True
-            logging.info("SKIP: Rain")
-            logging.info(self.spraydata["rain_prediction_next_24hr"])
+            self.spraydata["skip"] = True
+            self.spraydata["skip_reason"] = "rain"
+            logging.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
             return
         if False:   # TODO implement wind skip
             # handle wind skip
             pass
+        else:
+            self.spraydata["skip"] = False
+            self.spraydata["skip_reason"] = None
 
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
@@ -221,7 +228,7 @@ class zone:
             self.valve_scheduler.enter(valve_opening["open_at"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for"]})
         # start everything
         capture_sensors.start()
-        time.sleep(constants.SENSOR_CAPTURE_BUFFER_SECONDS)   # let the sensors capture some data before everything starts
+        time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
         activate_compressor.start()
         activate_watervalve.start()
         self.valve_scheduler.run()  # runs synchronously
@@ -229,17 +236,18 @@ class zone:
         activate_compressor.join()
         activate_watervalve.join()
         spray_end_time = time.time()*self.ms_in_second
-        time.sleep(constants.SENSOR_CAPTURE_BUFFER_SECONDS)   # let the sensors capture some data before everything finishes
+        time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data after everything finishes
         stop_reading_sensors.set()
         sensordata = sensorreadings.get()
         capture_sensors.join()
         self.spraydata["spray_timing"] = {
             "spray_start_time": spray_start_time,
             "spray_end_time": spray_end_time,
-            "total_spray_time": spray_end_time-spray_start_time,
-            "sensor_data": sensordata
+            "total_spray_time": spray_end_time-spray_start_time
         }
+        self.spraydata["sensor_data"] = sensordata
         logging.info(self.spraydata["spray_timing"])
+        logging.debug(self.spraydata["sensor_data"])
 
     # Functions to add sprayoccurrences
     def add_spray_occurrence (self, dayofweek, timeofday):
@@ -283,3 +291,5 @@ class zone:
         self.valve_activation_interval_ms = constants.default_valve_activation_interval_ms
         self.low_temp_threshold_f = constants.default_low_temp_threshold_f
         self.rain_threshold_in = constants.default_rain_threshold_in
+        self.sensor_capture_buffer_s = constants.default_sensor_capture_buffer_seconds
+        self.sensor_capture_interval_s = constants.default_sensor_capture_interval_seconds
