@@ -19,12 +19,21 @@ if sys.platform == 'linux':
         hx.set_reference_unit(reference_unit)
         hx.reset()
         hx.tare()
+        from gpiozero import LED
+        led_red = LED(16)
+        led_green = LED(20)
+        led_blue = LED(21)
+        # Manage initial state
+        led_red.off()
+        led_green.off()
+        led_blue.off()
         atexit.register(GPIO.cleanup)
 else:
     onpi = False
     # ensure Python doesn't complain about these not being defined
     adc = object
     hx = object
+    led_red = led_green = led_blue = object
 
 # Pressure sensor details
 # Range: 0-300 PSI
@@ -72,3 +81,28 @@ def read_current_weight():
         return weight
     else:
         return -1
+
+# Manage LED
+def led_ready():
+    if onpi:
+        led_red.off()
+        led_blue.off()
+        led_green.on()
+    else:
+        "LED: ready"
+
+def led_running():
+    if onpi:
+        led_red.off()
+        led_blue.on()
+        led_green.off()
+    else:
+        "LED: running"
+
+def led_running():
+    if onpi:
+        led_red.blink()
+        led_blue.off()
+        led_green.off()
+    else:
+        "LED: error"

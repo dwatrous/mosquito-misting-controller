@@ -21,7 +21,7 @@ if sys.platform == 'linux':
         GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
         GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
-        GPIO.setup(constants.GPIO_COMPRESSOR, GPIO.OUT)
+        GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT)
         atexit.register(GPIO.cleanup)
 else:
     onpi = False
@@ -140,23 +140,23 @@ class zone:
         self.spraydata["valve_executions"].append(valve_opening)
         logging.info(valve_opening)
 
-    def run_compressor(self, close_after_ms):
-        compressor_start_time = time.time()*self.ms_in_second
+    def run_motor(self, close_after_ms):
+        motor_start_time = time.time()*self.ms_in_second
 
         try:
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 0)
+            if onpi: GPIO.output(constants.GPIO_MOTOR, 0)
             time.sleep(close_after_ms/self.ms_in_second)
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
+            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
         except:
-            if onpi: GPIO.output(constants.GPIO_COMPRESSOR, 1)
+            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
 
-        compressor_shutoff_time = time.time()*self.ms_in_second
-        self.spraydata["compressor_timing"] = {
-            "compressor_start_time": compressor_start_time,
-            "compressor_shutoff_time": compressor_shutoff_time,
-            "total_compressor_run_time": compressor_shutoff_time-compressor_start_time
+        motor_shutoff_time = time.time()*self.ms_in_second
+        self.spraydata["motor_timing"] = {
+            "motor_start_time": motor_start_time,
+            "motor_shutoff_time": motor_shutoff_time,
+            "total_motor_run_time": motor_shutoff_time-motor_start_time
         }
-        logging.info(self.spraydata["compressor_timing"])
+        logging.info(self.spraydata["motor_timing"])
 
     # capture data from all sensors
     def capture_sensor_data(self, signal, sensordata, spray_start_time):
@@ -180,6 +180,8 @@ class zone:
     # execute spray
     @cloud.write_to_cloud
     def execute_spray(self):
+        # indicate running
+        device_sensors.led_running()
         # clear and begin capturing data
         spray_start_time = firestore.SERVER_TIMESTAMP
         self.spraydata = {
@@ -217,11 +219,11 @@ class zone:
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
         self.spraydata["valve_openings"] = valve_openings
-        # start compressor
+        # start motor
         spray_start_time = time.time()*self.ms_in_second
         capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings, spray_start_time))
-        activate_compressor = multiprocessing.Process(target=self.run_compressor, kwargs={"close_after_ms": self.sprayduration_ms})
-        activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms})
+        activate_motor = multiprocessing.Process(target=self.run_motor, kwargs={"close_after_ms": self.sprayduration_ms})
+        activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms + constants.WATER_REFILL_TIME_SECONDS})
         # schedule valve openings
         for valve_opening in valve_openings:
             # the multiple of self.ms_in_second are to convert between seconds and milliseconds
@@ -229,11 +231,11 @@ class zone:
         # start everything
         capture_sensors.start()
         time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
-        activate_compressor.start()
+        activate_motor.start()
         activate_watervalve.start()
         self.valve_scheduler.run()  # runs synchronously
         #wait for everything to complete
-        activate_compressor.join()
+        activate_motor.join()
         activate_watervalve.join()
         spray_end_time = time.time()*self.ms_in_second
         time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data after everything finishes
@@ -248,6 +250,8 @@ class zone:
         self.spraydata["sensor_data"] = sensordata
         logging.info(self.spraydata["spray_timing"])
         logging.debug(self.spraydata["sensor_data"])
+        # indicate ready
+        device_sensors.led_ready()
 
     # Functions to add sprayoccurrences
     def add_spray_occurrence (self, dayofweek, timeofday):
@@ -293,3 +297,4 @@ class zone:
         self.rain_threshold_in = constants.default_rain_threshold_in
         self.sensor_capture_buffer_s = constants.default_sensor_capture_buffer_seconds
         self.sensor_capture_interval_s = constants.default_sensor_capture_interval_seconds
+

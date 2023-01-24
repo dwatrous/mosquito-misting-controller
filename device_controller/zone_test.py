@@ -6,13 +6,13 @@ logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DE
 
 import unittest.mock as mock
 
+# test zone creation and functionality
+expected_default_timing = [{'open_at': 500, 'open_for': 700}, {'open_at': 5500, 'open_for': 700}, {'open_at': 10500, 'open_for': 700}, {'open_at': 15500, 'open_for': 700}, {'open_at': 20500, 'open_for': 700}, {'open_at': 25500, 'open_for': 700}, {'open_at': 30500, 'open_for': 700}, {'open_at': 35500, 'open_for': 700}, {'open_at': 40500, 'open_for': 700}]
+expected_80nozzle_chemclass4_timing = [{'open_at': 500, 'open_for': 4000}, {'open_at': 5500, 'open_for': 4000}, {'open_at': 10500, 'open_for': 4000}, {'open_at': 15500, 'open_for': 4000}, {'open_at': 20500, 'open_for': 4000}, {'open_at': 25500, 'open_for': 4000}, {'open_at': 30500, 'open_for': 4000}, {'open_at': 35500, 'open_for': 4000}, {'open_at': 40500, 'open_for': 4000}, {'open_at': 45500, 'open_for': 4000}, {'open_at': 50500, 'open_for': 4000}, {'open_at': 55500, 'open_for': 4000}]
+zonedefinition_filename = "zonedefinition.json"
+
 # assert no error execution
 if __name__ == '__main__':
-
-  # test zone creation and functionality
-  expected_default_timing = [{'open_at': 500, 'open_for': 700}, {'open_at': 5500, 'open_for': 700}, {'open_at': 10500, 'open_for': 700}, {'open_at': 15500, 'open_for': 700}, {'open_at': 20500, 'open_for': 700}, {'open_at': 25500, 'open_for': 700}, {'open_at': 30500, 'open_for': 700}, {'open_at': 35500, 'open_for': 700}, {'open_at': 40500, 'open_for': 700}]
-  expected_80nozzle_chemclass4_timing = [{'open_at': 500, 'open_for': 4000}, {'open_at': 5500, 'open_for': 4000}, {'open_at': 10500, 'open_for': 4000}, {'open_at': 15500, 'open_for': 4000}, {'open_at': 20500, 'open_for': 4000}, {'open_at': 25500, 'open_for': 4000}, {'open_at': 30500, 'open_for': 4000}, {'open_at': 35500, 'open_for': 4000}, {'open_at': 40500, 'open_for': 4000}, {'open_at': 45500, 'open_for': 4000}, {'open_at': 50500, 'open_for': 4000}, {'open_at': 55500, 'open_for': 4000}]
-  zonedefinition_filename = "zonedefinition.json"
 
   # create zone instance
   myzone = zone()

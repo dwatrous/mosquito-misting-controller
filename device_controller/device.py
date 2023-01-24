@@ -4,6 +4,7 @@ import logging
 import threading
 import schedule
 import zone
+import device_sensors
 import constants
 import json
 import time
@@ -50,6 +51,8 @@ class device:
             self.zones = [zone.zone(devicezone) for devicezone in devicedefinition["zones"]]
 
         # schedule sprays and start schedule thread
+        self.check_system()
+        # TODO if system isn't ready, signal error and don't schedule sprays
         self.schedule_sprays()
         self.start_schedule_thread()
 
@@ -69,6 +72,11 @@ class device:
         }
         return devicedefinition
     
+    def check_system(self):
+        # TODO add expected thresholds for ready and update conditional
+        if (device_sensors.read_current_line_in_pressure_psi() and device_sensors.read_current_weight()):
+            device_sensors.led_ready()
+
     def get_devicedefinition_json(self):
         return json.dumps(self.get_devicedefinition())
 
@@ -147,7 +155,6 @@ class device:
                     spraytime = "%02d:%02d" % (spraytime_dt.hour, spraytime_dt.minute)
                     self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "relativetime")
 
-    # app/online connection
 
 if __name__ == '__main__':
     mydevice = device()
