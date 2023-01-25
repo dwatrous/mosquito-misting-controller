@@ -39,7 +39,7 @@ VALVE_ZONE_2 = 12
 VALVE_ZONE_3 = 13
 VALVE_ZONE_4 = 14
 
-WATER_REFILL_TIME_SECONDS = 45
+WATER_REFILL_TIME_MS = 45000
 
 # GPIO pin assignments see https://app.diagrams.net/#G1WQeF1I6ggE7zajPLvekrFTin8tPEHoUg
 GPIO_MOTOR = 22

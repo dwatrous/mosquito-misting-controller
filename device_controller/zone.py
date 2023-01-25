@@ -98,9 +98,12 @@ class zone:
             valve_openings.append(valve_opening) 
         return valve_openings
 
-    def open_valve(self, valve, close_after_ms=700):
+    def open_valve(self, valve, close_after_ms=700, signal=None):
+        # signal, if available
+        if signal:
+            signal.set()
         # record start time in ms
-        open_time = time.time()*self.ms_in_second
+        open_time = int(time.time()*self.ms_in_second)
         try:
             # open valve
             if valve == constants.VALVE_WATER and onpi:
@@ -130,7 +133,7 @@ class zone:
             GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
 
         # record close time in ms
-        close_time = time.time()*self.ms_in_second
+        close_time = int(time.time()*self.ms_in_second)
         valve_opening = {
             "valve": valve,
             "open_time": open_time,
@@ -141,7 +144,7 @@ class zone:
         logging.info(valve_opening)
 
     def run_motor(self, close_after_ms):
-        motor_start_time = time.time()*self.ms_in_second
+        motor_start_time = int(time.time()*self.ms_in_second)
 
         try:
             if onpi: GPIO.output(constants.GPIO_MOTOR, 0)
@@ -150,7 +153,7 @@ class zone:
         except:
             if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
 
-        motor_shutoff_time = time.time()*self.ms_in_second
+        motor_shutoff_time = int(time.time()*self.ms_in_second)
         self.spraydata["motor_timing"] = {
             "motor_start_time": motor_start_time,
             "motor_shutoff_time": motor_shutoff_time,
@@ -181,7 +184,7 @@ class zone:
     @cloud.write_to_cloud
     def execute_spray(self):
         # indicate running
-        device_sensors.led_running()
+        device_sensors.status_led_running()
         # clear and begin capturing data
         spray_start_time = firestore.SERVER_TIMESTAMP
         self.spraydata = {
@@ -219,11 +222,12 @@ class zone:
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
         self.spraydata["valve_openings"] = valve_openings
+        water_valve_open = multiprocessing.Event()
         # start motor
-        spray_start_time = time.time()*self.ms_in_second
+        spray_start_time = int(time.time()*self.ms_in_second)
         capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings, spray_start_time))
         activate_motor = multiprocessing.Process(target=self.run_motor, kwargs={"close_after_ms": self.sprayduration_ms})
-        activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms + constants.WATER_REFILL_TIME_SECONDS})
+        activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms + constants.WATER_REFILL_TIME_MS, "signal": water_valve_open})
         # schedule valve openings
         for valve_opening in valve_openings:
             # the multiple of self.ms_in_second are to convert between seconds and milliseconds
@@ -231,13 +235,15 @@ class zone:
         # start everything
         capture_sensors.start()
         time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
-        activate_motor.start()
+        # start scheduled processes and threads
         activate_watervalve.start()
+        activate_motor.start()
+        water_valve_open.wait()     # wait for water valve process to start before running chem valves
         self.valve_scheduler.run()  # runs synchronously
         #wait for everything to complete
         activate_motor.join()
         activate_watervalve.join()
-        spray_end_time = time.time()*self.ms_in_second
+        spray_end_time = int(time.time()*self.ms_in_second)
         time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data after everything finishes
         stop_reading_sensors.set()
         sensordata = sensorreadings.get()
@@ -251,7 +257,7 @@ class zone:
         logging.info(self.spraydata["spray_timing"])
         logging.debug(self.spraydata["sensor_data"])
         # indicate ready
-        device_sensors.led_ready()
+        device_sensors.status_led_ready()
 
     # Functions to add sprayoccurrences
     def add_spray_occurrence (self, dayofweek, timeofday):

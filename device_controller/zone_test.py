@@ -2,8 +2,7 @@ import constants
 from zone import zone
 import os
 import logging
-logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG, force=True)
-
+logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s', force=True)
 import unittest.mock as mock
 
 # test zone creation and functionality
