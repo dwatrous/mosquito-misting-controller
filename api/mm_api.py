@@ -1,17 +1,18 @@
 # docker build -t mmapi .
-# docker run -p 8080:8080 -v C:\Users\Daniel\Documents\mosquito-controller\MosquitoMax\api:/creds mmapi
+# docker run -p 8080:8080 -v C:\Users\Daniel\Documents\mosquito-controller\MosquitoMax\api\creds:/creds mmapi
+# gcloud builds submit --config cloudbuild.yaml
 from flask import Flask, request
 import firebase_admin
 from firebase_admin import auth, firestore, credentials
 import secrets
 import re
 
-# Initialize Firestore
-# cred = credentials.Certificate("/creds/credfile.json")
-import os
-dirname = os.path.dirname(__file__)
-filename = os.path.join(dirname, 'creds/credfile.json')
-cred = credentials.Certificate(filename)
+#Initialize Firestore
+cred = credentials.Certificate("/creds/credfile.json")
+# import os
+# dirname = os.path.dirname(__file__)
+# filename = os.path.join(dirname, 'creds/credfile.json')
+# cred = credentials.Certificate(filename)
 firebase_admin.initialize_app(cred)
 
 # Get a reference to the collection
