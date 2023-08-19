@@ -1,0 +1,7 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker' 
+    args: ['push', 'us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1:latest']
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['run', 'deploy', 'mm-api', '--region=us-central1', '--update-secrets=/creds/credfile.json=firebase_creds:1', '--image=us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1', '--allow-unauthenticated', '--max-instances=2']
