@@ -69,8 +69,15 @@ def device_register(device_id):
     return device_config
 
 # get details about a device
+# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNDgxMzk2LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI0ODEzOTYsImV4cCI6MTY5MjQ4NDk5NiwiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.LkbdrUlvOmhoCfwNTJvXREmmmLmue7EBc5f0p0lBB_11cJkrqz0d0zrSjITIX0NXdFOFR79tM6bzUlqpvuL1aCHZIMQvv0EJWSIGG4jVEji6KQcIR82aPMbLghQPxiqQMKnr9PCNgNfK7CBP0fmtAOMM9b1Z-oNBY_yhF1oeGOK5ySuthH8x_lCz8WuixybpQvP_KOxSDLT08ERX6VOHj8K7sppqoCLUhSeJGamLFoxaHt3ydPyu8QBl_cVI4nJBFB4Vztm6INCyLqN5Zw7i_TMn4lsNK5dIqlrLuQ0J17z1Y1M3L0rWVloxZOW6sbXwt_2TM2v7k_pDkIxHVWsuUg' http://127.0.0.1:5000/api/v1/device/device_idd
 @app.get("/api/v1/device/<device_id>")
 def device_details(device_id):
+    token_header_name = "X-ID-Token"
+    token_header_value = request.headers.get(token_header_name)
+    try:
+        auth.verify_id_token(token_header_value)
+    except:
+        return "Unauthorized", 403
     # check for device
     device_ref = device_collection.document(device_id)
     device = device_ref.get()
