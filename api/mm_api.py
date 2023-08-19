@@ -6,13 +6,17 @@ import firebase_admin
 from firebase_admin import auth, firestore, credentials
 import secrets
 import re
+import requests
+import json
 
 #Initialize Firestore
-cred = credentials.Certificate("/creds/credfile.json")
-# import os
-# dirname = os.path.dirname(__file__)
-# filename = os.path.join(dirname, 'creds/credfile.json')
-# cred = credentials.Certificate(filename)
+try:
+    cred = credentials.Certificate("/creds/credfile.json")
+except:
+    import os
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, 'creds/credfile.json')
+    cred = credentials.Certificate(filename)
 firebase_admin.initialize_app(cred)
 
 # Get a reference to the collection
@@ -80,12 +84,28 @@ def device_details(device_id):
     return device
 
 # Auth a new device
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "bc3a236a8d5d73aca0ff36aab8f1a3b8f623e1035689653505dd9f33c970", "username": "device_idd@mosquitomax.com"}' http://127.0.0.1:5000/api/v1/device/device_idd/auth
 @app.post("/api/v1/device/<device_id>/auth")
 def device_auth(device_id):
-    # validate primary key
-    # sign in with device_id@mosquitomax.com and password
-    # return JSON response
-    pass
+    # get credentials in request
+    device_creds = request.get_json()
+    # sign in with provided username and password
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=FIREBASE_API_KEY_PLACEHOLDER"
+
+    headers = {"Content-Type": "application/json"}
+
+    data = {
+        "email": device_creds["username"],
+        "password": device_creds["password"],
+        "returnSecureToken": True
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    if response.status_code == 200:
+        return response.content
+    else:
+        return "Something went wrong. Auth failed", 400
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
