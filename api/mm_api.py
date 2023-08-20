@@ -1,3 +1,20 @@
+# ┌────────────────┐               ┌─────────────┐               ┌───────────────────┐
+# │                │               │             │               │                   │
+# │  Smart Device  │               │   Backend   │               │   Firebase Auth   │
+# │                │               │             │               │                   │
+# └────────────────┘               └─────────────┘               └───────────────────┘
+
+
+#             username/password              /v1/accounts:signInWithPassword
+#          ─────────────────────────►          ─────────────────────────────►
+
+#                                                                 ┌──────────────────┐
+#          ◄──────────────────────────        ◄────────────────── │ ID/Refresh token │
+#                                                                 └──────────────────┘
+#            request action/resource
+#              (ID Token)                       auth.verify_id_token
+#          ──────────────────────────►        ──────────────────────────────►
+
 # docker build -t mmapi .
 # docker run -p 8080:8080 -v C:\Users\Daniel\Documents\mosquito-controller\MosquitoMax\api\creds:/creds mmapi
 # gcloud builds submit --config cloudbuild.yaml
@@ -19,12 +36,19 @@ except:
     cred = credentials.Certificate(filename)
 firebase_admin.initialize_app(cred)
 
+# api key
+apikey = "FIREBASE_API_KEY_PLACEHOLDER"
+
 # Get a reference to the collection
 db = firestore.client()
 device_collection = db.collection("devices")
 accounts_collection = db.collection("accounts")
 
 app = Flask(__name__)
+
+# get email equivalent of device ID
+def device_id_as_email(device_id):
+    return device_id+"@mosquitomax.com"
 
 # function to validate serial number for RPi
 def validate_rpi_serial_number(number):
@@ -35,9 +59,9 @@ def validate_rpi_serial_number(number):
         return False
 
 # register a new device
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"serial_number": "000000003d1d1c36", "mac_address": "00:00:5e:00:53:af"}' http://127.0.0.1:5000/api/v1/device/device_idd/register
-@app.post("/api/v1/device/<device_id>/register")
-def device_register(device_id):
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"serial_number": "000000003d1d1c36", "mac_address": "00:00:5e:00:53:af"}' http://127.0.0.1:8080/api/v1/device/register
+@app.post("/api/v1/device/register")
+def device_register():
     # TODO consider adding a key validation step to prevent unauthorized device registrations
     # TODO add error handling around this rather optimistic getting of JSON (expecting {"serial_no": "", "mac_address": ""})
     device_info = request.get_json()
@@ -45,9 +69,9 @@ def device_register(device_id):
     if not validate_rpi_serial_number(device_info["serial_number"]):
         return "Invalid serial number", 400
     # assume email device_id@mosquitomax.com
-    username = device_id+"@mosquitomax.com"
+    username = device_id_as_email(device_info["serial_number"])
     # check for existing device registration
-    device_ref = device_collection.document(device_id)
+    device_ref = device_collection.document(device_info["serial_number"])
     device = device_ref.get()
     # Check if the document exists
     if device.exists:
@@ -63,23 +87,26 @@ def device_register(device_id):
     except ValueError:
         return "Provided values are invalid", 400
     # create device record in Firestore
-    device_collection.document(device_id).set(device_info)
+    device_collection.document(device_info["serial_number"]).set(device_info)
     # resopnd with device configuration file (including JSON auth response)
-    device_config = {"username": username, "password": password, }
+    device_config = {"username": username, "password": password}
     return device_config
 
 # get details about a device
-# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNDgxMzk2LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI0ODEzOTYsImV4cCI6MTY5MjQ4NDk5NiwiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.LkbdrUlvOmhoCfwNTJvXREmmmLmue7EBc5f0p0lBB_11cJkrqz0d0zrSjITIX0NXdFOFR79tM6bzUlqpvuL1aCHZIMQvv0EJWSIGG4jVEji6KQcIR82aPMbLghQPxiqQMKnr9PCNgNfK7CBP0fmtAOMM9b1Z-oNBY_yhF1oeGOK5ySuthH8x_lCz8WuixybpQvP_KOxSDLT08ERX6VOHj8K7sppqoCLUhSeJGamLFoxaHt3ydPyu8QBl_cVI4nJBFB4Vztm6INCyLqN5Zw7i_TMn4lsNK5dIqlrLuQ0J17z1Y1M3L0rWVloxZOW6sbXwt_2TM2v7k_pDkIxHVWsuUg' http://127.0.0.1:5000/api/v1/device/device_idd
-@app.get("/api/v1/device/<device_id>")
-def device_details(device_id):
+# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNDgxMzk2LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI0ODEzOTYsImV4cCI6MTY5MjQ4NDk5NiwiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.LkbdrUlvOmhoCfwNTJvXREmmmLmue7EBc5f0p0lBB_11cJkrqz0d0zrSjITIX0NXdFOFR79tM6bzUlqpvuL1aCHZIMQvv0EJWSIGG4jVEji6KQcIR82aPMbLghQPxiqQMKnr9PCNgNfK7CBP0fmtAOMM9b1Z-oNBY_yhF1oeGOK5ySuthH8x_lCz8WuixybpQvP_KOxSDLT08ERX6VOHj8K7sppqoCLUhSeJGamLFoxaHt3ydPyu8QBl_cVI4nJBFB4Vztm6INCyLqN5Zw7i_TMn4lsNK5dIqlrLuQ0J17z1Y1M3L0rWVloxZOW6sbXwt_2TM2v7k_pDkIxHVWsuUg' http://127.0.0.1:8080/api/v1/device
+@app.get("/api/v1/device")
+def device_details():
     token_header_name = "X-ID-Token"
     token_header_value = request.headers.get(token_header_name)
     try:
-        auth.verify_id_token(token_header_value)
+        device_token_values = auth.verify_id_token(token_header_value)
+    except auth.ExpiredIdTokenError:
+        # TODO consider refreshing the token and returning with the response if successful
+        return "Expired ID Token", 403
     except:
         return "Unauthorized", 403
     # check for device
-    device_ref = device_collection.document(device_id)
+    device_ref = device_collection.document(device_token_values["email"])
     device = device_ref.get()
     # Check if the document exists
     if device.exists:
@@ -90,14 +117,14 @@ def device_details(device_id):
         return "No such device", 404
     return device
 
-# Auth a new device
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "bc3a236a8d5d73aca0ff36aab8f1a3b8f623e1035689653505dd9f33c970", "username": "device_idd@mosquitomax.com"}' http://127.0.0.1:5000/api/v1/device/device_idd/auth
-@app.post("/api/v1/device/<device_id>/auth")
-def device_auth(device_id):
+# Authenticate a new device
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "bc3a236a8d5d73aca0ff36aab8f1a3b8f623e1035689653505dd9f33c970", "username": "device_idd@mosquitomax.com"}' http://127.0.0.1:8080/api/v1/device/auth
+@app.post("/api/v1/device/auth")
+def device_auth():
     # get credentials in request
     device_creds = request.get_json()
     # sign in with provided username and password
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=FIREBASE_API_KEY_PLACEHOLDER"
+    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+apikey
 
     headers = {"Content-Type": "application/json"}
 
@@ -109,10 +136,31 @@ def device_auth(device_id):
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
+    # verify that username matches
     if response.status_code == 200:
         return response.content
     else:
         return "Something went wrong. Auth failed", 400
+
+# Refresh an ID token
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"refresh_token": "AMf-vBwyo_hTtL2Gy5VfVGp-bsefl9X-lRUr5ThndhtINsu8NSqVjYLW__BwJbtlARADcrmhS5KCwuao_iEObPYeO2mOjMel_eKxxbK3CrLlYUKrRL0T1KjQn13XrJRxXvs5JzIxW7-SOQk5fXkLpj7ZYeKk3Y6ZORgbJb-_z4SHRgVfXFKD1JnL8vxM5vruZAjcUMeeho1jd8Ald_meu2JyTS5ItMz2RNyn436y0tjZ7PYKR1V6mz4"}' http://127.0.0.1:8080/api/v1/device/auth/refresh
+@app.post("/api/v1/device/auth/refresh")
+def device_auth_refresh():
+    # get credentials in request
+    refresh_token = request.get_json()
+    # sign in with provided username and password
+    url = "https://securetoken.googleapis.com/v1/token?key="+apikey
+
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    data = "grant_type=refresh_token&refresh_token="+refresh_token["refresh_token"]
+
+    response = requests.post(url, headers=headers, data=data)
+
+    if response.status_code == 200:
+        return response.content
+    else:
+        return "Something went wrong. Auth refresh failed", 400
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
