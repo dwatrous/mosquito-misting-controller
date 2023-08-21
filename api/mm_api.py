@@ -18,6 +18,7 @@
 # docker build -t mmapi .
 # docker run -p 8080:8080 -v C:\Users\Daniel\Documents\mosquito-controller\MosquitoMax\api\creds:/creds mmapi
 # gcloud builds submit --config cloudbuild.yaml
+from functools import wraps
 from flask import Flask, request
 import firebase_admin
 from firebase_admin import auth, firestore, credentials
@@ -30,6 +31,7 @@ import json
 try:
     cred = credentials.Certificate("/creds/credfile.json")
 except:
+    # this case is for local development
     import os
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname, 'creds/credfile.json')
@@ -71,7 +73,7 @@ def device_register():
     # assume email device_id@mosquitomax.com
     username = device_id_as_email(device_info["serial_number"])
     # check for existing device registration
-    device_ref = device_collection.document(device_info["serial_number"])
+    device_ref = device_collection.document(username)
     device = device_ref.get()
     # Check if the document exists
     if device.exists:
@@ -87,35 +89,10 @@ def device_register():
     except ValueError:
         return "Provided values are invalid", 400
     # create device record in Firestore
-    device_collection.document(device_info["serial_number"]).set(device_info)
+    device_collection.document(username).set(device_info)
     # resopnd with device configuration file (including JSON auth response)
     device_config = {"username": username, "password": password}
     return device_config
-
-# get details about a device
-# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNDgxMzk2LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI0ODEzOTYsImV4cCI6MTY5MjQ4NDk5NiwiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.LkbdrUlvOmhoCfwNTJvXREmmmLmue7EBc5f0p0lBB_11cJkrqz0d0zrSjITIX0NXdFOFR79tM6bzUlqpvuL1aCHZIMQvv0EJWSIGG4jVEji6KQcIR82aPMbLghQPxiqQMKnr9PCNgNfK7CBP0fmtAOMM9b1Z-oNBY_yhF1oeGOK5ySuthH8x_lCz8WuixybpQvP_KOxSDLT08ERX6VOHj8K7sppqoCLUhSeJGamLFoxaHt3ydPyu8QBl_cVI4nJBFB4Vztm6INCyLqN5Zw7i_TMn4lsNK5dIqlrLuQ0J17z1Y1M3L0rWVloxZOW6sbXwt_2TM2v7k_pDkIxHVWsuUg' http://127.0.0.1:8080/api/v1/device
-@app.get("/api/v1/device")
-def device_details():
-    token_header_name = "X-ID-Token"
-    token_header_value = request.headers.get(token_header_name)
-    try:
-        device_token_values = auth.verify_id_token(token_header_value)
-    except auth.ExpiredIdTokenError:
-        # TODO consider refreshing the token and returning with the response if successful
-        return "Expired ID Token", 403
-    except:
-        return "Unauthorized", 403
-    # check for device
-    device_ref = device_collection.document(device_token_values["email"])
-    device = device_ref.get()
-    # Check if the document exists
-    if device.exists:
-        # Get the data from the document
-        device = device.to_dict()
-    else:
-        # TODO return 404 Device not found
-        return "No such device", 404
-    return device
 
 # Authenticate a new device
 # TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "bc3a236a8d5d73aca0ff36aab8f1a3b8f623e1035689653505dd9f33c970", "username": "device_idd@mosquitomax.com"}' http://127.0.0.1:8080/api/v1/device/auth
@@ -161,6 +138,41 @@ def device_auth_refresh():
         return response.content
     else:
         return "Something went wrong. Auth refresh failed", 400
+
+def authenticate(function):
+
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        token_header_name = "X-ID-Token"
+        token_header_value = request.headers.get(token_header_name)
+        try:
+            device_token_values = auth.verify_id_token(token_header_value)
+        except auth.ExpiredIdTokenError:
+            # TODO consider refreshing the token and returning with the response if successful
+            return "Expired ID Token", 403
+        except:
+            return "Unauthorized", 403
+        kwargs["device_email"] = device_token_values["email"]
+        return function(*args, **kwargs)
+
+    return wrapper
+
+# get details about a device
+# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNTAzOTI1LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI2MTk3MjMsImV4cCI6MTY5MjYyMzMyMywiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Rrbz41ECUgJWjLIi2Snmwysm9l0N-LXTspi4xtmpYrq_TyoK6Ag2UskfutY6NT6sYo6zrWL2xb9ayMII1mUIRBf1n1u144n3XTjYEibFbAGlcmG8xWpl2EkThJHUbZA09XAOLaD9zmkkpMLm_NG2qK-r7Yn3FCzuyE4FWSimX0JM-k47UAUESSWo13GV0vtbqEffJHwCZcv0hLnPErXnLzzlTItONj5KmcggnSaEVvU3Q6hto9HL9ExTapIh6tR9v1X1dKQShSfeVcxZuIobObcFT2fXp3RvVkxSqtCGRbN_yuFKSauZ_W8UMXeNrWnWxvMg1bHNlZh378t4rhnoKg' http://127.0.0.1:8080/api/v1/device
+@app.get("/api/v1/device")
+@authenticate
+def device_details(device_email):
+    # check for device
+    device_ref = device_collection.document(device_email)
+    device = device_ref.get()
+    # Check if the document exists
+    if device.exists:
+        # Get the data from the document
+        device = device.to_dict()
+    else:
+        # TODO return 404 Device not found
+        return "No such device", 404
+    return device
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)
