@@ -10,10 +10,11 @@ import sched, time
 import multiprocessing
 import json
 from environment import environment
-from firebase_admin import firestore
 import cloud
 
 import sys, os
+onpi = False
+GPIO = object
 if sys.platform == 'linux':
     if os.uname().nodename == 'raspberrypi':
         onpi = True
@@ -23,15 +24,13 @@ if sys.platform == 'linux':
         GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
         GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT)
         atexit.register(GPIO.cleanup)
-else:
-    onpi = False
-    GPIO = object
 
 logging.info("On Raspberry Pi: ", onpi)
 
 class zone:
     ms_in_second = 1000
     valve_scheduler = sched.scheduler()
+    zonecloud = cloud.Cloud()
 
     def __init__(self, zonedefinition=None) -> None:
         self.env = environment()
@@ -181,12 +180,11 @@ class zone:
         sensordata.put(readings)
 
     # execute spray
-    @cloud.write_to_cloud
     def execute_spray(self):
         # indicate running
         device_sensors.status_led_running()
         # clear and begin capturing data
-        spray_start_time = firestore.SERVER_TIMESTAMP
+        spray_start_time = datetime.datetime.now()
         self.spraydata = {
             "start_time": spray_start_time,
             "valve_executions": []
@@ -254,6 +252,8 @@ class zone:
             "total_spray_time": spray_end_time-spray_start_time
         }
         self.spraydata["sensor_data"] = sensordata
+        # write spraydata to cloud
+        self.zonecloud.write_spray_occurence_ds(self.spraydata)
         logging.info(self.spraydata["spray_timing"])
         logging.debug(self.spraydata["sensor_data"])
         # indicate ready

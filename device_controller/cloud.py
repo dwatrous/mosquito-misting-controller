@@ -54,17 +54,11 @@ class Cloud(object):
         # finally, return authenticated_user, which may just be the cached values
         return self.authenticated_user
 
-    def write_spray_occurence_ds(self):
-        pass
-
-def write_to_cloud(func):
-    def execute_and_write(myobj):
-        # logging.info("Ready to run spray execution and log in cloud")
-        func(myobj)
-        doc_ref = db.collection(u'sprayoccurrences').document()
-        doc_ref.set(myobj.spraydata)
-    return execute_and_write
+    def write_spray_occurence_ds(self, spraydata):
+        self.ds.collection(u'devices').document(self.config.get_config()["device"]["email"]).collection(u'sprayoccurrences').add(spraydata)
 
 if __name__ == '__main__':
     cloud = Cloud()
     print(cloud.get_authenticated_user())
+    spraydata = {"spraydetails": "lots of data here"}
+    cloud.write_spray_occurence_ds(spraydata)

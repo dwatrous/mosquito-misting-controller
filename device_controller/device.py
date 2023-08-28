@@ -10,7 +10,6 @@ import json
 import time
 import datetime
 from environment import environment
-from threading import Thread
 from pytz import timezone
 
 class device:
@@ -75,7 +74,7 @@ class device:
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional
         if (device_sensors.read_current_line_in_pressure_psi() and device_sensors.read_current_weight()):
-            device_sensors.led_ready()
+            device_sensors.status_led_ready()
 
     def get_devicedefinition_json(self):
         return json.dumps(self.get_devicedefinition())
