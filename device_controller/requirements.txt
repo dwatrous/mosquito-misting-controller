@@ -5,3 +5,5 @@ schedule
 time-machine
 pytz
 firebase_admin
+firebase-rest-api
+pyjwt

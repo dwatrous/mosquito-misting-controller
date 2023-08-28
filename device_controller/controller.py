@@ -27,15 +27,12 @@ from time import sleep
 from device import device
 import schedule
 import cloud
-
-from pathlib import Path
+import utils
 
 wait_time = 60
 
-# load in configuration
-configfile = Path(__file__).with_name("config.json")
-with configfile.open("r") as configreader:
-    config = json.loads(configreader.read())
+# get Config
+config = utils.Config()
 
 # handle first time setup
 # start wifi hotspot
@@ -43,7 +40,7 @@ with configfile.open("r") as configreader:
 # write initial account configuration file
 
 # Connect to cloud to check for existing device configuration
-account_ref = cloud.db.collection(u"accounts").document(config["account_id"])
+account_ref = cloud.db.collection(u"accounts").document(config.getConfig()["account_id"])
 account_doc = account_ref.get()
 if account_doc.exists:
     account = account_doc.to_dict()
@@ -52,13 +49,13 @@ else:
 # check for empty devices and create default config
 if account["devices"] == {}:
     new_default_device = device()
-    account["devices"][config["device_name"]] = new_default_device.get_devicedefinition()
+    account["devices"][config.getConfig()["device_name"]] = new_default_device.get_devicedefinition()
     account_ref.set(account)
     new_default_device.schedule_thread_kill_signal.set()
     del new_default_device
 # load device configuration if available (cloud first, then local)
 try:
-    device_config = account["devices"][config["device_name"]]
+    device_config = account["devices"][config.getConfig()["device_name"]]
 except:
     print(u"No such device!") # TODO handle error
 deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
@@ -69,7 +66,7 @@ with deviceconfigfile.open("w") as configwriter:
 if __name__ == '__main__':
 
     # create the device instance
-    this_device = device(account["devices"][config["device_name"]])
+    this_device = device(account["devices"][config.getConfig()["device_name"]])
 
     while True:
         # listen for messages from the cloud
