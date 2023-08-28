@@ -10,7 +10,7 @@ class Config(object):
             cls.instance = super(Config, cls).__new__(cls)
         return cls.instance
 
-    def getConfig(self):
+    def get_config(self):
         # TODO accommodate remote update of config values to force reload
         if self.config == None or self.reload:
             configfile = Path(__file__).with_name("config.json")
@@ -22,5 +22,5 @@ if __name__ == '__main__':
     config = Config()
     other_config = Config()
     print(config is other_config)
-    print(config.getConfig() == other_config.getConfig())
-    print(other_config.getConfig())
+    print(config.get_config() == other_config.get_config())
+    print(other_config.get_config())

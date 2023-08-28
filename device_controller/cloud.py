@@ -1,5 +1,4 @@
 # Import Firebase REST API 
-from time import sleep
 import firebase
 import utils
 import datetime
@@ -27,7 +26,7 @@ class Cloud(object):
 
     def __init__(self) -> None:
         # Instantiates a Firebase 
-        self.app = firebase.initialize_app(self.config.getConfig()["firebase"])
+        self.app = firebase.initialize_app(self.config.get_config()["firebase"])
         # Firebase Auth
         self.auth = self.app.auth()
         # Firestore
@@ -35,10 +34,10 @@ class Cloud(object):
         # Realtime database
         self.db = self.app.database()
 
-    def getAuthenticateUser(self):
+    def get_authenticated_user(self):
         # handle initial authentication
         if self.authenticated_user == None:
-            user = self.auth.sign_in_with_email_and_password(self.config.getConfig()["device"]["email"], self.config.getConfig()["device"]["password"])
+            user = self.auth.sign_in_with_email_and_password(self.config.get_config()["device"]["email"], self.config.get_config()["device"]["password"])
             self.authenticated_user = {
                 "uid": user["localId"],
                 "serial_number": user["displayName"],
@@ -55,6 +54,9 @@ class Cloud(object):
         # finally, return authenticated_user, which may just be the cached values
         return self.authenticated_user
 
+    def write_spray_occurence_ds(self):
+        pass
+
 def write_to_cloud(func):
     def execute_and_write(myobj):
         # logging.info("Ready to run spray execution and log in cloud")
@@ -65,6 +67,4 @@ def write_to_cloud(func):
 
 if __name__ == '__main__':
     cloud = Cloud()
-    print(cloud.getAuthenticateUser())
-    sleep(10)
-    print(cloud.getAuthenticateUser())
+    print(cloud.get_authenticated_user())
