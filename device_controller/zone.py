@@ -1,7 +1,6 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
 import logging
-import atexit
 import datetime
 import constants
 import device_sensors
@@ -10,22 +9,8 @@ import sched, time
 import multiprocessing
 import json
 from environment import environment
+from utils import onpi, GPIO, float_switch_signal
 import cloud
-
-import sys, os
-onpi = False
-GPIO = object
-if sys.platform == 'linux':
-    if os.uname().nodename == 'raspberrypi':
-        onpi = True
-        import RPi.GPIO as GPIO
-        GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
-        GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT)
-        GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT)
-        GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT)
-        atexit.register(GPIO.cleanup)
-
-logging.info("On Raspberry Pi: ", onpi)
 
 class zone:
     ms_in_second = 1000
@@ -116,8 +101,13 @@ class zone:
                     logging.info("Opened valve %d (not on pi)" % valve)
             
             # leave valve open for close_after_ms
-            time.sleep(close_after_ms/self.ms_in_second)
+            while int(time.time()*self.ms_in_second) < (open_time+close_after_ms) and not float_switch_signal.is_set():
+                time.sleep(0.001)
 
+        except:
+            GPIO.output(constants.GPIO_WATER_VALVE, 1)
+            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
+        finally:
             if valve == constants.VALVE_WATER and onpi:
                 GPIO.output(constants.GPIO_WATER_VALVE, 1)
             elif valve == constants.VALVE_CHEMICAL and onpi:
@@ -127,9 +117,6 @@ class zone:
                     logging.error("Invalid valve: %d" % valve)
                 else:
                     logging.info("Closed valve %d (not on pi)" % valve)
-        except:
-            GPIO.output(constants.GPIO_WATER_VALVE, 1)
-            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
 
         # record close time in ms
         close_time = int(time.time()*self.ms_in_second)
@@ -147,9 +134,11 @@ class zone:
 
         try:
             if onpi: GPIO.output(constants.GPIO_MOTOR, 0)
-            time.sleep(close_after_ms/self.ms_in_second)
-            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
+            while int(time.time()*self.ms_in_second) < (motor_start_time+close_after_ms) and not float_switch_signal.is_set():
+                time.sleep(0.001)
         except:
+            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
+        finally:
             if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
 
         motor_shutoff_time = int(time.time()*self.ms_in_second)

@@ -57,9 +57,9 @@ if __name__ == '__main__':
   assert newzone.calculate_valve_openings() == [{'open_at': 7500, 'open_for': 4000}, {'open_at': 22500, 'open_for': 4000}, {'open_at': 37500, 'open_for': 4000}, {'open_at': 52500, 'open_for': 4000}]
 
   if os.path.exists(zonedefinition_filename):
-    os.remove(zonedefinition_filename)
+      os.remove(zonedefinition_filename)
   else:
-    print("The file does not exist")
+      print("The file does not exist")
 
   myzone.env.get_low_temp_last_24hr = mock.MagicMock(return_value=75)
   myzone.env.get_low_temp_last_24hr.__reduce__ = lambda self: (mock.MagicMock, ())

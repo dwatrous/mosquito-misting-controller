@@ -1,5 +1,33 @@
+import constants
 import json
+import atexit
+import logging
+import multiprocessing
 from pathlib import Path
+import sys, os
+
+onpi = False
+GPIO = object
+if sys.platform == 'linux':
+    if os.uname().nodename == 'raspberrypi':
+        onpi = True
+        import RPi.GPIO as GPIO
+        GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
+        GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT, initial=GPIO.HIGH)
+        GPIO.setup(constants.GPIO_FLOAT_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        GPIO.setup(constants.GPIO_RESET_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+        GPIO.setup(constants.GPIO_BUZZER, GPIO.OUT, initial=GPIO.LOW)
+        atexit.register(GPIO.cleanup)
+
+logging.info("On Raspberry Pi: ", onpi)
+
+# create a signal for the float switch, set when FALLING, clear with RISING
+float_switch_signal = multiprocessing.Event()
+if onpi:
+    GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.FALLING, callback=float_switch_signal.set)
+    GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.RISING, callback=float_switch_signal.clear)
 
 class Config(object):
     config = None
