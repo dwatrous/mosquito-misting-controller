@@ -5,6 +5,20 @@ import logging
 import multiprocessing
 from pathlib import Path
 import sys, os
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+logFile = 'device.log'
+
+my_handler = TimedRotatingFileHandler(logFile, when="D", interval=1, backupCount=10, encoding='utf-8')
+my_handler.setFormatter(log_formatter)
+my_handler.setLevel(logging.DEBUG)
+
+app_log = logging.getLogger('root')
+app_log.setLevel(logging.DEBUG)
+
+app_log.addHandler(my_handler)
 
 onpi = False
 GPIO = object
@@ -21,7 +35,7 @@ if sys.platform == 'linux':
         GPIO.setup(constants.GPIO_BUZZER, GPIO.OUT, initial=GPIO.LOW)
         atexit.register(GPIO.cleanup)
 
-logging.info("On Raspberry Pi: ", onpi)
+app_log.info("On Raspberry Pi: ", onpi)
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()

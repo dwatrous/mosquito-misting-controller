@@ -1,22 +1,7 @@
 #!/usr/bin/env python
-# Copyright MosquitoMax 2022, all rights reserved
+# Copyright MosquitoMax 2023, all rights reserved
 
 # This is the main controller file
-
-import logging
-from logging.handlers import TimedRotatingFileHandler
-
-log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
-logFile = 'controller.log'
-
-my_handler = TimedRotatingFileHandler(logFile, when="D", interval=1, backupCount=10, encoding='utf-8')
-my_handler.setFormatter(log_formatter)
-my_handler.setLevel(logging.DEBUG)
-
-app_log = logging.getLogger('root')
-app_log.setLevel(logging.DEBUG)
-
-app_log.addHandler(my_handler)
 
 import datetime
 from pytz import timezone
@@ -33,6 +18,8 @@ wait_time = 60
 
 # get Config
 config = utils.Config()
+# get cloud object
+controller_cloud = cloud.Cloud()
 
 # handle first time setup
 # start wifi hotspot
@@ -40,42 +27,39 @@ config = utils.Config()
 # write initial account configuration file
 
 # Connect to cloud to check for existing device configuration
-account_ref = cloud.db.collection(u"accounts").document(config.getConfig()["account_id"])
-account_doc = account_ref.get()
-if account_doc.exists:
-    account = account_doc.to_dict()
-else:
+account = controller_cloud.account_get(config.get_config()["account_id"])
+if account == None:
     print(u"No such account!") # TODO handle error
 # check for empty devices and create default config
 if account["devices"] == {}:
     new_default_device = device()
-    account["devices"][config.getConfig()["device_name"]] = new_default_device.get_devicedefinition()
-    account_ref.set(account)
+    account["devices"][config.get_config()["device"]["name"]] = new_default_device.get_devicedefinition()
+    controller_cloud.account_update(config.get_config()["account_id"], account)
     new_default_device.schedule_thread_kill_signal.set()
     del new_default_device
 # load device configuration if available (cloud first, then local)
 try:
-    device_config = account["devices"][config.getConfig()["device_name"]]
+    device_config = account["devices"][config.get_config()["device"]["name"]]
 except:
     print(u"No such device!") # TODO handle error
-deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
-with deviceconfigfile.open("w") as configwriter:
-    configwriter.write(json.dumps(device_config))
+# deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
+# with deviceconfigfile.open("w") as configwriter:
+#     configwriter.write(json.dumps(device_config))
 # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
 if __name__ == '__main__':
 
     # create the device instance
-    this_device = device(account["devices"][config.getConfig()["device_name"]])
+    this_device = device(account["devices"][config.get_config()["device"]["name"]])
+    # listen for messages from the cloud
+    controller_cloud.listen_for_messages(this_device.message_handler)
 
     while True:
-        # listen for messages from the cloud
-        # handle message
         # MESSAGES: reload configuration, spray now, skip next spray, get device status
         # check and send device status (hourly?) (may include error state that will be handled from the cloud)
 
         # periodically refresh schedule (daily should be fine)
-        app_log.info("Next spray {0}".format(schedule.next_run()))
-        app_log.info("waiting {0} seconds at {1}".format(wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
+        utils.app_log.info("Next spray {0}".format(schedule.next_run()))
+        utils.app_log.info("waiting {0} seconds at {1}".format(wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
         sleep(wait_time)
 
