@@ -12,6 +12,7 @@ import datetime
 from utils import onpi, GPIO
 from environment import environment
 from pytz import timezone
+import cloud
 
 class device:
 
@@ -19,6 +20,7 @@ class device:
         self.zones = []
         self.env = environment()
         self.schedule_thread_kill_signal = threading.Event()
+        self.device_cloud = cloud.Cloud()
 
         if devicedefinition == None:
             self.name = "My Device"
@@ -72,6 +74,15 @@ class device:
         }
         return devicedefinition
     
+    def message_handler(self, message):
+        if message["data"] == None:
+            print("Message is empty, it must be a delete")
+            print(message)
+        else:
+            for key in message["data"]: 
+                print(key + " -> " + message["data"][key])
+                self.device_cloud.mark_message_read({key: message["data"][key]})
+
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional
         if (device_sensors.read_current_line_in_pressure_psi() and device_sensors.read_current_weight()):
