@@ -8,6 +8,7 @@ import sys, os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
+# TODO need to filter idToken out of logs
 log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
 logFile = 'device.log'
 

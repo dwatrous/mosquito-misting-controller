@@ -9,7 +9,7 @@ import constants
 import json
 import time
 import datetime
-from utils import onpi, GPIO
+from utils import onpi, GPIO, app_log
 from environment import environment
 from pytz import timezone
 import cloud
@@ -76,11 +76,11 @@ class device:
     
     def message_handler(self, message):
         if message["data"] == None:
-            print("Message is empty, it must be a delete")
-            print(message)
+            app_log.info("Empty message: %s", message)
         else:
             for key in message["data"]: 
-                print(key + " -> " + message["data"][key])
+                app_log.info("Received message: %s", message)
+                # do something with the message
                 self.device_cloud.mark_message_read({key: message["data"][key]})
 
     def check_system(self):
