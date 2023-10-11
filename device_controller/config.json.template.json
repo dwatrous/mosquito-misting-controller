@@ -1,0 +1,18 @@
+{
+    "account_id": "dwmaillist@gmail.com",
+    "device": {
+        "name": "Device Name",
+        "email": "SERIALNO@mosquitomax.com",
+        "password": "PASSWORD",
+        "scale_offset": -289500
+    },
+    "firebase": {
+        "apiKey": "FIREBASE_API_KEY_PLACEHOLDER",
+        "authDomain": "FIREBASE_PROJECT.firebaseapp.com",
+        "databaseURL": "https://FIREBASE_PROJECT-default-rtdb.firebaseio.com",
+        "projectId": "FIREBASE_PROJECT",
+        "storageBucket": "FIREBASE_PROJECT.appspot.com",
+        "messagingSenderId": "messagingSenderId",
+        "appId": "appId"
+    }
+}
