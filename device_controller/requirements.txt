@@ -7,3 +7,4 @@ pytz
 firebase_admin
 firebase-rest-api
 pyjwt
+Adafruit_ADS1x15

@@ -4,7 +4,7 @@ import atexit
 import logging
 import multiprocessing
 from pathlib import Path
-import sys, os
+import io
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -21,28 +21,34 @@ app_log.setLevel(logging.DEBUG)
 
 app_log.addHandler(my_handler)
 
+def is_raspberrypi():
+    try:
+        with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
+            if 'raspberry pi' in m.read().lower(): return True
+    except Exception: pass
+    return False
+
 onpi = False
 GPIO = object
-if sys.platform == 'linux':
-    if os.uname().nodename == 'raspberrypi':
-        onpi = True
-        import RPi.GPIO as GPIO
-        GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
-        GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT, initial=GPIO.HIGH)
-        GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT, initial=GPIO.HIGH)
-        GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT, initial=GPIO.HIGH)
-        GPIO.setup(constants.GPIO_FLOAT_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(constants.GPIO_RESET_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.setup(constants.GPIO_BUZZER, GPIO.OUT, initial=GPIO.LOW)
-        atexit.register(GPIO.cleanup)
+if is_raspberrypi():
+    onpi = True
+    import RPi.GPIO as GPIO
+    GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
+    GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(constants.GPIO_FLOAT_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(constants.GPIO_RESET_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(constants.GPIO_BUZZER, GPIO.OUT, initial=GPIO.LOW)
+    atexit.register(GPIO.cleanup)
 
-app_log.info("On Raspberry Pi: ", onpi)
+app_log.info("On Raspberry Pi: %s", onpi)
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()
 if onpi:
     GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.FALLING, callback=float_switch_signal.set)
-    GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.RISING, callback=float_switch_signal.clear)
+    # GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.RISING, callback=float_switch_signal.clear)
 
 class Config(object):
     config = None

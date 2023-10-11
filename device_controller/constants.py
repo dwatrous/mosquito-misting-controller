@@ -57,6 +57,128 @@ GPIO_BUZZER = 24
 ADC_CHANNEL_LINE_IN_PRESSURE = 0
 ADC_CHANNEL_LINE_OUT_PRESSURE = 1
 ADC_CHANNEL_VACUUM = 2
+SCALE_RAW_TO_OZ_REFERENCE = 13162
+
+# # Messaging events
+#     # "action": [
+#     #     "notify_user",
+#     #     "notify_device",
+#     #     "notify_admin",
+#     #     "spray",
+#     #     "skip_next",
+#     #     "skip_24hr"
+#     # ]
+#     # "origin": "DEVICE|USER|ADMIN",
+
+# EVENT_SPRAY_NOW = {
+#     "origin": "USER",
+#     "text_description": "EVENT_SPRAY_NOW",
+#     "action": [
+#         "notify_device",
+#         "spray"
+#     ]
+# }
+# EVENT_SPRAY_SKIP_NEXT = {
+#     "origin": "USER",
+#     "text_description": "EVENT_SPRAY_SKIP_NEXT",
+#     "action": [
+#         "notify_device",
+#         "skip_next"
+#     ]
+# }
+# EVENT_SPRAY_PENDING = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_SPRAY_PENDING",
+#     "action": [
+#         "notify_user"
+#     ]
+# }
+# EVENT_SPRAY_COMPLETED = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_SPRAY_COMPLETED",
+#     "action": [
+#         "notify_user"
+#     ]
+# }
+# EVENT_SKIP_24HR = {
+#     "origin": "USER",
+#     "text_description": "EVENT_SKIP_24HR",
+#     "action": [
+#         "notify_device",
+#         "skip_24hr"
+#     ]
+# }
+# EVENT_DEVICE_REGISTER = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_REGISTER",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_BOOT = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_BOOT",
+#     "action": [
+#         "notify_user"
+#     ]
+# }
+# EVENT_DEVICE_LOW_PRESSURE_IN = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_LOW_PRESSURE_IN",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_LOW_PRESSURE_OUT = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_LOW_PRESSURE_OUT",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_LOW_VACUUM = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_LOW_VACUUM",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_WEIGHT_INSUFFICIENT_CHANGE = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_WEIGHT_INSUFFICIENT_CHANGE",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_WEIGHT_EXTREME_CHANGE = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_WEIGHT_EXTREME_CHANGE",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_RESET_INITIATED = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_RESET_INITIATED",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
+# EVENT_DEVICE_ERROR_STATE = {
+#     "origin": "DEVICE",
+#     "text_description": "EVENT_DEVICE_ERROR_STATE",
+#     "action": [
+#         "notify_user",
+#         "notify_admin"
+#     ]
+# }
 
 configfilename = "device_config.json"
 

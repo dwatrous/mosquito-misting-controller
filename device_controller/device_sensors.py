@@ -3,27 +3,27 @@
 import constants
 import atexit
 import time
+from utils import Config, onpi, GPIO, is_raspberrypi
 
-import sys, os
-if sys.platform == 'linux':
-    if os.uname().nodename == 'raspberrypi':
-        onpi = True
-        import Adafruit_ADS1x15
-        adc = Adafruit_ADS1x15.ADS1115()
-        import RPi.GPIO as GPIO
-        GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
-        from hx711 import HX711
-        hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
-        hx.set_reading_format("MSB", "MSB")
-        reference_unit = 1
-        hx.set_reference_unit(reference_unit)
-        hx.reset()
-        hx.tare()
-        from gpiozero import RGBLED
-        status_led = RGBLED(16, 20, 21, active_high=False)
-        atexit.register(GPIO.cleanup)
+if is_raspberrypi():
+    # setup ADS1115
+    import Adafruit_ADS1x15
+    adc = Adafruit_ADS1x15.ADS1115()
+    # setup HX711 scale
+    config = Config()
+    from hx711 import HX711
+    hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
+    # hx.reset()    # This doesn't seem to be needed/helpful
+    # the referen_unit converts the measurement to OZ
+    hx.set_reference_unit(constants.SCALE_RAW_TO_OZ_REFERENCE)
+    # setting the offset is how to tare the scale
+    # hx.tare() captures several readings and uses those to find and set the offset
+    hx.set_offset(config.get_config()["device"]["scale_offset"])
+
+    from gpiozero import RGBLED
+    status_led = RGBLED(16, 20, 21, active_high=False)
+    atexit.register(GPIO.cleanup)
 else:
-    onpi = False
     # ensure Python doesn't complain about these not being defined
     adc = object
     hx = object
@@ -69,8 +69,7 @@ def read_current_vacuum_pressure_kpa():
 
 def read_current_weight():
     if onpi:
-        weight = hx.get_weight(5)   # TODO not sure if this needs to be configurable at some point
-        hx.reset()
+        weight = hx.get_weight(3)   # TODO not sure if this needs to be configurable at some point
         time.sleep(0.1)
         return weight
     else:
@@ -83,9 +82,15 @@ def status_led_ready():
     else:
         "LED: ready"
 
+def status_led_disable():
+    if onpi:
+        status_led.off()
+    else:
+        "LED: disabled"
+
 def status_led_running():
     if onpi:
-        status_led.pulse(on_color=(0.25,0.75,0.5))
+        status_led.blink(on_color=(0,1,0.5))
     else:
         "LED: running"
 
@@ -94,3 +99,24 @@ def status_led_error():
         status_led.blink(on_color=(1,0,0))
     else:
         "LED: error"
+
+if __name__ == '__main__':
+    from time import sleep
+    print("LED Ready")
+    status_led_ready()
+    sleep(6)
+    print("LED Error")
+    status_led_error()
+    sleep(6)
+    print("LED Running")
+    status_led_running()
+    sleep(6)
+    print("LED Disable")
+    status_led_disable()
+    while True:
+        print("Current Line In Pressure: ", read_current_line_in_pressure_psi())
+        print("Current Line Out Pressure: ", read_current_line_out_pressure_psi())
+        print("Current Vacuum: ", read_current_vacuum_pressure_kpa())
+        print("Current Weight in OZ: ", read_current_weight())
+        sleep(4)
+
