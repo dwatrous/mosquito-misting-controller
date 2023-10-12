@@ -1,0 +1,11 @@
+# working hotspot
+sudo sdm --customize --plugin disables:piwiz --plugin L10n:host --plugin user:"adduser=mm|password=secret" --plugin hotspot:"config=hotspot.cfg" --restart --host mmdwatrous 2023-05-03-raspios-bullseye-armhf-lite.img
+sudo sdm --burnfile sdm.img --expand-root 2023-05-03-raspios-bullseye-armhf-lite.img
+
+# captive portal
+sudo sdm --customize --plugin raspiconfig:"i2c=1" --plugin copyfile:"filelist=/usr/local/bin/" --plugin disables:piwiz --plugin L10n:host --plugin user:"adduser=mm|password=secret" --plugin wificonfig:"country=us" --restart --host mmdwatrous 2023-05-03-raspios-bullseye-armhf-lite.img
+sudo sdm --burnfile sdm.img --expand-root 2023-05-03-raspios-bullseye-armhf-lite.img
+
+# normal wifi connected
+sudo sdm --customize --plugin raspiconfig:"i2c=0" --plugin copyfile:"filelist=sdmfilelist" --plugin disables:piwiz --plugin L10n:host --plugin user:"adduser=mm|password=secret" --plugin user:"deluser=pi" --plugin network:"netman=nm|wifissid='Wishy Washy'|wifipassword='not to late to fate'|wificountry=US|noipv6" --plugin apps:"apps=python3-pip" --plugin mmsetup --extend --xmb 500 --restart --host mmdwatrous 2023-05-03-raspios-bullseye-armhf-lite.img
+sudo sdm --burnfile mm.img --expand-root 2023-05-03-raspios-bullseye-armhf-lite.img
