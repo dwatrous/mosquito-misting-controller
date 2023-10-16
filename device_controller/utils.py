@@ -1,4 +1,5 @@
 import constants
+from time import sleep
 import json
 import atexit
 import logging
@@ -28,27 +29,37 @@ def is_raspberrypi():
     except Exception: pass
     return False
 
-onpi = False
-GPIO = object
-if is_raspberrypi():
-    onpi = True
-    import RPi.GPIO as GPIO
-    GPIO.setmode(GPIO.BCM)  # choose BCM for Raspberry pi GPIO numbers
-    GPIO.setup(constants.GPIO_CHEMICAL_VALVE, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(constants.GPIO_WATER_VALVE, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(constants.GPIO_MOTOR, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(constants.GPIO_FLOAT_SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(constants.GPIO_RESET_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(constants.GPIO_BUZZER, GPIO.OUT, initial=GPIO.LOW)
-    atexit.register(GPIO.cleanup)
-
-app_log.info("On Raspberry Pi: %s", onpi)
+def start_hotspot():
+    pass
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()
-if onpi:
-    GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.FALLING, callback=float_switch_signal.set)
-    # GPIO.add_event_detect(constants.GPIO_FLOAT_SWITCH, GPIO.RISING, callback=float_switch_signal.clear)
+
+onpi = False
+if is_raspberrypi():
+    onpi = True
+    from gpiozero import RGBLED, Buzzer, DigitalOutputDevice, Button
+    status_led = RGBLED(constants.GPIO_LED_RED, constants.GPIO_LED_GREEN, constants.GPIO_LED_BLUE, active_high=False)
+    buzzer = Buzzer(constants.GPIO_BUZZER, active_high=False)
+    gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=False)
+    gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=False)
+    gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=False)
+    gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH)
+    gpioctrl_float_switch.when_pressed = float_switch_signal.set
+    gpioctrl_float_switch.when_released = float_switch_signal.clear
+    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, hold_time=10)
+    gpioctrl_reset_button.when_held = start_hotspot
+else:
+    # ensure Python doesn't complain about these not being defined when not on a pi
+    status_led = object
+    buzzer = object
+    gpioctrl_motor = object
+    gpioctrl_chemical_valve = object
+    gpioctrl_water_valve = object
+    gpioctrl_float_switch = object
+    gpioctrl_reset_button = object
+
+app_log.info("On Raspberry Pi: %s", onpi)
 
 class Config(object):
     config = None
