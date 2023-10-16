@@ -9,7 +9,7 @@ import constants
 import json
 import time
 import datetime
-from utils import onpi, GPIO, app_log
+from utils import app_log
 from environment import environment
 from pytz import timezone
 import cloud
