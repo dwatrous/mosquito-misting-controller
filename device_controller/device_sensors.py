@@ -3,14 +3,14 @@
 import constants
 import atexit
 import time
-from utils import Config, onpi, GPIO, is_raspberrypi
+import utils
 
-if is_raspberrypi():
+if utils.is_raspberrypi():
     # setup ADS1115
     import Adafruit_ADS1x15
     adc = Adafruit_ADS1x15.ADS1115()
     # setup HX711 scale
-    config = Config()
+    config = utils.Config()
     from hx711 import HX711
     hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
     # hx.reset()    # This doesn't seem to be needed/helpful
@@ -19,15 +19,10 @@ if is_raspberrypi():
     # setting the offset is how to tare the scale
     # hx.tare() captures several readings and uses those to find and set the offset
     hx.set_offset(config.get_config()["device"]["scale_offset"])
-
-    from gpiozero import RGBLED
-    status_led = RGBLED(16, 20, 21, active_high=False)
-    atexit.register(GPIO.cleanup)
 else:
     # ensure Python doesn't complain about these not being defined
     adc = object
     hx = object
-    status_led = object
 
 # Pressure sensor details
 # Range: 0-300 PSI
@@ -47,28 +42,28 @@ SENSOR_VACUUM_MAX_NEG_KPA = 40
 
 # on board sensors
 def read_current_line_in_pressure_psi():
-    if onpi:
+    if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
         return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
     else:
         return -1
 
 def read_current_line_out_pressure_psi():
-    if onpi:
+    if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
         return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
     else:
         return -1
 
 def read_current_vacuum_pressure_kpa():
-    if onpi:
+    if utils.onpi:
         current_vacuum = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
         return (current_vacuum - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_VACUUM_MAX_NEG_KPA
     else:
         return -1
 
 def read_current_weight():
-    if onpi:
+    if utils.onpi:
         weight = hx.get_weight(3)   # TODO not sure if this needs to be configurable at some point
         time.sleep(0.1)
         return weight
@@ -77,31 +72,46 @@ def read_current_weight():
 
 # Manage LED
 def status_led_ready():
-    if onpi:
-        status_led.on()
+    if utils.onpi:
+        utils.status_led.on()
     else:
         "LED: ready"
 
 def status_led_disable():
-    if onpi:
-        status_led.off()
+    if utils.onpi:
+        utils.status_led.off()
     else:
         "LED: disabled"
 
 def status_led_running():
-    if onpi:
-        status_led.blink(on_color=(0,1,0.5))
+    if utils.onpi:
+        utils.status_led.blink(on_color=(0,1,0.5))
     else:
         "LED: running"
 
 def status_led_error():
-    if onpi:
-        status_led.blink(on_color=(1,0,0))
+    if utils.onpi:
+        utils.status_led.blink(on_color=(1,0,0))
     else:
         "LED: error"
 
+# Manage Buzzer
+def status_buzzer_beep():
+    if utils.onpi:
+        utils.buzzer.beep()
+    else:
+        "BUZZER: beep"
+
+def status_buzzer_off():
+    if utils.onpi:
+        utils.buzzer.off()
+    else:
+        "BUZZER: off"
+
 if __name__ == '__main__':
     from time import sleep
+    print("Buzzer beep")
+    status_buzzer_beep()
     print("LED Ready")
     status_led_ready()
     sleep(6)
@@ -118,5 +128,8 @@ if __name__ == '__main__':
         print("Current Line Out Pressure: ", read_current_line_out_pressure_psi())
         print("Current Vacuum: ", read_current_vacuum_pressure_kpa())
         print("Current Weight in OZ: ", read_current_weight())
+        print("Reset Button: ", utils.gpioctrl_reset_button.value)
+        print("Float Switch: ", utils.gpioctrl_float_switch.value)
+        print("Float Signal: ", utils.float_switch_signal.is_set())
         sleep(4)
 

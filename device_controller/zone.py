@@ -9,7 +9,7 @@ import sched, time
 import multiprocessing
 import json
 from environment import environment
-from utils import onpi, GPIO, float_switch_signal
+import utils
 import cloud
 
 class zone:
@@ -90,30 +90,32 @@ class zone:
         open_time = int(time.time()*self.ms_in_second)
         try:
             # open valve
-            if valve == constants.VALVE_WATER and onpi:
-                GPIO.output(constants.GPIO_WATER_VALVE, 0)
-            elif valve == constants.VALVE_CHEMICAL and onpi:
-                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 0)
+            if valve == constants.VALVE_WATER and utils.onpi:
+                utils.gpioctrl_water_valve.on()
+            elif valve == constants.VALVE_CHEMICAL and utils.onpi:
+                utils.gpioctrl_chemical_valve.on()
             else:
-                if onpi:
+                if utils.onpi:
                     logging.error("Invalid valve: %d" % valve)
                 else:
                     logging.info("Opened valve %d (not on pi)" % valve)
             
             # leave valve open for close_after_ms
-            while int(time.time()*self.ms_in_second) < (open_time+close_after_ms) and not float_switch_signal.is_set():
+            while int(time.time()*self.ms_in_second) < (open_time+close_after_ms):
+                if utils.float_switch_signal.is_set() and valve != constants.GPIO_CHEMICAL_VALVE and utils.onpi:
+                    utils.gpioctrl_chemical_valve.off()
                 time.sleep(0.001)
 
         except:
-            GPIO.output(constants.GPIO_WATER_VALVE, 1)
-            GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
+            utils.gpioctrl_water_valve.off()
+            utils.gpioctrl_chemical_valve.off()
         finally:
-            if valve == constants.VALVE_WATER and onpi:
-                GPIO.output(constants.GPIO_WATER_VALVE, 1)
-            elif valve == constants.VALVE_CHEMICAL and onpi:
-                GPIO.output(constants.GPIO_CHEMICAL_VALVE, 1)
+            if valve == constants.VALVE_WATER and utils.onpi:
+                utils.gpioctrl_water_valve.off()
+            elif valve == constants.VALVE_CHEMICAL and utils.onpi:
+                utils.gpioctrl_chemical_valve.off()
             else:
-                if onpi:
+                if utils.onpi:
                     logging.error("Invalid valve: %d" % valve)
                 else:
                     logging.info("Closed valve %d (not on pi)" % valve)
@@ -133,13 +135,17 @@ class zone:
         motor_start_time = int(time.time()*self.ms_in_second)
 
         try:
-            if onpi: GPIO.output(constants.GPIO_MOTOR, 0)
-            while int(time.time()*self.ms_in_second) < (motor_start_time+close_after_ms) and not float_switch_signal.is_set():
+            if utils.onpi: utils.gpioctrl_motor.on()
+            while int(time.time()*self.ms_in_second) < (motor_start_time+close_after_ms):
+                if utils.float_switch_signal.is_set() and utils.onpi:
+                    utils.gpioctrl_motor.off()
+                else:
+                    utils.gpioctrl_motor.on()
                 time.sleep(0.001)
         except:
-            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
+            if utils.onpi: utils.gpioctrl_motor.off()
         finally:
-            if onpi: GPIO.output(constants.GPIO_MOTOR, 1)
+            if utils.onpi: utils.gpioctrl_motor.off()
 
         motor_shutoff_time = int(time.time()*self.ms_in_second)
         self.spraydata["motor_timing"] = {
