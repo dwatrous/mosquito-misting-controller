@@ -1,0 +1,12 @@
+from=cloud.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=constants.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=controller.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=create-account.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=device_sensors.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=device.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=environment.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=hx711.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=requirements.txt|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=utils.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=visualcrossing.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
+from=zone.py|to=/home/mm/controller|chown=mm:mm|chmod=655|mkdirif
