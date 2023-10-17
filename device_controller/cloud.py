@@ -40,7 +40,7 @@ class Cloud(object):
     def get_authenticated_user(self):
         # handle initial authentication
         if self.authenticated_user == None:
-            user = self.auth.sign_in_with_email_and_password(self.config.get_config()["device"]["email"], self.config.get_config()["device"]["password"])
+            user = self.auth.sign_in_with_email_and_password(self.config.device_email, self.config.device_password)
             self.authenticated_user = {
                 "uid": user["localId"],
                 "serial_number": user["displayName"],
@@ -60,7 +60,7 @@ class Cloud(object):
     # Firestore
     def write_spray_occurence_ds(self, spraydata):
         # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.get_config()["device"]["email"]).collection(u'sprayoccurrences').add(spraydata)
+        self.ds.collection(u'devices').document(self.config.device_serial_number).collection(u'sprayoccurrences').add(spraydata)
 
     def account_get(self, account_id):
         try:

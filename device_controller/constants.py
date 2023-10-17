@@ -17,11 +17,15 @@ visualcrossing_api = {
 visualcrossing_refresh_threshold = 60 * 60 * 6  # 6 hours in seconds
 
 # device constants
+email_representation_domain = "mosquitomax.com"
+
 # use zipcode and state for MosquitoMax office
 default_zip = 77449
 default_state = "TX"
 default_environment_city = "Houston"    # must be in https://astral.readthedocs.io/en/latest/index.html#cities
 default_timezone = "US/Central"     # https://schedule.readthedocs.io/en/latest/timezones.html
+
+controller_wait_time = 120
 
 # winter/summer options
 

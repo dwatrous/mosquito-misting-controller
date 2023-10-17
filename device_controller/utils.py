@@ -1,7 +1,6 @@
 import constants
 from time import sleep
 import json
-import atexit
 import logging
 import multiprocessing
 from pathlib import Path
@@ -64,17 +63,50 @@ app_log.info("On Raspberry Pi: %s", onpi)
 class Config(object):
     config = None
     reload = False
+    serial_number = None
+    mac_address = None
 
     def __new__(cls):
         if not hasattr(cls, 'instance'):
             cls.instance = super(Config, cls).__new__(cls)
         return cls.instance
+    
+    @property
+    def device_email(self):
+        return self.device_serial_number + "@" + constants.email_representation_domain
+        
+    @property
+    def device_serial_number(self):
+        if self.serial_number == None:
+            try:
+                with open("/sys/firmware/devicetree/base/serial-number", "r") as sno:
+                    self.serial_number = sno.read().rstrip('\x00')
+            except:
+                self.serial_number = "0000000000000000"
+        return self.serial_number
 
+    @property
+    def device_mac_address(self):
+        if self.mac_address == None:
+            try:
+                with open("/sys/class/net/wlan0/address", "r") as mac:
+                    self.mac_address = mac.read().rstrip('\n')
+            except:
+                self.mac_address = "00:00:00:00:00:00"
+        return self.mac_address
+
+    @property
+    def device_password(self):
+        return self.get_config()["device"]["password"]
+
+    @property
+    def configfile(self):
+        return Path(__file__).with_name("config.json")
+    
     def get_config(self):
         # TODO accommodate remote update of config values to force reload
         if self.config == None or self.reload:
-            configfile = Path(__file__).with_name("config.json")
-            with configfile.open("r") as configreader:
+            with self.configfile.open("r") as configreader:
                 self.config = json.loads(configreader.read())
         return self.config
 
@@ -84,3 +116,7 @@ if __name__ == '__main__':
     print(config is other_config)
     print(config.get_config() == other_config.get_config())
     print(other_config.get_config())
+    print(config.device_email)
+    print(config.device_password)
+    print(config.device_serial_number)
+    print(config.device_mac_address)

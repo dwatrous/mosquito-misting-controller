@@ -1,8 +1,6 @@
 {
-    "account_id": "dwmaillist@gmail.com",
+    "account_id": "ACCOUNT_EMAIL",
     "device": {
-        "name": "Device Name",
-        "email": "SERIALNO@mosquitomax.com",
         "password": "PASSWORD",
         "scale_offset": -289500
     },
