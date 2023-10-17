@@ -5,7 +5,7 @@
 # └────────────────┘               └─────────────┘               └───────────────────┘
 
 
-#             username/password              /v1/accounts:signInWithPassword
+#             device_email/password              /v1/accounts:signInWithPassword
 #          ─────────────────────────►          ─────────────────────────────►
 
 #                                                                 ┌──────────────────┐
@@ -26,6 +26,7 @@ import secrets
 import re
 import requests
 import json
+import random
 
 #Initialize Firestore
 try:
@@ -49,7 +50,7 @@ accounts_collection = db.collection("accounts")
 app = Flask(__name__)
 
 # get email equivalent of device ID
-def device_id_as_email(device_id):
+def device_serial_number_as_email(device_id):
     return device_id+"@mosquitomax.com"
 
 # function to validate serial number for RPi
@@ -60,7 +61,7 @@ def validate_rpi_serial_number(number):
     else:
         return False
 
-# register a new device
+# register a new device in the factory
 # TEST: curl -X POST -H 'Content-Type: application/json' -d '{"serial_number": "000000003d1d1c36", "mac_address": "00:00:5e:00:53:af"}' http://127.0.0.1:8080/api/v1/device/register
 @app.post("/api/v1/device/register")
 def device_register():
@@ -70,50 +71,52 @@ def device_register():
     # validate that the what was received looks like a RPi serial number
     if not validate_rpi_serial_number(device_info["serial_number"]):
         return "Invalid serial number", 400
-    # assume email device_id@mosquitomax.com
-    username = device_id_as_email(device_info["serial_number"])
     # check for existing device registration
-    device_ref = device_collection.document(username)
+    device_ref = device_collection.document(device_info["serial_number"])
     device = device_ref.get()
     # Check if the document exists
     if device.exists:
         # Get the data from the document
         return "Device record already exists", 409
     # generate a new password for this device
-    password = secrets.token_hex(30)
+    password = secrets.token_hex(random.randint(32,43))
     # create a new user
+    # assume email serial_number@mosquitomax.com
+    device_email = device_serial_number_as_email(device_info["serial_number"])
     try:
-        device_user = auth.create_user(email=username, password=password)
+        device_user = auth.create_user(email=device_email, password=password)
     except auth.EmailAlreadyExistsError:
         return "Auth account already exists", 409
     except ValueError:
         return "Provided values are invalid", 400
     # create device record in Firestore
-    device_collection.document(username).set(device_info)
+    device_collection.document(device_info["serial_number"]).set(device_info)
     # resopnd with device configuration file (including JSON auth response)
-    device_config = {"username": username, "password": password}
+    device_config = {"device_email": device_email, "device_password": password}
     return device_config
 
 # Authenticate a new device
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "bc3a236a8d5d73aca0ff36aab8f1a3b8f623e1035689653505dd9f33c970", "username": "device_idd@mosquitomax.com"}' http://127.0.0.1:8080/api/v1/device/auth
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "3cc8d7f404a1580c7c6b7ed40d0e4a9d8bc3c7b5bc268493ceb7799f790a", "device_email": "000000003d1d1c36@mosquitomax.com"}' http://127.0.0.1:8080/api/v1/device/auth
 @app.post("/api/v1/device/auth")
 def device_auth():
     # get credentials in request
     device_creds = request.get_json()
-    # sign in with provided username and password
+    # TODO validate the the values make sense, e.g. the device_email is a valid email address
+    # TODO consider sanitizing the input
+    # sign in with provided device_email and password
     url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+apikey
 
     headers = {"Content-Type": "application/json"}
 
     data = {
-        "email": device_creds["username"],
+        "email": device_creds["device_email"],
         "password": device_creds["password"],
         "returnSecureToken": True
     }
 
     response = requests.post(url, headers=headers, data=json.dumps(data))
 
-    # verify that username matches
+    # verify that device_email matches
     if response.status_code == 200:
         return response.content
     else:
@@ -125,7 +128,8 @@ def device_auth():
 def device_auth_refresh():
     # get credentials in request
     refresh_token = request.get_json()
-    # sign in with provided username and password
+    # TODO consider sanitizing the input
+    # sign in with provided device_email and password
     url = "https://securetoken.googleapis.com/v1/token?key="+apikey
 
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
