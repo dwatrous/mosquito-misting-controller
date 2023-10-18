@@ -1,3 +1,4 @@
+# https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2023-05-03/
 # working hotspot
 sudo sdm --customize --plugin disables:piwiz --plugin L10n:host --plugin user:"adduser=mm|password=secret" --plugin hotspot:"config=hotspot.cfg" --restart --host mmdwatrous 2023-05-03-raspios-bullseye-armhf-lite.img
 sudo sdm --burnfile sdm.img --expand-root 2023-05-03-raspios-bullseye-armhf-lite.img

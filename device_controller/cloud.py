@@ -60,11 +60,11 @@ class Cloud(object):
     # Firestore
     def write_spray_occurence_ds(self, spraydata):
         # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata)
+        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.get_authenticated_user()["idToken"])
 
     def account_get(self, account_id):
         try:
-            account = self.ds.collection(u"accounts").document(account_id).get()
+            account = self.ds.collection(u"accounts").document(account_id).get(token=self.get_authenticated_user()["idToken"])
         except requests.exceptions.HTTPError:
             # TODO cleanup...assume 404, but it could be something else, like a 403, which might be confusing
             return None
@@ -72,7 +72,7 @@ class Cloud(object):
 
     def account_update(self, account_id, account):
         try:
-            self.ds.collection()(u"accounts").document(account_id).update(account)
+            self.ds.collection()(u"accounts").document(account_id).update(account, token=self.get_authenticated_user()["idToken"])
         except:
             pass    # TODO add error handling here
 
