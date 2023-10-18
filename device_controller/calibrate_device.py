@@ -1,4 +1,4 @@
-from device_sensors import calibrate_scale, calibrate_line_in, calibrate_line_out
+from device_sensors import calibrate_scale, calibrate_line_in, calibrate_line_out, calibrate_vacuum
 from utils import Config, app_log
 import json
 
@@ -9,8 +9,9 @@ with config.configfile.open("r") as configreader:
     configfile_contents = json.loads(configreader.read())
 
 configfile_contents["device"]["scale_offset"] = calibrate_scale()
-configfile_contents["device"]["line_in_offset"] = calibrate_line_in()
-configfile_contents["device"]["line_out_offset"] = calibrate_line_out()
+configfile_contents["device"]["line_in_offset_psi"] = calibrate_line_in()
+configfile_contents["device"]["line_out_offset_psi"] = calibrate_line_out()
+configfile_contents["device"]["vacuum_offset_kpa"] = calibrate_vacuum()
 
 with config.configfile.open("w") as configwriter:
     json.dump(configfile_contents, configwriter, indent=4)

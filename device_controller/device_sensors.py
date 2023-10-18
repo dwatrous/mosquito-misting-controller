@@ -45,6 +45,8 @@ ADC_SLOPE_LINE_OUT = (SENSOR_PRESSURE_LINE_OUT_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZER
 ADC_B_LINE_OUT = SENSOR_ZERO * ADC_SLOPE_LINE_OUT
 ADC_SLOPE_LINE_IN = (SENSOR_PRESSURE_LINE_IN_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZERO)
 ADC_B_LINE_IN = SENSOR_ZERO * ADC_SLOPE_LINE_IN
+ADC_SLOPE_VACUUM = (SENSOR_VACUUM_MAX_NEG_KPA-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_B_VACUUM = SENSOR_ZERO * ADC_SLOPE_VACUUM
 
 # calibration functions
 def calibrate_scale():
@@ -55,13 +57,22 @@ def calibrate_scale():
 
 def calibrate_line_in():
     if utils.onpi:
-        return read_current_line_in_pressure_psi() - ATMOSPHERE_PSI
+        current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
+        return (ADC_SLOPE_LINE_IN * current_pressure) - ATMOSPHERE_PSI
     else:
         return -1
 
 def calibrate_line_out():
     if utils.onpi:
-        return read_current_line_out_pressure_psi() - ATMOSPHERE_PSI
+        current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
+        return (ADC_SLOPE_LINE_OUT * current_pressure) - ATMOSPHERE_PSI
+    else:
+        return -1
+
+def calibrate_vacuum():
+    if utils.onpi:
+        current_pressure = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
+        return (ADC_SLOPE_VACUUM * current_pressure)
     else:
         return -1
 
@@ -69,20 +80,21 @@ def calibrate_line_out():
 def read_current_line_in_pressure_psi():
     if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
-        return (ADC_SLOPE_LINE_IN * current_pressure) - ADC_SLOPE_LINE_IN - config.get_config()["device"]["line_in_offset"]
+        return (ADC_SLOPE_LINE_IN * current_pressure) - config.get_config()["device"]["line_in_offset_psi"]
     else:
         return -1
 
 def read_current_line_out_pressure_psi():
     if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
-        return (ADC_SLOPE_LINE_OUT * current_pressure) - ADC_SLOPE_LINE_OUT - config.get_config()["device"]["line_out_offset"]
+        return (ADC_SLOPE_LINE_OUT * current_pressure) - config.get_config()["device"]["line_out_offset_psi"]
     else:
         return -1
 
 def read_current_vacuum_pressure_kpa():
     if utils.onpi:
         current_vacuum = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
+        return (ADC_SLOPE_VACUUM * current_vacuum) - config.get_config()["device"]["vacuum_offset_kpa"]
         return (current_vacuum - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_VACUUM_MAX_NEG_KPA
     else:
         return -1
