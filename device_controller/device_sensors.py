@@ -32,26 +32,51 @@ else:
 ADC_GAIN = 2/3
 ADC_MAX_V = 6.144
 # Given ADS1115 outputs -32768 to 32767, it should be expected that the 
-# lowest input value of 0.5 V will product a floor of about (0.5/4.5) * 32767 = 3641
+# lowest input value of 0.5 V will produce a floor of about (0.5/4.5) * 32767 = 3641
 SENSOR_MAX_ADC = 32767
 SENSOR_ZERO = 0.5/ADC_MAX_V * SENSOR_MAX_ADC
 SENSOR_MAX = 4.5/ADC_MAX_V * SENSOR_MAX_ADC
 # PSI calculation should be (OUT - 3641)/(32767-3641)
-SENSOR_PRESSURE_MAX_PSI = 300
+SENSOR_PRESSURE_LINE_OUT_MAX_PSI = 300
+SENSOR_PRESSURE_LINE_IN_MAX_PSI = 100
 SENSOR_VACUUM_MAX_NEG_KPA = 40
+ATMOSPHERE_PSI = 14.696 # https://en.wikipedia.org/wiki/Atmospheric_pressure
+ADC_SLOPE_LINE_OUT = (SENSOR_PRESSURE_LINE_OUT_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_B_LINE_OUT = SENSOR_ZERO * ADC_SLOPE_LINE_OUT
+ADC_SLOPE_LINE_IN = (SENSOR_PRESSURE_LINE_IN_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_B_LINE_IN = SENSOR_ZERO * ADC_SLOPE_LINE_IN
+
+# calibration functions
+def calibrate_scale():
+    if utils.onpi:
+        return hx.tare()
+    else:
+        return -1
+
+def calibrate_line_in():
+    if utils.onpi:
+        return read_current_line_in_pressure_psi() - ATMOSPHERE_PSI
+    else:
+        return -1
+
+def calibrate_line_out():
+    if utils.onpi:
+        return read_current_line_out_pressure_psi() - ATMOSPHERE_PSI
+    else:
+        return -1
 
 # on board sensors
 def read_current_line_in_pressure_psi():
     if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
-        return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
+        return (ADC_SLOPE_LINE_IN * current_pressure) - ADC_SLOPE_LINE_IN - config.get_config()["device"]["line_in_offset"]
     else:
         return -1
 
 def read_current_line_out_pressure_psi():
     if utils.onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
-        return (current_pressure - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_PRESSURE_MAX_PSI
+        return (ADC_SLOPE_LINE_OUT * current_pressure) - ADC_SLOPE_LINE_OUT - config.get_config()["device"]["line_out_offset"]
     else:
         return -1
 
