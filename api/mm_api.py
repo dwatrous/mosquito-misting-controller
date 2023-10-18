@@ -49,10 +49,6 @@ accounts_collection = db.collection("accounts")
 
 app = Flask(__name__)
 
-# get email equivalent of device ID
-def device_serial_number_as_email(device_id):
-    return device_id+"@mosquitomax.com"
-
 # function to validate serial number for RPi
 def validate_rpi_serial_number(number):
     regex = "^[a-z0-9]{16}$"
@@ -62,7 +58,7 @@ def validate_rpi_serial_number(number):
         return False
 
 # register a new device in the factory
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"serial_number": "000000003d1d1c36", "mac_address": "00:00:5e:00:53:af"}' http://127.0.0.1:8080/api/v1/device/register
+# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"device_email": "000000003d1d1c36@mosquitomax.com", "serial_number": "000000003d1d1c36", "mac_address": "00:00:5e:00:53:af"}' http://127.0.0.1:8080/api/v1/device/register
 @app.post("/api/v1/device/register")
 def device_register():
     # TODO consider adding a key validation step to prevent unauthorized device registrations
@@ -72,7 +68,7 @@ def device_register():
     if not validate_rpi_serial_number(device_info["serial_number"]):
         return "Invalid serial number", 400
     # check for existing device registration
-    device_ref = device_collection.document(device_info["serial_number"])
+    device_ref = device_collection.document(device_info["device_email"])
     device = device_ref.get()
     # Check if the document exists
     if device.exists:
@@ -81,18 +77,17 @@ def device_register():
     # generate a new password for this device
     password = secrets.token_hex(random.randint(32,43))
     # create a new user
-    # assume email serial_number@mosquitomax.com
-    device_email = device_serial_number_as_email(device_info["serial_number"])
     try:
-        device_user = auth.create_user(email=device_email, password=password)
+        device_user = auth.create_user(email=device_info["device_email"], password=password)
     except auth.EmailAlreadyExistsError:
         return "Auth account already exists", 409
     except ValueError:
         return "Provided values are invalid", 400
     # create device record in Firestore
-    device_collection.document(device_info["serial_number"]).set(device_info)
+    device_info["uid"] = device_user.uid
+    device_collection.document(device_info["device_email"]).set(device_info)
     # resopnd with device configuration file (including JSON auth response)
-    device_config = {"device_email": device_email, "device_password": password}
+    device_config = {"device_password": password}
     return device_config
 
 # Authenticate a new device
