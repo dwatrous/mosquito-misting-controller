@@ -60,7 +60,7 @@ class Cloud(object):
     # Firestore
     def write_spray_occurence_ds(self, spraydata):
         # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.device_serial_number).collection(u'sprayoccurrences').add(spraydata)
+        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata)
 
     def account_get(self, account_id):
         try:

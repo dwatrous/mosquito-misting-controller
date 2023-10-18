@@ -32,13 +32,13 @@ if __name__ == '__main__':
     # check for empty devices and create default config
     if account["devices"] == {}:
         new_default_device = device()
-        account["devices"][config.device_serial_number] = new_default_device.get_devicedefinition()
+        account["devices"][config.device_email] = new_default_device.get_devicedefinition()
         controller_cloud.account_update(config.get_config()["account_id"], account)
         new_default_device.schedule_thread_kill_signal.set()
         del new_default_device
     # load device configuration if available (cloud first, then local)
     try:
-        device_config = account["devices"][config.device_serial_number]
+        device_config = account["devices"][config.device_email]
     except:
         print(u"No such device!") # TODO handle error
     # deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
     # create the device instance
-    this_device = device(account["devices"][config.device_serial_number])
+    this_device = device(account["devices"][config.device_email])
     # listen for messages from the cloud
     controller_cloud.listen_for_messages(this_device.message_handler)
 
