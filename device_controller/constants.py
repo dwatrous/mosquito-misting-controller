@@ -50,6 +50,7 @@ GPIO_MOTOR = 17
 GPIO_WATER_VALVE = 27
 GPIO_CHEMICAL_VALVE = 22
 GPIO_RELAY_X = 23   # unused 4th relay
+GPIO_RELAY_ACTIVE_HIGH = False
 GPIO_WEIGHT_DATA = 5
 GPIO_WEIGHT_SCK = 6
 GPIO_LED_RED = 16
@@ -223,7 +224,7 @@ default_sprayduration_ms = 45000
 def generate_default_sprayoccurrences ():
     default_sprayoccurrences = []
     for dayofweek in range(7):
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": [23,0]}})
+        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": {"hour": 23, "minutes": 0}}})
         default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "sunrise", "sunposition": "before", "deltaminutes": 5}}})
         default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": 5}}})
     return default_sprayoccurrences

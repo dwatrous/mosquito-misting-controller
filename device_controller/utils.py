@@ -40,9 +40,9 @@ if is_raspberrypi():
     from gpiozero import RGBLED, Buzzer, DigitalOutputDevice, Button
     status_led = RGBLED(constants.GPIO_LED_RED, constants.GPIO_LED_GREEN, constants.GPIO_LED_BLUE, active_high=False)
     buzzer = Buzzer(constants.GPIO_BUZZER, active_high=False)
-    gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=False)
-    gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=False)
-    gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=False)
+    gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
+    gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
+    gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
     gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH)
     gpioctrl_float_switch.when_pressed = float_switch_signal.set
     gpioctrl_float_switch.when_released = float_switch_signal.clear

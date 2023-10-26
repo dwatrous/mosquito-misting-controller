@@ -80,7 +80,7 @@ class device:
         else:
             for key in message["data"]: 
                 app_log.info("Received message: %s", message)
-                # do something with the message
+                # TODO do something with the message
                 self.device_cloud.mark_message_read({key: message["data"][key]})
 
     def check_system(self):
@@ -147,7 +147,7 @@ class device:
             for sprayoccurence in spray_zone.sprayoccurrences:
                 # handle each day (see constants.py dayofweekmap)
                 if sprayoccurence["timeofday"]["type"] == "fixedtime":
-                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"][0], sprayoccurence["timeofday"]["value"][1])
+                    spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"]["hour"], sprayoccurence["timeofday"]["value"]["minutes"])
                     self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "fixedtime")
                 # handle only relative time
                 if sprayoccurence["timeofday"]["type"] == "relativetime":
