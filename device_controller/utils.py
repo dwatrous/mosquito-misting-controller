@@ -108,6 +108,7 @@ class Config(object):
         if self.config == None or self.reload:
             with self.configfile.open("r") as configreader:
                 self.config = json.loads(configreader.read())
+            self.reload = False
         return self.config
 
 if __name__ == '__main__':

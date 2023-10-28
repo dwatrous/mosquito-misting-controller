@@ -4,11 +4,12 @@ import firebase
 import requests
 import utils
 import datetime
+import sys
 
 class Cloud(object):
     # get Config
     config = utils.Config()
-    authenticated_user = None
+    authenticated_device_account = None
 
     # Firebase app https://github.com/AsifArmanRahman/firebase-rest-api/tree/main
     app = None
@@ -37,11 +38,11 @@ class Cloud(object):
         self.db = self.app.database()
 
     # Authentication
-    def get_authenticated_user(self):
+    def get_authenticated_device_account(self):
         # handle initial authentication
-        if self.authenticated_user == None:
+        if self.authenticated_device_account == None:
             user = self.auth.sign_in_with_email_and_password(self.config.device_email, self.config.device_password)
-            self.authenticated_user = {
+            self.authenticated_device_account = {
                 "uid": user["localId"],
                 "serial_number": user["displayName"],
                 "serial_number_as_email": user["email"],
@@ -50,33 +51,42 @@ class Cloud(object):
                 "expiresAt": user["expiresAt"]
             }
         # handle refresh
-        if datetime.datetime.now() > datetime.datetime.fromtimestamp(self.authenticated_user["expiresAt"]):
-            user = self.auth.refresh(self.authenticated_user['refreshToken'])
-            self.authenticated_user["idToken"] = user["idToken"]
-            self.authenticated_user["expiresAt"] = user["expiresAt"]
-        # finally, return authenticated_user, which may just be the cached values
-        return self.authenticated_user
+        if datetime.datetime.now() > datetime.datetime.fromtimestamp(self.authenticated_device_account["expiresAt"]):
+            user = self.auth.refresh(self.authenticated_device_account['refreshToken'])
+            self.authenticated_device_account["idToken"] = user["idToken"]
+            self.authenticated_device_account["expiresAt"] = user["expiresAt"]
+        # finally, return authenticated_device_account, which may just be the cached values
+        return self.authenticated_device_account
+        # TODO handle error case
 
     # Firestore
+    def device_get(self):
+        return self.ds.collection(u'devices').document(self.config.device_email).get(token=self.get_authenticated_device_account()["idToken"])
+
+    def device_update(self, device):
+        return self.ds.collection(u'devices').document(self.config.device_email).update(device, token=self.get_authenticated_device_account()["idToken"])
+
     def write_spray_occurence_ds(self, spraydata):
         # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.get_authenticated_user()["idToken"])
+        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.get_authenticated_device_account()["idToken"])
 
     def account_get(self, account_id):
         try:
-            account = self.ds.collection(u"accounts").document(account_id).get(token=self.get_authenticated_user()["idToken"])
+            account = self.ds.collection(u"Users").document(account_id).get(token=self.get_authenticated_device_account()["idToken"])
         except requests.exceptions.HTTPError:
             # TODO cleanup...assume 404, but it could be something else, like a 403, which might be confusing
-            return None
+            the_type, the_value, the_traceback = sys.exc_info()
+            return the_value
         return account
 
     def account_update(self, account_id, account):
         try:
-            self.ds.collection()(u"accounts").document(account_id).update(account, token=self.get_authenticated_user()["idToken"])
+            self.ds.collection()(u"Users").document(account_id).update(account, token=self.get_authenticated_device_account()["idToken"])
         except:
             pass    # TODO add error handling here
+    
 
-    # Firebase (used for messaging)
+    # Firebase realtime database (used for messaging)
     def _build_message(self, event, info, action, origin):
         msg = {
             "origin": origin,
@@ -91,23 +101,26 @@ class Cloud(object):
 
     def send_message(self, event, info="", action=None, origin="device"):
         message = self._build_message(event, info, action, origin)
-        self.db.child("devices").child(self.get_authenticated_user()["uid"]).child("messages").push(message, token=self.get_authenticated_user()["idToken"])
+        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").push(message, token=self.get_authenticated_device_account()["idToken"])
 
     def listen_for_messages(self, callback):
-        self.my_stream = self.db.child("devices").child(self.get_authenticated_user()["uid"]).child("messages").stream(callback, token=self.get_authenticated_user()["idToken"])
+        self.my_stream = self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").stream(callback, token=self.get_authenticated_device_account()["idToken"])
         atexit.register(self.my_stream.close)
 
     def mark_message_read(self, message):
         document_key = list(message.keys())[0]  # should only ever get one message at a time
-        self.db.child("devices").child(self.get_authenticated_user()["uid"]).child("messages").child(document_key).remove(token=self.get_authenticated_user()["idToken"])
-        self.db.child("devices").child(self.get_authenticated_user()["uid"]).child("processed").push(message, token=self.get_authenticated_user()["idToken"])
+        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").child(document_key).remove(token=self.get_authenticated_device_account()["idToken"])
+        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("processed").push(message, token=self.get_authenticated_device_account()["idToken"])
 
 if __name__ == '__main__':
     cloud = Cloud()
-    print(cloud.get_authenticated_user())
+    print(cloud.get_authenticated_device_account())
     spraydata = {"spraydetails": "lots of data here"}
     cloud.write_spray_occurence_ds(spraydata)
-    account = cloud.account_get('dwmaillist@gmail.com')
+    mydevice = cloud.device_get()
+    print(mydevice)
+    
+    account = cloud.account_get('t8abTKbDoCY8lf3q6XeRcl2H3fA3')
     print(account)
     notaccount = cloud.account_get('fake')
     print(notaccount)

@@ -24,9 +24,6 @@ class device:
 
         if devicedefinition == None:
             self.name = "My Device"
-            self.street1 = None
-            self.street2 = None
-            self.city = None
             self.state = constants.default_state
             self.zip = constants.default_zip
             self.environment_city = constants.default_environment_city
@@ -41,9 +38,6 @@ class device:
         
             # hydrate based on devicedefinition
             self.name = devicedefinition["name"]
-            self.street1 = devicedefinition["street1"]
-            self.street2 = devicedefinition["street2"]
-            self.city = devicedefinition["city"]
             self.state = devicedefinition["state"]
             self.zip = devicedefinition["zip"]
             self.environment_city = devicedefinition["environment_city"]
@@ -61,9 +55,6 @@ class device:
     def get_devicedefinition(self):
         devicedefinition = {
             "name": self.name,
-            "street1": self.street1,
-            "street2": self.street2,
-            "city": self.city,
             "state": self.state,
             "zip": self.zip,
             "environment_city": self.environment_city,

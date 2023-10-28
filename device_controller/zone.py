@@ -71,13 +71,13 @@ class zone:
         # get milliseconds to open based on chemical class and nozzle quantity
         valve_open_duration_ms = constants.VALVE_OPEN_DURATION[self.chemicalclass][self.nozzlecount]
         # add first open time and duration
-        valve_openings.append({"open_at": self.valve_first_open_offset_ms, "open_for": valve_open_duration_ms})
+        valve_openings.append({"open_at_ms": self.valve_first_open_offset_ms, "open_for_ms": valve_open_duration_ms})
         # add remaining times based on 
         number_valve_openings = floor(self.sprayduration_ms/self.valve_activation_interval_ms)
         for opening in range(1, number_valve_openings):
             valve_opening = {
-                "open_at": self.valve_activation_interval_ms * opening + self.valve_first_open_offset_ms,
-                "open_for": valve_open_duration_ms
+                "open_at_ms": self.valve_activation_interval_ms * opening + self.valve_first_open_offset_ms,
+                "open_for_ms": valve_open_duration_ms
             }
             valve_openings.append(valve_opening) 
         return valve_openings
@@ -126,7 +126,7 @@ class zone:
             "valve": valve,
             "open_time": open_time,
             "close_time": close_time,
-            "total_valve_time": close_time-open_time
+            "total_valve_time_ms": close_time-open_time
         }
         self.spraydata["valve_executions"].append(valve_opening)
         logging.info(valve_opening)
@@ -224,7 +224,7 @@ class zone:
         # schedule valve openings
         for valve_opening in valve_openings:
             # the multiple of self.ms_in_second are to convert between seconds and milliseconds
-            self.valve_scheduler.enter(valve_opening["open_at"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for"]})
+            self.valve_scheduler.enter(valve_opening["open_at_ms"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for_ms"]})
         # start everything
         capture_sensors.start()
         time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
@@ -244,7 +244,7 @@ class zone:
         self.spraydata["spray_timing"] = {
             "spray_start_time": spray_start_time,
             "spray_end_time": spray_end_time,
-            "total_spray_time": spray_end_time-spray_start_time
+            "total_spray_time_ms": spray_end_time-spray_start_time
         }
         self.spraydata["sensor_data"] = sensordata
         # write spraydata to cloud
