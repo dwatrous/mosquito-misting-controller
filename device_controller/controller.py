@@ -23,23 +23,11 @@ if __name__ == '__main__':
     # handle first time setup
     # start wifi hotspot
     # start server to accept connection from the app
-    # write initial account configuration file
+    # write initial device configuration file
 
     # Connect to cloud to check for existing device configuration
-    account = controller_cloud.account_get(config.get_config()["account_id"])
-    if account == None:
-        print(u"No such account!") # TODO handle error
-    # check for empty devices and create default config
-    if account["devices"] == {}:
-        new_default_device = device()
-        account["devices"][config.device_email] = new_default_device.get_devicedefinition()
-        controller_cloud.account_update(config.get_config()["account_id"], account)
-        new_default_device.schedule_thread_kill_signal.set()
-        del new_default_device
-    # load device configuration if available (cloud first, then local)
-    try:
-        device_config = account["devices"][config.device_email]
-    except:
+    clouddevice = controller_cloud.device_get()
+    if clouddevice == None:
         print(u"No such device!") # TODO handle error
     # deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
     # with deviceconfigfile.open("w") as configwriter:
@@ -47,7 +35,7 @@ if __name__ == '__main__':
     # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
     # create the device instance
-    this_device = device(account["devices"][config.device_email])
+    this_device = device(clouddevice["config"])
     # listen for messages from the cloud
     controller_cloud.listen_for_messages(this_device.message_handler)
 
