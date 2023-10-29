@@ -87,20 +87,20 @@ class Cloud(object):
     
 
     # Firebase realtime database (used for messaging)
-    def _build_message(self, event, info, action, origin):
+    def _build_message(self, event, info, action, sender):
         msg = {
-            "origin": origin,
-            "data": {
+            "sender": sender,
+            "message": {
                 "event": event,
                 "action": action,
                 "info": info
             },
-            "time": datetime.datetime.now()
+            "time": datetime.datetime.now().strftime("%m-%d-%Y, %H:%M:%S")
         }
         return msg
 
-    def send_message(self, event, info="", action=None, origin="device"):
-        message = self._build_message(event, info, action, origin)
+    def send_message(self, event, info="", action=None, sender="device"):
+        message = self._build_message(event, info, action, sender)
         self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").push(message, token=self.get_authenticated_device_account()["idToken"])
 
     def listen_for_messages(self, callback):
@@ -108,9 +108,9 @@ class Cloud(object):
         atexit.register(self.my_stream.close)
 
     def mark_message_read(self, message):
-        document_key = list(message.keys())[0]  # should only ever get one message at a time
-        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").child(document_key).remove(token=self.get_authenticated_device_account()["idToken"])
-        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("processed").push(message, token=self.get_authenticated_device_account()["idToken"])
+        message_key = message["path"][1:]
+        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("messages").child(message_key).remove(token=self.get_authenticated_device_account()["idToken"])
+        self.db.child("devices").child(self.get_authenticated_device_account()["uid"]).child("processed").push(message["data"], token=self.get_authenticated_device_account()["idToken"])
 
 if __name__ == '__main__':
     cloud = Cloud()

@@ -23,7 +23,6 @@ class device:
         self.device_cloud = cloud.Cloud()
 
         if devicedefinition == None:
-            self.name = "My Device"
             self.state = constants.default_state
             self.zip = constants.default_zip
             self.environment_city = constants.default_environment_city
@@ -37,7 +36,6 @@ class device:
                 devicedefinition = json.loads(devicedefinition)
         
             # hydrate based on devicedefinition
-            self.name = devicedefinition["name"]
             self.state = devicedefinition["state"]
             self.zip = devicedefinition["zip"]
             self.environment_city = devicedefinition["environment_city"]
@@ -54,7 +52,6 @@ class device:
 
     def get_devicedefinition(self):
         devicedefinition = {
-            "name": self.name,
             "state": self.state,
             "zip": self.zip,
             "environment_city": self.environment_city,
@@ -69,10 +66,9 @@ class device:
         if message["data"] == None:
             app_log.info("Empty message: %s", message)
         else:
-            for key in message["data"]: 
-                app_log.info("Received message: %s", message)
-                # TODO do something with the message
-                self.device_cloud.mark_message_read({key: message["data"][key]})
+            app_log.info("Received message: %s", message["data"])
+            # TODO do something with the message
+            self.device_cloud.mark_message_read(message)
 
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional

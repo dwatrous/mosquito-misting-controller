@@ -10,7 +10,7 @@ reg_cloud = cloud.Cloud()
 apihost = "https://mm-api-shbeom7lea-uc.a.run.app"
 apipath = "/api/v1/device/register"
 
-device_info = {"device_email": config.device_email,"serial_number": config.device_serial_number, "mac_address": config.device_mac_address}
+device_info = {"device_email": config.device_email,"serial_number": config.device_serial_number, "mac_address": config.device_mac_address, "name": "My Mister"}
 url = apihost + apipath
 
 # call API to register device
