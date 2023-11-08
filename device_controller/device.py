@@ -63,12 +63,8 @@ class device:
         return devicedefinition
     
     def message_handler(self, message):
-        if message["data"] == None:
-            app_log.info("Empty message: %s", message)
-        else:
-            app_log.info("Received message: %s", message["data"])
-            # TODO do something with the message
-            self.device_cloud.mark_message_read(message)
+        app_log.info("Received message: %s", message["data"])
+        # TODO do something with the message
 
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional
