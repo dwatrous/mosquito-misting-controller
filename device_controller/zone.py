@@ -176,8 +176,6 @@ class zone:
 
     # execute spray
     def execute_spray(self):
-        # indicate running
-        device_sensors.status_led_running()
         # clear and begin capturing data
         spray_start_time = datetime.datetime.now()
         self.spraydata = {
@@ -198,12 +196,14 @@ class zone:
             self.spraydata["skip"] = True
             self.spraydata["skip_reason"] = "temperature"
             logging.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
+            self.zonecloud.write_spray_occurence_ds(self.spraydata)
             return
         if rain_prediction_next_24hr > self.rain_threshold_in:
             # handle rain skip
             self.spraydata["skip"] = True
             self.spraydata["skip_reason"] = "rain"
             logging.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
+            self.zonecloud.write_spray_occurence_ds(self.spraydata)
             return
         if False:   # TODO implement wind skip
             # handle wind skip
@@ -212,6 +212,8 @@ class zone:
             self.spraydata["skip"] = False
             self.spraydata["skip_reason"] = None
 
+        # indicate running
+        device_sensors.status_led_running()
         # calculate valve openings
         valve_openings = self.calculate_valve_openings()
         self.spraydata["valve_openings"] = valve_openings
