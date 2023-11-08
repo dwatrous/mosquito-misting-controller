@@ -69,6 +69,7 @@ class device:
         if message["message"]["event"] == "SPRAYNOW":
             # TODO need to change this when implementing multiple zones
             self.zones[0].execute_spray()
+        return True
 
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional

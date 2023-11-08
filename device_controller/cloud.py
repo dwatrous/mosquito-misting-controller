@@ -112,7 +112,7 @@ class Cloud(object):
         # identify single message and evaluate
         elif "message" in message["data"].keys():
             # if message intended for this device, process
-            if message["data"]["recipient"] == cloud.device_get()["uid"]:
+            if message["data"]["recipient"] == self.device_get()["uid"]:
                 if self.message_processor(message["data"]):
                     self.archive_message(message["path"][1:], message["data"])
         
@@ -120,7 +120,7 @@ class Cloud(object):
         else:
             for key in message["data"].keys():
                 # if message intended for this device, process
-                if message["data"][key]["recipient"] == cloud.device_get()["uid"]:
+                if message["data"][key]["recipient"] == self.device_get()["uid"]:
                     if self.message_processor(message["data"][key]):
                         self.archive_message(key, message["data"][key])
                 else:

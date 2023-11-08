@@ -133,11 +133,17 @@ def status_led_error():
         "LED: error"
 
 # Manage Buzzer
-def status_buzzer_beep():
+def status_buzzer_beep(beepfor_s = 20):
     if utils.onpi:
         utils.buzzer.beep()
     else:
-        "BUZZER: beep"
+        "BUZZER: beep start"
+    sleep(beepfor_s)
+    if utils.onpi:
+        utils.buzzer.off()
+    else:
+        "BUZZER: beep end"
+    
 
 def status_buzzer_off():
     if utils.onpi:

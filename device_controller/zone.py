@@ -176,6 +176,9 @@ class zone:
 
     # execute spray
     def execute_spray(self):
+        # notify user and message spray execution
+        self.zonecloud.send_message("EXECUTE_SPRAY")
+        device_sensors.status_buzzer_beep()
         # clear and begin capturing data
         spray_start_time = datetime.datetime.now()
         self.spraydata = {
