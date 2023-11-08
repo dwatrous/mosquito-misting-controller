@@ -42,6 +42,7 @@ class Cloud(object):
     def get_authenticated_device_account(self):
         # handle initial authentication
         if self.authenticated_device_account == None:
+            app_log.info("Perform initial device authentication")
             device = self.auth.sign_in_with_email_and_password(self.config.device_email, self.config.device_password)
             self.authenticated_device_account = {
                 "uid": device["localId"],
@@ -53,6 +54,7 @@ class Cloud(object):
             }
         # handle refresh
         if datetime.datetime.now() > datetime.datetime.fromtimestamp(self.authenticated_device_account["expiresAt"]):
+            app_log.info("Refreshing authentication at %s" % datetime.datetime.now())
             device = self.auth.refresh(self.authenticated_device_account['refreshToken'])
             self.authenticated_device_account["idToken"] = device["idToken"]
             self.authenticated_device_account["expiresAt"] = device["expiresAt"]
@@ -60,19 +62,23 @@ class Cloud(object):
         return self.authenticated_device_account
         # TODO handle error case
 
+    @property
+    def idtoken(self):
+        return self.idtoken
+    
     # Firestore
     def device_get(self):
         # handle initial authentication
         if self.device_details == None or self.device_details_reload:
-            self.device_details = self.ds.collection(u'devices').document(self.config.device_email).get(token=self.get_authenticated_device_account()["idToken"])
+            self.device_details = self.ds.collection(u'devices').document(self.config.device_email).get(token=self.idtoken)
         return self.device_details
 
     def device_update(self, device):
-        return self.ds.collection(u'devices').document(self.config.device_email).update(device, token=self.get_authenticated_device_account()["idToken"])
+        return self.ds.collection(u'devices').document(self.config.device_email).update(device, token=self.idtoken)
 
     def write_spray_occurence_ds(self, spraydata):
         # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.get_authenticated_device_account()["idToken"])
+        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.idtoken)
 
     # Firebase realtime database (used for messaging)
     def _build_message(self, event, info, action):
@@ -89,18 +95,18 @@ class Cloud(object):
 
     def send_message(self, event, info="", action=None):
         message = self._build_message(event, info, action)
-        self.db.child("messages").push(message, token=self.get_authenticated_device_account()["idToken"])
+        self.db.child("messages").push(message, token=self.idtoken)
         app_log.info("Sent message with event: %s" % id)
 
     def listen_for_messages(self, callback):
         self.message_processor = callback
-        self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.get_authenticated_device_account()["idToken"])
+        self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
         app_log.info("Listening for messages")        
         atexit.register(self.my_stream.close)
 
     def archive_message(self, id, message):
-        self.db.child("processed").push(message, token=self.get_authenticated_device_account()["idToken"])
-        self.db.child("messages").child(id).remove(token=self.get_authenticated_device_account()["idToken"])
+        self.db.child("processed").push(message, token=self.idtoken)
+        self.db.child("messages").child(id).remove(token=self.idtoken)
         app_log.info("Message %s move to processed" % id)
 
     def message_capture(self, message):
