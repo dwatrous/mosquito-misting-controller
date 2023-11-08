@@ -63,8 +63,12 @@ class device:
         return devicedefinition
     
     def message_handler(self, message):
-        app_log.info("Received message: %s", message["data"])
-        # TODO do something with the message
+        # see cloud.py _build_message function for message structure
+        app_log.info("Received message: %s", message)
+        # handle SPRAYNOW
+        if message["message"]["event"] == "SPRAYNOW":
+            # TODO need to change this when implementing multiple zones
+            self.zones[0].execute_spray()
 
     def check_system(self):
         # TODO add expected thresholds for ready and update conditional
