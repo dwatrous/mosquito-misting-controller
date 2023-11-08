@@ -4,6 +4,7 @@ import constants
 import atexit
 import time
 import utils
+from time import sleep
 
 if utils.is_raspberrypi():
     # setup ADS1115
