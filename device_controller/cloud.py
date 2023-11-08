@@ -64,7 +64,7 @@ class Cloud(object):
 
     @property
     def idtoken(self):
-        return self.idtoken
+        return self.get_authenticated_device_account()["idToken"]
     
     # Firestore
     def device_get(self):
