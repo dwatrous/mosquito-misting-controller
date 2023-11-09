@@ -96,18 +96,26 @@ class Cloud(object):
     def send_message(self, event, info="", action=None):
         message = self._build_message(event, info, action)
         self.db.child("messages").push(message, token=self.idtoken)
-        app_log.info("Sent message with event: %s" % id)
+        app_log.info("Sent message with event: %s" % event)
 
     def listen_for_messages(self, callback):
         self.message_processor = callback
         self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
         app_log.info("Listening for messages")        
         atexit.register(self.my_stream.close)
+    
+    def listen_for_messages_refresh(self):
+        try:
+            self.my_stream.close()
+        except Exception as err:
+            app_log.error("Failed to close stream with error: %s" % err)
+        self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
+        app_log.info("Refreshed for messages stream")        
 
-    def archive_message(self, id, message):
+    def archive_message(self, key, message):
         self.db.child("processed").push(message, token=self.idtoken)
-        self.db.child("messages").child(id).remove(token=self.idtoken)
-        app_log.info("Message %s move to processed" % id)
+        self.db.child("messages").child(key).remove(token=self.idtoken)
+        app_log.info("Message %s move to processed" % key)
 
     def message_capture(self, message):
         process_outcome = {}
@@ -148,5 +156,8 @@ if __name__ == '__main__':
 
     cloud.listen_for_messages(message_processor)
     cloud.send_message("SPRAY_NOTIFICATION", "Spray started")
+    cloud.listen_for_messages_refresh()
+    cloud.send_message("SPRAY_NOTIFICATION", "Spray started")
     x = input("Press any key when messaging done")
+    cloud.my_stream.close()
     print(x)
