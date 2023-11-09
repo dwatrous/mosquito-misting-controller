@@ -110,7 +110,7 @@ class Cloud(object):
         except Exception as err:
             app_log.error("Failed to close stream with error: %s" % err)
         self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
-        app_log.info("Refreshed for messages stream")        
+        app_log.info("Refreshed messages stream")        
 
     def archive_message(self, key, message):
         self.db.child("processed").push(message, token=self.idtoken)

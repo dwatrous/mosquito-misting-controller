@@ -7,13 +7,22 @@ from pathlib import Path
 import io
 import logging
 from logging.handlers import TimedRotatingFileHandler
+import subprocess, time
+import re
 
-# TODO need to filter idToken out of logs
-log_formatter = logging.Formatter('%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s')
+# filter idToken out of logs
+jwt_regex = r"ey[\w-]*\.[\w-]*\.[\w-]*"
+class secure_formatter(logging.Formatter):
+    def format(self, record):
+        message = super().format(record)
+        message = re.sub(jwt_regex, 'ID_TOKEN', message)
+        return message
+
+formatter = secure_formatter('%(asctime)s %(levelname)s %(pathname)s :: %(funcName)s(%(lineno)d) %(message)s')    
 logFile = 'device.log'
 
 my_handler = TimedRotatingFileHandler(logFile, when="D", interval=1, backupCount=10, encoding='utf-8')
-my_handler.setFormatter(log_formatter)
+my_handler.setFormatter(formatter)
 my_handler.setLevel(logging.DEBUG)
 
 app_log = logging.getLogger('root')

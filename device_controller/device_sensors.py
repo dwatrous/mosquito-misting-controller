@@ -5,11 +5,14 @@ import atexit
 import time
 import utils
 from time import sleep
+import logging
 
 if utils.is_raspberrypi():
     # setup ADS1115
     import Adafruit_ADS1x15
     adc = Adafruit_ADS1x15.ADS1115()
+    # reduce logging from I2C
+    adc._device._logger.setLevel(logging.INFO)
     # setup HX711 scale
     config = utils.Config()
     from hx711 import HX711
