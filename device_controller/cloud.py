@@ -1,8 +1,13 @@
 # Import Firebase REST API 
 import atexit
+import json
+import threading
+from time import sleep
 import firebase
 from utils import Config, app_log
 import datetime
+from aiosseclient import aiosseclient
+import asyncio
 
 class Cloud(object):
     # get Config
@@ -98,19 +103,47 @@ class Cloud(object):
         self.db.child("messages").push(message, token=self.idtoken)
         app_log.info("Sent message with event: %s" % event)
 
+    def listen_for_messages_url(self):
+        url = self.config.get_config()["firebase"]["databaseURL"] + "/messages.json?auth=" + self.idtoken
+        return url
+    
     def listen_for_messages(self, callback):
         self.message_processor = callback
-        self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
-        app_log.info("Listening for messages")        
-        atexit.register(self.my_stream.close)
+        message_reader_thread = threading.Thread(target=asyncio.run, args=(self.message_reader(),))
+        message_reader_thread.start()
+
+        def listener_manager(self, message_reader_thread):    
+            while True:
+                if message_reader_thread.is_alive():
+                    app_log.debug("Still reading messages")
+                    sleep(30)
+                else:
+                    message_reader_thread.join()
+                    message_reader_thread = threading.Thread(target=asyncio.run, args=(self.message_reader(),))
+                    message_reader_thread.start()
+
+        message_auth_manager = threading.Thread(target=listener_manager, args=(self, message_reader_thread,))
+        message_auth_manager.start()
+        return
     
-    def listen_for_messages_refresh(self):
-        try:
-            self.my_stream.close()
-        except Exception as err:
-            app_log.error("Failed to close stream with error: %s" % err)
-        self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
-        app_log.info("Refreshed messages stream")        
+    async def message_reader(self):
+        async for event in aiosseclient(self.listen_for_messages_url()):
+            if event.event == "auth_revoked":   # event.data == "credential is no longer valid"
+                app_log.info("Encountered %s. restart listening" % event.event)
+            elif event.event == "stream_failed":
+                app_log.info("Encountered %s: %s" % (event.event, event.data))
+            elif event.event == "keep-alive":
+                app_log.debug("Received %s" % event.event)
+            else:
+                self.message_capture(event.data)
+
+    # def listen_for_messages_refresh(self):
+    #     try:
+    #         self.my_stream.close()
+    #     except Exception as err:
+    #         app_log.error("Failed to close stream with error: %s" % err)
+    #     self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
+    #     app_log.info("Refreshed messages stream")        
 
     def archive_message(self, key, message):
         self.db.child("processed").push(message, token=self.idtoken)
@@ -118,10 +151,19 @@ class Cloud(object):
         app_log.info("Message %s move to processed" % key)
 
     def message_capture(self, message):
-        process_outcome = {}
+        if isinstance(message, str):
+            try:
+                message = json.loads(message)
+            except:
+                pass
+
+        # ignore strings that aren't JSON documents
+        if isinstance(message["data"], str):
+            app_log.debug("'data' is a str: %s", message)
+
         # identify empty message and ignore
-        if message["data"] == None:
-            app_log.info("Empty message: %s", message)
+        elif message["data"] == None:
+            app_log.debug("Empty message: %s", message)
         
         # identify single message and evaluate
         elif "message" in message["data"].keys():
@@ -129,6 +171,8 @@ class Cloud(object):
             if message["data"]["recipient"] == self.device_get()["uid"]:
                 if self.message_processor(message["data"]):
                     self.archive_message(message["path"][1:], message["data"])
+            else:
+                app_log.debug("Message intended for %s", message["data"]["recipient"])
         
         # identify multiple messages and evaluate
         else:
@@ -155,9 +199,7 @@ if __name__ == '__main__':
         return True
 
     cloud.listen_for_messages(message_processor)
-    cloud.send_message("SPRAY_NOTIFICATION", "Spray started")
-    cloud.listen_for_messages_refresh()
-    cloud.send_message("SPRAY_NOTIFICATION", "Spray started")
+    cloud.send_message("SPRAY_NOTIFICATION", "Spray started 1")
+    cloud.send_message("SPRAY_NOTIFICATION", "Spray started 2")
     x = input("Press any key when messaging done")
-    cloud.my_stream.close()
     print(x)
