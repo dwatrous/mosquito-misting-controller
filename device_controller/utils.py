@@ -12,10 +12,12 @@ import re
 
 # filter idToken out of logs
 jwt_regex = r"ey[\w-]*\.[\w-]*\.[\w-]*"
+key_regex = r"key=([A-Za-z0-9]+)"
 class secure_formatter(logging.Formatter):
     def format(self, record):
         message = super().format(record)
-        message = re.sub(jwt_regex, 'ID_TOKEN', message)
+        message = re.sub(jwt_regex, 'JWT', message)
+        message = re.sub(key_regex, 'key=KEY', message)
         return message
 
 formatter = secure_formatter('%(asctime)s %(levelname)s %(pathname)s :: %(funcName)s(%(lineno)d) %(message)s')    
