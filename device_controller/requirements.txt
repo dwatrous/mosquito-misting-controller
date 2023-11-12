@@ -1,4 +1,5 @@
 requests
+aiosseclient
 astral
 noaa_sdk
 schedule
@@ -8,3 +9,4 @@ firebase_admin
 firebase-rest-api
 pyjwt
 Adafruit_ADS1x15
+bottle
