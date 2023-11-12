@@ -158,7 +158,7 @@ def status_buzzer_off():
 if __name__ == '__main__':
     from time import sleep
     print("Buzzer beep")
-    status_buzzer_beep()
+    status_buzzer_beep(2)
     print("LED Ready")
     status_led_ready()
     sleep(6)
