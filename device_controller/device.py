@@ -68,6 +68,7 @@ class device:
         # handle SPRAYNOW
         if message["message"]["event"] == "SPRAYNOW":
             # TODO need to change this when implementing multiple zones
+            # TODO need to keep track of if a spray is currently happening and not run two at once
             self.zones[0].execute_spray()
         return True
 

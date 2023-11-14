@@ -1,7 +1,6 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
 import constants
-import atexit
 import time
 import utils
 from time import sleep

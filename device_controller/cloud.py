@@ -1,5 +1,4 @@
 # Import Firebase REST API 
-import atexit
 import json
 import threading
 from time import sleep
@@ -114,27 +113,24 @@ class Cloud(object):
 
         def listener_manager(self, message_reader_thread):    
             while True:
-                if message_reader_thread.is_alive():
-                    app_log.debug("Still reading messages")
-                    sleep(30)
-                else:
+                if not message_reader_thread.is_alive():
+                    app_log.debug("Restarting message listener with new idtoken")
                     message_reader_thread.join()
                     message_reader_thread = threading.Thread(target=asyncio.run, args=(self.message_reader(),))
                     message_reader_thread.start()
+                sleep(5)
 
         message_auth_manager = threading.Thread(target=listener_manager, args=(self, message_reader_thread,))
         message_auth_manager.start()
         return
     
     async def message_reader(self):
-        async for event in aiosseclient(self.listen_for_messages_url()):
-            if event.event == "auth_revoked":   # event.data == "credential is no longer valid"
-                app_log.info("Encountered %s. restart listening" % event.event)
-            elif event.event == "stream_failed":
-                app_log.info("Encountered %s: %s" % (event.event, event.data))
-            elif event.event == "keep-alive":
-                app_log.debug("Received %s" % event.event)
-            else:
+        # more details about SSE https://html.spec.whatwg.org/multipage/server-sent-events.html
+        async for event in aiosseclient(self.listen_for_messages_url(), valid_http_codes=[200], exit_events=["cancel", "auth_revoked"]):
+            # expected events and data https://firebase.google.com/docs/reference/rest/database#section-streaming
+            app_log.debug("Received SSE %s with data %s" % (event.event, event.data))
+            # only process put and patch events
+            if event.event in ["put", "patch"]:
                 self.message_capture(event.data)
 
     # def listen_for_messages_refresh(self):
@@ -201,5 +197,8 @@ if __name__ == '__main__':
     cloud.listen_for_messages(message_processor)
     cloud.send_message("SPRAY_NOTIFICATION", "Spray started 1")
     cloud.send_message("SPRAY_NOTIFICATION", "Spray started 2")
-    x = input("Press any key when messaging done")
-    print(x)
+    try:
+        while True:
+            sleep(5)
+    except KeyboardInterrupt:
+        pass

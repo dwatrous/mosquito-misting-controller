@@ -163,14 +163,18 @@ class zone:
             "readings": []
         }
         while not signal.is_set():
-            readings["readings"].append(
-                {
-                    "pressure_line_in_psi": device_sensors.read_current_line_in_pressure_psi(),
-                    "pressure_line_out_psi": device_sensors.read_current_line_out_pressure_psi(),
-                    "vacuum_kpa": device_sensors.read_current_vacuum_pressure_kpa(),
-                    "weight": device_sensors.read_current_weight()
-                }
-            )
+            try:
+                readings["readings"].append(
+                    {
+                        "pressure_line_in_psi": device_sensors.read_current_line_in_pressure_psi(),
+                        "pressure_line_out_psi": device_sensors.read_current_line_out_pressure_psi(),
+                        "vacuum_kpa": device_sensors.read_current_vacuum_pressure_kpa(),
+                        "weight": device_sensors.read_current_weight()
+                    }
+                )
+            except Exception as ioerr:
+                # just pass and miss a reading
+                utils.app_log.error(ioerr)
             time.sleep(self.sensor_capture_interval_s)
         sensordata.put(readings)
 

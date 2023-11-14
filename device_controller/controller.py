@@ -46,6 +46,5 @@ if __name__ == '__main__':
         # periodically refresh schedule (daily should be fine)
         app_log.info("Next spray {0}".format(schedule.next_run()))
         app_log.info("waiting {0} seconds at {1}".format(constants.controller_wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
-        controller_cloud.listen_for_messages_refresh()
         sleep(constants.controller_wait_time)
 
