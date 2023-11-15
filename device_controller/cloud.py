@@ -78,11 +78,16 @@ class Cloud(object):
         return self.device_details
 
     def device_update(self, device):
-        return self.ds.collection(u'devices').document(self.config.device_email).update(device, token=self.idtoken)
+        try:
+            self.ds.collection(u'devices').document(self.config.device_email).update(device, token=self.idtoken)
+        except Exception as err:
+            app_log.error("device update failed with: %s" % err)
 
     def write_spray_occurence_ds(self, spraydata):
-        # TODO this is probably too optimistic, add error handling
-        self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.idtoken)
+        try:
+            self.ds.collection(u'devices').document(self.config.device_email).collection(u'sprayoccurrences').add(spraydata, token=self.idtoken)
+        except Exception as err:
+            app_log.error("telemtry write failed with: %s" % err)
 
     # Firebase realtime database (used for messaging)
     def _build_message(self, event, info, action):
@@ -126,20 +131,12 @@ class Cloud(object):
     
     async def message_reader(self):
         # more details about SSE https://html.spec.whatwg.org/multipage/server-sent-events.html
-        async for event in aiosseclient(self.listen_for_messages_url(), valid_http_codes=[200], exit_events=["cancel", "auth_revoked"]):
+        async for event in aiosseclient(self.listen_for_messages_url(), valid_http_codes=[200], exit_events=["cancel", "auth_revoked"], timeout_total=1200):
             # expected events and data https://firebase.google.com/docs/reference/rest/database#section-streaming
             app_log.debug("Received SSE %s with data %s" % (event.event, event.data))
             # only process put and patch events
             if event.event in ["put", "patch"]:
                 self.message_capture(event.data)
-
-    # def listen_for_messages_refresh(self):
-    #     try:
-    #         self.my_stream.close()
-    #     except Exception as err:
-    #         app_log.error("Failed to close stream with error: %s" % err)
-    #     self.my_stream = self.db.child("messages").stream(self.message_capture, token=self.idtoken)
-    #     app_log.info("Refreshed messages stream")        
 
     def archive_message(self, key, message):
         self.db.child("processed").push(message, token=self.idtoken)
@@ -187,6 +184,16 @@ if __name__ == '__main__':
     cloud.write_spray_occurence_ds(spraydata)
     mydevice = cloud.device_get()
     print(mydevice)
+    status_update = {"status": 
+                        {
+                            "line_in_pressure": 50,
+                            "solution_weight": 12.5,
+                            "next_spray": datetime.datetime.now(),
+                            "timestamp": datetime.datetime.now()
+                        }
+    }
+    cloud.device_update(status_update)
+                     
 
     # test messages
     def message_processor(message):

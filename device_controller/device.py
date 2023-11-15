@@ -76,6 +76,17 @@ class device:
         # TODO add expected thresholds for ready and update conditional
         if (device_sensors.read_current_line_in_pressure_psi() and device_sensors.read_current_weight()):
             device_sensors.status_led_ready()
+    
+    def send_status_update(self):
+        status_update = {"status": 
+                            {
+                                "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
+                                "solution_weight": device_sensors.read_current_weight(),
+                                "next_spray": self.get_next_spray(),
+                                "timestamp": datetime.datetime.now()
+                            }
+                        }
+        self.device_cloud.device_update(status_update)
 
     def get_devicedefinition_json(self):
         return json.dumps(self.get_devicedefinition())
@@ -127,6 +138,8 @@ class device:
         if daynumber == 6:
             schedule.every().saturday.at(spraytime, self.timezone).do(dofunc).tag(tag)
 
+    def schedule_status_updates(self):
+        schedule.every(10).minutes.do(self.send_status_update).tag("status_update")
 
     def schedule_sprays(self):
         # clear existing schedule and thread as a reset
@@ -154,8 +167,15 @@ class device:
                     # create scheduled based on adjusted spraytime
                     spraytime = "%02d:%02d" % (spraytime_dt.hour, spraytime_dt.minute)
                     self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "relativetime")
+        self.schedule_status_updates()
 
-
+    def get_next_spray(self):
+        if schedule.next_run('fixedtime') > schedule.next_run('relativetime'):
+            return schedule.next_run('relativetime')
+        else:
+            return schedule.next_run('fixedtime')
+        
 if __name__ == '__main__':
     mydevice = device()
     mydevice.schedule_sprays()
+    print(mydevice.get_next_spray())

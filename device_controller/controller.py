@@ -44,7 +44,7 @@ if __name__ == '__main__':
         # check and send device status (hourly?) (may include error state that will be handled from the cloud)
 
         # periodically refresh schedule (daily should be fine)
-        app_log.info("Next spray {0}".format(schedule.next_run()))
+        app_log.info("Next spray {0}".format(this_device.get_next_spray()))
         app_log.info("waiting {0} seconds at {1}".format(constants.controller_wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
         sleep(constants.controller_wait_time)
 
