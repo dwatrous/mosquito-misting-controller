@@ -17,10 +17,13 @@ class zone:
     valve_scheduler = sched.scheduler()
     zonecloud = cloud.Cloud()
 
-    def __init__(self, zonedefinition=None) -> None:
+    def __init__(self, zonedefinition=None, low_temp_threshold_f=50, rain_threshold_in=0.5) -> None:
         self.env = environment()
         self.spraydata = {}
         self.sensordata = []
+
+        self.low_temp_threshold_f = low_temp_threshold_f
+        self.rain_threshold_in = rain_threshold_in
 
         if zonedefinition == None:
             self.name = "Default"
@@ -40,8 +43,6 @@ class zone:
         self.sprayoccurrences = zonedefinition["sprayoccurrences"]
         self.valve_first_open_offset_ms = zonedefinition["valve_first_open_offset_ms"]
         self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
-        self.low_temp_threshold_f = zonedefinition["low_temp_threshold_f"]
-        self.rain_threshold_in = zonedefinition["rain_threshold_in"]
         self.sensor_capture_buffer_s = zonedefinition["sensor_capture_buffer_s"]
         self.sensor_capture_interval_s = zonedefinition["sensor_capture_interval_s"]
 
@@ -55,8 +56,6 @@ class zone:
             "sprayoccurrences": self.sprayoccurrences,
             "valve_first_open_offset_ms": self.valve_first_open_offset_ms,
             "valve_activation_interval_ms": self.valve_activation_interval_ms,
-            "low_temp_threshold_f": self.low_temp_threshold_f,
-            "rain_threshold_in": self.rain_threshold_in,
             "sensor_capture_buffer_s": self.sensor_capture_buffer_s,
             "sensor_capture_interval_s": self.sensor_capture_interval_s
         }
