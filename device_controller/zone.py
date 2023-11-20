@@ -183,7 +183,7 @@ class zone:
         self.zonecloud.send_message("EXECUTE_SPRAY")
         device_sensors.status_buzzer_beep()
         # clear and begin capturing data
-        spray_start_time = datetime.datetime.now()
+        spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
         self.spraydata = {
             "start_time": spray_start_time,
             "valve_executions": []
@@ -263,19 +263,18 @@ class zone:
         device_sensors.status_led_ready()
 
     # Functions to add sprayoccurrences
-    def add_spray_occurrence (self, dayofweek, timeofday):
-        occurrence = {"dayofweek": dayofweek, "timeofday": timeofday}
+    def add_spray_occurrence (self, daysofweek, timeofday):
+        occurrence = {"daysofweek": daysofweek, "timeofday": timeofday}
         if occurrence not in self.sprayoccurrences:
             self.sprayoccurrences.append(occurrence)
     
     def add_sprayoccurrences_all_days (self, timeofday):
-        for dayofweek in range(7):
-            self.add_spray_occurrence(dayofweek, timeofday)
+        self.add_spray_occurrence([0,1,2,3,4,5,6], timeofday)
 
     def add_sprayoccurrences_weekdays (self, timeofday):
-        for dayofweek in range(1,6):
-            self.add_spray_occurrence(dayofweek, timeofday)
+        self.add_spray_occurrence([1,2,3,4,5], timeofday)
     
+    # removing a sprayoccurrence will normally be done through the app
     def remove_sprayoccurrence(self, sprayoccurrence_remove):
         for i in range(len(self.sprayoccurrences)):
             if sprayoccurrence_remove == self.sprayoccurrences[i]:

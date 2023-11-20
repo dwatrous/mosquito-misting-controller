@@ -83,7 +83,7 @@ class device:
                                 "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
                                 "solution_weight": device_sensors.read_current_weight(),
                                 "next_spray": self.get_next_spray(),
-                                "timestamp": datetime.datetime.now()
+                                "timestamp": datetime.datetime.utcnow()
                             }
                         }
         self.device_cloud.device_update(status_update)
@@ -121,21 +121,21 @@ class device:
         continuous_thread = ScheduleThread()
         continuous_thread.start()
 
-    def schedule_dayofweek(self, daynumber, spraytime, dofunc, tag):
-        logging.info({"schedule_dayofweek": {"daynumber": daynumber, "spraytime": spraytime, "dofunc": dofunc, "tag": tag}})
-        if daynumber == 0:
+    def schedule_daysofweek(self, daystospray, spraytime, dofunc, tag):
+        logging.info({"schedule_daysofweek": {"daystospray": daystospray, "spraytime": spraytime, "dofunc": dofunc, "tag": tag}})
+        if 0 in daystospray:
             schedule.every().sunday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 1:
+        if 1 in daystospray:
             schedule.every().monday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 2:
+        if 2 in daystospray:
             schedule.every().tuesday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 3:
+        if 3 in daystospray:
             schedule.every().wednesday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 4:
+        if 4 in daystospray:
             schedule.every().thursday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 5:
+        if 5 in daystospray:
             schedule.every().friday.at(spraytime, self.timezone).do(dofunc).tag(tag)
-        if daynumber == 6:
+        if 6 in daystospray:
             schedule.every().saturday.at(spraytime, self.timezone).do(dofunc).tag(tag)
 
     def schedule_status_updates(self):
@@ -147,10 +147,10 @@ class device:
         for spray_zone in self.zones:
             # TODO: may need offset for zones that spray at the same time
             for sprayoccurence in spray_zone.sprayoccurrences:
-                # handle each day (see constants.py dayofweekmap)
+                # handle each day (see constants.py daysofweekmap)
                 if sprayoccurence["timeofday"]["type"] == "fixedtime":
                     spraytime = "%02d:%02d" % (sprayoccurence["timeofday"]["value"]["hour"], sprayoccurence["timeofday"]["value"]["minutes"])
-                    self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "fixedtime")
+                    self.schedule_daysofweek(sprayoccurence["daysofweek"], spraytime, spray_zone.execute_spray, "fixedtime")
                 # handle only relative time
                 if sprayoccurence["timeofday"]["type"] == "relativetime":
                     # see environment for structure of sundata and constants.py for structure of sprayoccurrence
@@ -166,16 +166,18 @@ class device:
                         pass # TODO handle error
                     # create scheduled based on adjusted spraytime
                     spraytime = "%02d:%02d" % (spraytime_dt.hour, spraytime_dt.minute)
-                    self.schedule_dayofweek(sprayoccurence["dayofweek"], spraytime, spray_zone.execute_spray, "relativetime")
+                    self.schedule_daysofweek(sprayoccurence["daysofweek"], spraytime, spray_zone.execute_spray, "relativetime")
         self.schedule_status_updates()
 
     def get_next_spray(self):
         if schedule.next_run('fixedtime') > schedule.next_run('relativetime'):
-            return schedule.next_run('relativetime')
+            nextspray = schedule.next_run('relativetime')
         else:
-            return schedule.next_run('fixedtime')
+            nextspray = schedule.next_run('fixedtime')
+        return nextspray.astimezone(datetime.timezone.utc)
         
 if __name__ == '__main__':
     mydevice = device()
     mydevice.schedule_sprays()
     print(mydevice.get_next_spray())
+    mydevice.send_status_update()
