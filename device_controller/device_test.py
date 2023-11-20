@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # load from devicedefinition
     with open(devicedefinition_filename, "r") as savedfile:
         new_devicedefinition_json = savedfile.read()
-    newdevice = device(devicedefinition=new_devicedefinition_json)
+    newdevice = device(initialize=True)
     # assert default values
     assert mydevice.state == constants.default_state
     assert mydevice.zip == constants.default_zip

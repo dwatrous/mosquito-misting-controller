@@ -38,7 +38,7 @@ device_account = reg_cloud.get_authenticated_device_account()
 # create default device config and save
 mydevice = reg_cloud.device_get()
 if "config" not in mydevice:
-    new_default_device = device()
+    new_default_device = device(initialize=True)
     mydevice["config"] = new_default_device.get_devicedefinition()
     reg_cloud.device_update(mydevice)
     new_default_device.schedule_thread_kill_signal.set()

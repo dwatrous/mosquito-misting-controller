@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
     # create the device instance
-    this_device = device(clouddevice["config"])
+    this_device = device()
     # listen for messages from the cloud
     controller_cloud.listen_for_messages(this_device.message_handler)
 

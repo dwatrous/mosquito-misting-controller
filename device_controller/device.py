@@ -16,13 +16,15 @@ import cloud
 
 class device:
 
-    def __init__(self, devicedefinition=None) -> None:
+    def __init__(self, initialize=False) -> None:
         self.zones = []
         self.env = environment()
         self.schedule_thread_kill_signal = threading.Event()
         self.device_cloud = cloud.Cloud()
 
-        if devicedefinition == None:
+        devicerecord = self.device_cloud.device_get()
+
+        if devicerecord == None or initialize == True:
             self.state = constants.default_state
             self.zip = constants.default_zip
             self.environment_city = constants.default_environment_city
@@ -31,24 +33,34 @@ class device:
             self.timezone = constants.default_timezone
             self.zones.append(zone.zone())
         else:
-            # if a JSON was passed directly, change it to a dict
-            if type(devicedefinition) is not dict:
-                devicedefinition = json.loads(devicedefinition)
-        
-            # hydrate based on devicedefinition
-            self.state = devicedefinition["state"]
-            self.zip = devicedefinition["zip"]
-            self.environment_city = devicedefinition["environment_city"]
-            self.low_temp_threshold_f = devicedefinition["low_temp_threshold_f"]
-            self.rain_threshold_in = devicedefinition["rain_threshold_in"]
-            self.timezone = devicedefinition["timezone"]
-            self.zones = [zone.zone(devicezone, low_temp_threshold_f=self.low_temp_threshold_f, rain_threshold_in=self.rain_threshold_in) for devicezone in devicedefinition["zones"]]
+            self.load_devicedefinition_from_cloud()
 
         # schedule sprays and start schedule thread
         self.check_system()
         # TODO if system isn't ready, signal error and don't schedule sprays
         self.schedule_sprays()
         self.start_schedule_thread()
+        self.send_status_update()
+
+    def load_devicedefinition_from_cloud(self, reload=False):
+        if reload:
+            self.device_cloud.device_details_reload = True
+        devicerecord = self.device_cloud.device_get()
+
+        # if a JSON was passed directly, change it to a dict
+        if type(devicerecord) is not dict:
+            devicerecord = json.loads(devicerecord)
+
+        self.devicedefinition = devicerecord["config"]
+    
+        # hydrate based on devicedefinition
+        self.state = self.devicedefinition["state"]
+        self.zip = self.devicedefinition["zip"]
+        self.environment_city = self.devicedefinition["environment_city"]
+        self.low_temp_threshold_f = self.devicedefinition["low_temp_threshold_f"]
+        self.rain_threshold_in = self.devicedefinition["rain_threshold_in"]
+        self.timezone = self.devicedefinition["timezone"]
+        self.zones = [zone.zone(devicezone, low_temp_threshold_f=self.low_temp_threshold_f, rain_threshold_in=self.rain_threshold_in) for devicezone in self.devicedefinition["zones"]]
 
     def get_devicedefinition(self):
         devicedefinition = {
@@ -62,6 +74,9 @@ class device:
         }
         return devicedefinition
     
+    def get_devicedefinition_json(self):
+        return json.dumps(self.get_devicedefinition())
+
     def message_handler(self, message):
         # see cloud.py _build_message function for message structure
         app_log.info("Received message: %s", message)
@@ -70,6 +85,9 @@ class device:
             # TODO need to change this when implementing multiple zones
             # TODO need to keep track of if a spray is currently happening and not run two at once
             self.zones[0].execute_spray()
+        if message["message"]["event"] == "REFRESHSCHEDULE":
+            self.load_devicedefinition_from_cloud(reload=True)
+            self.schedule_sprays()
         return True
 
     def check_system(self):
@@ -87,9 +105,6 @@ class device:
                             }
                         }
         self.device_cloud.device_update(status_update)
-
-    def get_devicedefinition_json(self):
-        return json.dumps(self.get_devicedefinition())
 
     # currently unused
     def open_zone_valve(self, valve, close_after_ms=700):

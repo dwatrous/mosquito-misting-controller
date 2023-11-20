@@ -63,6 +63,7 @@ ADC_CHANNEL_LINE_IN_PRESSURE = 1
 ADC_CHANNEL_LINE_OUT_PRESSURE = 2
 ADC_CHANNEL_VACUUM = 0
 SCALE_RAW_TO_OZ_REFERENCE = 13162
+APPCONFIG_TIME_TO_LET_RUN_SECONDS = 600
 
 # # Messaging events
 #     # "action": [
@@ -222,11 +223,14 @@ default_sprayduration_ms = 45000
 #   },
 # ...]
 def generate_default_sprayoccurrences ():
+    everyday = [0,1,2,3,4,5,6]
+    weekday = [1,2,3,4,5]
+    weekend = [0,6]
     default_sprayoccurrences = []
-    for dayofweek in range(7):
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "fixedtime", "value": {"hour": 23, "minutes": 0}}})
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "sunrise", "sunposition": "before", "deltaminutes": 5}}})
-        default_sprayoccurrences.append({"dayofweek": dayofweek, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": 5}}})
+    default_sprayoccurrences.append({"daysofweek": everyday, "timeofday": {"type": "fixedtime", "value": {"hour": 23, "minutes": 0}}})
+    default_sprayoccurrences.append({"daysofweek": weekday, "timeofday": {"type": "relativetime", "value": {"sunevent": "sunrise", "sunposition": "before", "deltaminutes": 5}}})
+    default_sprayoccurrences.append({"daysofweek": weekday, "timeofday": {"type": "relativetime", "value": {"sunevent": "dusk", "sunposition": "before", "deltaminutes": 5}}})
+    default_sprayoccurrences.append({"daysofweek": weekend, "timeofday": {"type": "fixedtime", "value": {"hour": 6, "minutes": 0}}})
     return default_sprayoccurrences
 
 default_valve_first_open_offset_ms = 500

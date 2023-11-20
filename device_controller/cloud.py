@@ -75,6 +75,7 @@ class Cloud(object):
         # handle initial authentication
         if self.device_details == None or self.device_details_reload:
             self.device_details = self.ds.collection(u'devices').document(self.config.device_email).get(token=self.idtoken)
+            self.device_details_reload = False
         return self.device_details
 
     def device_update(self, device):
@@ -90,6 +91,7 @@ class Cloud(object):
             app_log.error("telemtry write failed with: %s" % err)
 
     # Firebase realtime database (used for messaging)
+    # TODO this fails when the device is not associated with a user: KeyError on ["onwer"]
     def _build_message(self, event, info, action):
         msg = {
             "sender": self.get_authenticated_device_account()["uid"],
