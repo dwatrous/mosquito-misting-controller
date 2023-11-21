@@ -5,8 +5,11 @@ from time import sleep
 import firebase
 from utils import Config, app_log
 import datetime
-from aiosseclient import aiosseclient
+# from aiosseclient import aiosseclient
 import asyncio
+from aiohttp_sse_client2 import client as sse_client
+# import logging
+# sse_client._LOGGER.setLevel(logging.INFO)
 
 class Cloud(object):
     # get Config
@@ -131,17 +134,27 @@ class Cloud(object):
         message_auth_manager.start()
         return
     
+    # async def message_reader(self):
+    #     # more details about SSE https://html.spec.whatwg.org/multipage/server-sent-events.html
+    #     async for event in aiosseclient(self.listen_for_messages_url(), valid_http_codes=[200], exit_events=["cancel", "auth_revoked"], timeout_total=1200):
+    #         # expected events and data https://firebase.google.com/docs/reference/rest/database#section-streaming
+    #         app_log.debug("Received SSE %s with data %s" % (event.event, event.data))
+    #         # only process put and patch events
+    #         if event.event in ["put", "patch"]:
+    #             self.message_capture(event.data)
     async def message_reader(self):
-        # more details about SSE https://html.spec.whatwg.org/multipage/server-sent-events.html
-        async for event in aiosseclient(self.listen_for_messages_url(), valid_http_codes=[200], exit_events=["cancel", "auth_revoked"], timeout_total=1200):
-            # expected events and data https://firebase.google.com/docs/reference/rest/database#section-streaming
-            app_log.debug("Received SSE %s with data %s" % (event.event, event.data))
-            # only process put and patch events
-            if event.event in ["put", "patch"]:
-                self.message_capture(event.data)
+        async with sse_client.EventSource(self.listen_for_messages_url()) as event_source:
+            try:
+                async for event in event_source:
+                    app_log.debug("Received SSE %s with data %s" % (event.type, event.data))
+                    # only process put and patch events
+                    if event.type in ["put", "patch"]:
+                        self.message_capture(event.data)
+            except ConnectionError:
+                pass
 
     def archive_message(self, key, message):
-        self.db.child("processed").push(message, token=self.idtoken)
+        self.db.child("processed").child(datetime.date.today()).push(message, token=self.idtoken)
         self.db.child("messages").child(key).remove(token=self.idtoken)
         app_log.info("Message %s move to processed" % key)
 
