@@ -24,6 +24,7 @@ default_zip = "77449"
 default_state = "TX"
 default_environment_city = "Houston"    # must be in https://astral.readthedocs.io/en/latest/index.html#cities
 default_timezone = "US/Central"     # https://schedule.readthedocs.io/en/latest/timezones.html
+default_beep_duration = 30
 
 controller_wait_time = 120
 

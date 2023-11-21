@@ -45,6 +45,7 @@ class zone:
         self.valve_activation_interval_ms = zonedefinition["valve_activation_interval_ms"]
         self.sensor_capture_buffer_s = zonedefinition["sensor_capture_buffer_s"]
         self.sensor_capture_interval_s = zonedefinition["sensor_capture_interval_s"]
+        self.beep_duration = zonedefinition["beep_duration"]
 
 
     def get_zonedefinition(self):
@@ -57,7 +58,8 @@ class zone:
             "valve_first_open_offset_ms": self.valve_first_open_offset_ms,
             "valve_activation_interval_ms": self.valve_activation_interval_ms,
             "sensor_capture_buffer_s": self.sensor_capture_buffer_s,
-            "sensor_capture_interval_s": self.sensor_capture_interval_s
+            "sensor_capture_interval_s": self.sensor_capture_interval_s,
+            "beep_duration": self.beep_duration
         }
         return zonedefinition
 
@@ -178,10 +180,7 @@ class zone:
         sensordata.put(readings)
 
     # execute spray
-    def execute_spray(self):
-        # notify user and message spray execution
-        self.zonecloud.send_message("EXECUTE_SPRAY")
-        device_sensors.status_buzzer_beep()
+    def execute_spray(self, skip_override=False):
         # clear and begin capturing data
         spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
         self.spraydata = {
@@ -197,26 +196,32 @@ class zone:
         self.spraydata["low_temp_last_24hr"] = low_temp_last_24hr
         self.spraydata["low_temp_next_24hr"] = low_temp_next_24hr
         self.spraydata["rain_prediction_next_24hr"] = rain_prediction_next_24hr
-        if low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f:
+        if (low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f) and not skip_override:
             # handle temperature skip
             self.spraydata["skip"] = True
             self.spraydata["skip_reason"] = "temperature"
             logging.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
+            self.zonecloud.send_message("SKIP_SPRAY")
             self.zonecloud.write_spray_occurence_ds(self.spraydata)
             return
-        if rain_prediction_next_24hr > self.rain_threshold_in:
+        if rain_prediction_next_24hr > self.rain_threshold_in and not skip_override:
             # handle rain skip
             self.spraydata["skip"] = True
             self.spraydata["skip_reason"] = "rain"
             logging.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
+            self.zonecloud.send_message("SKIP_SPRAY")
             self.zonecloud.write_spray_occurence_ds(self.spraydata)
             return
-        if False:   # TODO implement wind skip
+        if False and not skip_override:   # TODO implement wind skip
             # handle wind skip
             pass
         else:
             self.spraydata["skip"] = False
-            self.spraydata["skip_reason"] = None
+            self.spraydata["skip_reason"] = "skip override" if skip_override else None
+
+        # notify user and message spray execution
+        self.zonecloud.send_message("EXECUTE_SPRAY")
+        device_sensors.status_buzzer_beep(self.beep_duration)
 
         # indicate running
         device_sensors.status_led_running()
@@ -305,4 +310,5 @@ class zone:
         self.rain_threshold_in = constants.default_rain_threshold_in
         self.sensor_capture_buffer_s = constants.default_sensor_capture_buffer_seconds
         self.sensor_capture_interval_s = constants.default_sensor_capture_interval_seconds
+        self.beep_duration = constants.default_beep_duration
 
