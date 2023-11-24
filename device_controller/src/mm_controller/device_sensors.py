@@ -154,7 +154,7 @@ def status_buzzer_off():
     else:
         "BUZZER: off"
 
-if __name__ == '__main__':
+def rundiagnostics():
     from time import sleep
     print("Buzzer beep")
     status_buzzer_beep(2)
@@ -179,3 +179,5 @@ if __name__ == '__main__':
         print("Float Signal: ", utils.float_switch_signal.is_set())
         sleep(4)
 
+if __name__ == '__main__':
+    rundiagnostics()
