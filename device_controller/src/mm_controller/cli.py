@@ -1,7 +1,6 @@
 import argparse
 import sys
-import device_sensors
-import calibrate_device
+from mm_controller import device_sensors, calibrate_device, controller
 
 
 def cli():
@@ -27,6 +26,7 @@ def cli():
        pass
     else:
         print("Run controller")
+        controller.run()
     sys.exit(1)
 
 if __name__ == "__main__":

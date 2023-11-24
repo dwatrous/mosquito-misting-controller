@@ -1,6 +1,7 @@
-from device_sensors import calibrate_scale, calibrate_line_in, calibrate_line_out, calibrate_vacuum
-from utils import Config, app_log
 import json
+
+from mm_controller.device_sensors import calibrate_scale, calibrate_line_in, calibrate_line_out, calibrate_vacuum
+from mm_controller.utils import Config, app_log
 
 def calibrate_all():
     config = Config()

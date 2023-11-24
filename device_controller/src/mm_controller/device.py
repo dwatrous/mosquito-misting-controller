@@ -3,16 +3,17 @@
 import logging
 import threading
 import schedule
-import zone
-import device_sensors
-import constants
 import json
 import time
 import datetime
-from utils import app_log
-from environment import environment
 from pytz import timezone
-import cloud
+
+from mm_controller import zone
+from mm_controller import device_sensors
+from mm_controller import constants
+from mm_controller import cloud
+from mm_controller.environment import environment
+from mm_controller.utils import app_log
 
 class device:
 

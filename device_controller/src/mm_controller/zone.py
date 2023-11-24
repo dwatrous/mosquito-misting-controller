@@ -2,15 +2,16 @@
 
 import logging
 import datetime
-import constants
-import device_sensors
 from math import floor
 import sched, time
 import multiprocessing
 import json
-from environment import environment
-import utils
-import cloud
+
+from mm_controller.environment import environment
+from mm_controller import constants
+from mm_controller import device_sensors
+from mm_controller import utils
+from mm_controller import cloud
 
 class zone:
     ms_in_second = 1000

@@ -5,16 +5,14 @@
 
 import datetime
 from pytz import timezone
-import constants
-# import json
-# from os.path import exists
 from time import sleep
-from device import device
-import schedule
-import cloud
-from utils import Config, app_log
 
-if __name__ == '__main__':
+from mm_controller.device import device
+from mm_controller import constants
+from mm_controller import cloud
+from mm_controller.utils import Config, app_log
+
+def run():
     # get Config
     config = Config()
     # get cloud object
@@ -29,9 +27,6 @@ if __name__ == '__main__':
     clouddevice = controller_cloud.device_get()
     if clouddevice == None:
         print(u"No such device!") # TODO handle error
-    # deviceconfigfile = Path(__file__).with_name("deviceconfig.json")
-    # with deviceconfigfile.open("w") as configwriter:
-    #     configwriter.write(json.dumps(device_config))
     # if WiFi unavailable, do ??? (need try/except to trigger a local run only)
 
     # create the device instance
@@ -48,3 +43,5 @@ if __name__ == '__main__':
         app_log.info("waiting {0} seconds at {1}".format(constants.controller_wait_time, datetime.datetime.now(tz=timezone(constants.default_timezone))))
         sleep(constants.controller_wait_time)
 
+if __name__ == '__main__':
+    run()

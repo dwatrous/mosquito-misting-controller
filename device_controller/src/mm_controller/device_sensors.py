@@ -1,10 +1,11 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
-import constants
 import time
-import utils
 from time import sleep
 import logging
+
+from mm_controller import constants
+from mm_controller import utils
 
 if utils.is_raspberrypi():
     # setup ADS1115

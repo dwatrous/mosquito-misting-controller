@@ -1,9 +1,10 @@
 import time
 import datetime
-import constants
 import requests
 from urllib.parse import urlunsplit, urlencode
 from string import Template
+
+from mm_controller import constants
 
 class visualcrossing:
     weather_data = None

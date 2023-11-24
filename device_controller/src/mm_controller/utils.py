@@ -1,4 +1,3 @@
-import constants
 from time import sleep
 import json
 import logging
@@ -9,6 +8,8 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import subprocess, time
 import re
+
+from mm_controller import constants
 
 # filter idToken out of logs
 jwt_regex = r"ey[\w-]*\.[\w-]*\.[\w-]*"
