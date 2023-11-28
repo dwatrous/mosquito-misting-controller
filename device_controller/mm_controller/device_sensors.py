@@ -15,7 +15,7 @@ if utils.is_raspberrypi():
     adc._device._logger.setLevel(logging.INFO)
     # setup HX711 scale
     config = utils.Config()
-    from hx711 import HX711
+    from mm_controller.hx711 import HX711
     hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
     # hx.reset()    # This doesn't seem to be needed/helpful
     # the referen_unit converts the measurement to OZ
@@ -175,9 +175,12 @@ def rundiagnostics():
         print("Current Line Out Pressure: ", read_current_line_out_pressure_psi())
         print("Current Vacuum: ", read_current_vacuum_pressure_kpa())
         print("Current Weight in OZ: ", read_current_weight())
-        print("Reset Button: ", utils.gpioctrl_reset_button.value)
-        print("Float Switch: ", utils.gpioctrl_float_switch.value)
-        print("Float Signal: ", utils.float_switch_signal.is_set())
+        if utils.onpi:
+            print("Reset Button: ", utils.gpioctrl_reset_button.value)
+            print("Float Switch: ", utils.gpioctrl_float_switch.value)
+            print("Float Signal: ", utils.float_switch_signal.is_set())
+        else:
+            print("Skipping buttons, not on pi")
         sleep(4)
 
 if __name__ == '__main__':

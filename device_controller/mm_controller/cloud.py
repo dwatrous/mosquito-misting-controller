@@ -151,8 +151,12 @@ class Cloud(object):
                     # only process put and patch events
                     if event.type in ["put", "patch"]:
                         self.message_capture(event.data)
-            except ConnectionError:
-                pass
+            except ConnectionError as connerr:
+                app_log.error("ConnectionError: %s" % connerr)
+            except TimeoutError as timeerr:
+                app_log.error("TimeoutError: %s" % timeerr)
+            except Exception as err:
+                app_log.error("UnexpectedError: %s" % err)
 
     def archive_message(self, key, message):
         self.db.child("processed").child(datetime.date.today()).push(message, token=self.idtoken)

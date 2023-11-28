@@ -4,3 +4,4 @@ config.json
 deviceconfig.json
 *.img
 *.xz
+.pdm-python

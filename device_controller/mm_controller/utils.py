@@ -113,7 +113,10 @@ class Config(object):
 
     @property
     def configfile(self):
-        return Path("/home").joinpath("mm").joinpath("config.json")
+        if onpi:
+            return Path("/home").joinpath("mm").joinpath("config.json")
+        else:
+            return Path(__file__).parent.joinpath("../").joinpath("config.json")
     
     def get_config(self):
         # TODO accommodate remote update of config values to force reload

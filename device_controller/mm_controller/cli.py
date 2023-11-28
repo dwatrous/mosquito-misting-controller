@@ -1,6 +1,7 @@
 import argparse
 import sys
-from mm_controller import device_sensors, calibrate_device, controller
+
+from mm_controller import device_sensors, calibrate_device, controller, register_device
 
 
 def cli():
@@ -8,6 +9,7 @@ def cli():
 
     parser.add_argument("-d", "--diagnostics", action="store_true", help="Run diagnostics.")
     parser.add_argument("-c", "--calibrate", action="store_true", help="Calibrate connected devices.")
+    parser.add_argument("-r", "--register", action="store_true", help=argparse.SUPPRESS) # TODO secure this so consumers can't register devices
     parser.add_argument("--validate", choices=["cloud", "weather"], help="Run various exercises to validate connectivity.")
     parser.add_argument("-l", "--loglevel", choices=["DEBUG", "INFO", "WARN", "ERROR"], default="INFO", help="Set logging level.")
 
@@ -20,6 +22,9 @@ def cli():
     elif args.calibrate:
         print("Running calibration...")
         calibrate_device.calibrate_all()
+    elif args.register:
+        print("Running registration...")
+        register_device.register()
     elif args.validate == "cloud":
        pass
     elif args.validate == "weather":
