@@ -156,7 +156,7 @@ class Cloud(object):
             except TimeoutError as timeerr:
                 app_log.error("TimeoutError: %s" % timeerr)
             except Exception as err:
-                app_log.error("UnexpectedError: %s" % err)
+                app_log.error("UnexpectedError: %s" % err.__traceback__)
 
     def archive_message(self, key, message):
         self.db.child("processed").child(datetime.date.today()).push(message, token=self.idtoken)

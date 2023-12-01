@@ -86,7 +86,7 @@ class device:
             # TODO need to keep track of if a spray is currently happening and not run two at once
             self.zones[0].execute_spray(skip_override=True)
             self.send_status_update()
-        if message["message"]["event"] == "REFRESHSCHEDULE":
+        if message["message"]["event"] == "REFRESHCONFIG":
             self.load_devicedefinition_from_cloud(reload=True)
             self.schedule_sprays()
             self.send_status_update()
