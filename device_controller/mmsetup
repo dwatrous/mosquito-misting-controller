@@ -64,6 +64,6 @@ else
     mv /home/mm/config.json.template /home/mm/config.json
     echo 'export PATH="/home/mm/.ctrlenv/bin:$PATH"' >> /home/mm/.bashrc
     runuser -l mm -c 'python -m venv /home/mm/.ctrlenv'
-    runuser -l mm -c '/home/mm/.ctrlenv/bin/pip install /home/mm/mm_controller-0.1.1-py3-none-any.whl'
+    runuser -l mm -c '/home/mm/.ctrlenv/bin/pip install /home/mm/mm_controller-0.1.9-py3-none-any.whl'
     logtoboth "* Plugin $pfx: Complete Phase post-install"
 fi

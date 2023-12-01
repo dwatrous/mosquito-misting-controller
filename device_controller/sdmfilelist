@@ -1,2 +1,2 @@
-from=dist/mm_controller-0.1.1-py3-none-any.whl|to=/home/mm|chown=mm:mm|chmod=655|mkdirif
+from=dist/mm_controller-0.1.9-py3-none-any.whl|to=/home/mm|chown=mm:mm|chmod=655|mkdirif
 from=config.json.template|to=/home/mm|chown=mm:mm|chmod=655|mkdirif
