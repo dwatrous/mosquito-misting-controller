@@ -6,7 +6,6 @@ import schedule
 import json
 import time
 import datetime
-from pytz import timezone
 
 from mm_controller import zone
 from mm_controller import device_sensors
