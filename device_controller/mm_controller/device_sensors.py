@@ -3,11 +3,18 @@
 import time
 from time import sleep
 import multiprocessing
+import subprocess
+from pathlib import Path
 import logging
 
 from mm_controller import constants
 from mm_controller.utils import onpi, Config
-from mm_controller.controller import start_hotspot
+
+def start_hotspot():
+    status_led_hotspot()
+    configurator_path = Path("/home/mm/.ctrlenv/bin/configurate")
+    subprocess.run(["python", configurator_path])
+    status_led_ready()
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()
@@ -160,6 +167,12 @@ def status_led_error():
     else:
         "LED: error"
 
+def status_led_hotspot():
+    if onpi:
+        status_led.blink(on_color=(0,1,0))
+    else:
+        "LED: hotspot"
+
 # Manage Buzzer
 def status_buzzer_beep(beepfor_s = 20):
     if onpi:
@@ -191,6 +204,9 @@ def rundiagnostics():
     sleep(6)
     print("LED Running")
     status_led_running()
+    sleep(6)
+    print("LED Hotspot")
+    status_led_hotspot()
     sleep(6)
     print("LED Disable")
     status_led_disable()

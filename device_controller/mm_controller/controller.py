@@ -6,17 +6,11 @@
 import datetime
 from pytz import timezone
 from time import sleep
-import subprocess
-from pathlib import Path
 
 from mm_controller.device import device
 from mm_controller import constants
 from mm_controller import cloud
 from mm_controller.utils import Config, app_log
-
-def start_hotspot():
-    configurator_path = Path.cwd().joinpath("configurator.py")
-    subprocess.run(["python", configurator_path])
 
 def run():
     # get Config
