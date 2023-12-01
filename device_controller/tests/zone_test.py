@@ -1,5 +1,5 @@
-import constants
-from zone import zone
+from mm_controller import constants
+from mm_controller.zone import zone
 import os
 import logging
 logging.basicConfig(filename='zone_test.log', encoding='utf-8', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(funcName)s(%(lineno)d) %(message)s', force=True)

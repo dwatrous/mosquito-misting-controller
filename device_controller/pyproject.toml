@@ -32,6 +32,7 @@ name = "mm_controller"
 
 [project.scripts]
 mmctrl = "mm_controller.cli:cli"
+configurate = "mm_controller.configurator:configurate"
 
 [build-system]
 requires = ["pdm-backend"]

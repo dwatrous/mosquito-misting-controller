@@ -93,9 +93,9 @@ class zone:
         try:
             # open valve
             if valve == constants.VALVE_WATER and utils.onpi:
-                utils.gpioctrl_water_valve.on()
+                device_sensors.gpioctrl_water_valve.on()
             elif valve == constants.VALVE_CHEMICAL and utils.onpi:
-                utils.gpioctrl_chemical_valve.on()
+                device_sensors.gpioctrl_chemical_valve.on()
             else:
                 if utils.onpi:
                     logging.error("Invalid valve: %d" % valve)
@@ -104,18 +104,18 @@ class zone:
             
             # leave valve open for close_after_ms
             while int(time.time()*self.ms_in_second) < (open_time+close_after_ms):
-                if utils.float_switch_signal.is_set() and valve != constants.GPIO_CHEMICAL_VALVE and utils.onpi:
-                    utils.gpioctrl_chemical_valve.off()
+                if device_sensors.float_switch_signal.is_set() and valve != constants.GPIO_CHEMICAL_VALVE and utils.onpi:
+                    device_sensors.gpioctrl_chemical_valve.off()
                 time.sleep(0.001)
 
         except:
-            utils.gpioctrl_water_valve.off()
-            utils.gpioctrl_chemical_valve.off()
+            device_sensors.gpioctrl_water_valve.off()
+            device_sensors.gpioctrl_chemical_valve.off()
         finally:
             if valve == constants.VALVE_WATER and utils.onpi:
-                utils.gpioctrl_water_valve.off()
+                device_sensors.gpioctrl_water_valve.off()
             elif valve == constants.VALVE_CHEMICAL and utils.onpi:
-                utils.gpioctrl_chemical_valve.off()
+                device_sensors.gpioctrl_chemical_valve.off()
             else:
                 if utils.onpi:
                     logging.error("Invalid valve: %d" % valve)
@@ -137,17 +137,17 @@ class zone:
         motor_start_time = int(time.time()*self.ms_in_second)
 
         try:
-            if utils.onpi: utils.gpioctrl_motor.on()
+            if utils.onpi: device_sensors.gpioctrl_motor.on()
             while int(time.time()*self.ms_in_second) < (motor_start_time+close_after_ms):
-                if utils.float_switch_signal.is_set() and utils.onpi:
-                    utils.gpioctrl_motor.off()
+                if device_sensors.float_switch_signal.is_set() and utils.onpi:
+                    device_sensors.gpioctrl_motor.off()
                 else:
-                    utils.gpioctrl_motor.on()
+                    device_sensors.gpioctrl_motor.on()
                 time.sleep(0.001)
         except:
-            if utils.onpi: utils.gpioctrl_motor.off()
+            if utils.onpi: device_sensors.gpioctrl_motor.off()
         finally:
-            if utils.onpi: utils.gpioctrl_motor.off()
+            if utils.onpi: device_sensors.gpioctrl_motor.off()
 
         motor_shutoff_time = int(time.time()*self.ms_in_second)
         self.spraydata["motor_timing"] = {

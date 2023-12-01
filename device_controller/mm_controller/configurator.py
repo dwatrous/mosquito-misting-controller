@@ -47,7 +47,7 @@ def runapp(exitsignal):
     app.config["exitsignal"] = exitsignal
     app.run(host='0.0.0.0', port=8080, debug=True)
 
-if __name__ == '__main__':
+def configurate():
     now = time()
     exitsignal = Queue()
     server = Process(target=runapp, args=(exitsignal,))
@@ -64,3 +64,6 @@ if __name__ == '__main__':
         print("Success, Exit")
         server.terminate()
         server.join()
+
+if __name__ == '__main__':
+    configurate()

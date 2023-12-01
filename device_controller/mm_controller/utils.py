@@ -1,7 +1,6 @@
 from time import sleep
 import json
 import logging
-import multiprocessing
 from pathlib import Path
 import io
 import logging
@@ -39,35 +38,9 @@ def is_raspberrypi():
     except Exception: pass
     return False
 
-def start_hotspot():
-    pass
-
-# create a signal for the float switch, set when FALLING, clear with RISING
-float_switch_signal = multiprocessing.Event()
-
 onpi = False
 if is_raspberrypi():
     onpi = True
-    from gpiozero import RGBLED, Buzzer, DigitalOutputDevice, Button
-    status_led = RGBLED(constants.GPIO_LED_RED, constants.GPIO_LED_GREEN, constants.GPIO_LED_BLUE, active_high=False)
-    buzzer = Buzzer(constants.GPIO_BUZZER, active_high=True)
-    gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
-    gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
-    gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
-    gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH)
-    gpioctrl_float_switch.when_pressed = float_switch_signal.set
-    gpioctrl_float_switch.when_released = float_switch_signal.clear
-    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, hold_time=10)
-    gpioctrl_reset_button.when_held = start_hotspot
-else:
-    # ensure Python doesn't complain about these not being defined when not on a pi
-    status_led = object
-    buzzer = object
-    gpioctrl_motor = object
-    gpioctrl_chemical_valve = object
-    gpioctrl_water_valve = object
-    gpioctrl_float_switch = object
-    gpioctrl_reset_button = object
 
 app_log.info("On Raspberry Pi: %s", onpi)
 

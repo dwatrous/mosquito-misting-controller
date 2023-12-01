@@ -2,13 +2,13 @@ import datetime
 import os
 from time import sleep, time
 import schedule
-
-import constants
-import zone_test
-from environment import environment
-from device import device
 import time_machine
 from pytz import timezone
+
+import zone_test
+from mm_controller import constants
+from mm_controller.environment import environment
+from mm_controller.device import device
 
 devicedefinition_filename = "devicedefinition.json"
 env = environment()

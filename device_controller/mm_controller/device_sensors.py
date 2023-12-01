@@ -2,19 +2,36 @@
 
 import time
 from time import sleep
+import multiprocessing
 import logging
 
 from mm_controller import constants
-from mm_controller import utils
+from mm_controller.utils import onpi, Config
+from mm_controller.controller import start_hotspot
 
-if utils.is_raspberrypi():
+# create a signal for the float switch, set when FALLING, clear with RISING
+float_switch_signal = multiprocessing.Event()
+
+if onpi:
+    # setup gpio
+    from gpiozero import RGBLED, Buzzer, DigitalOutputDevice, Button
+    status_led = RGBLED(constants.GPIO_LED_RED, constants.GPIO_LED_GREEN, constants.GPIO_LED_BLUE, active_high=False)
+    buzzer = Buzzer(constants.GPIO_BUZZER, active_high=True)
+    gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
+    gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
+    gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
+    gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH)
+    gpioctrl_float_switch.when_pressed = float_switch_signal.set
+    gpioctrl_float_switch.when_released = float_switch_signal.clear
+    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, hold_time=10)
+    gpioctrl_reset_button.when_held = start_hotspot
     # setup ADS1115
     import Adafruit_ADS1x15
     adc = Adafruit_ADS1x15.ADS1115()
     # reduce logging from I2C
     adc._device._logger.setLevel(logging.INFO)
     # setup HX711 scale
-    config = utils.Config()
+    config = Config()
     from mm_controller.hx711 import HX711
     hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
     # hx.reset()    # This doesn't seem to be needed/helpful
@@ -24,7 +41,14 @@ if utils.is_raspberrypi():
     # hx.tare() captures several readings and uses those to find and set the offset
     hx.set_offset(config.get_config()["device"]["scale_offset"])
 else:
-    # ensure Python doesn't complain about these not being defined
+    # ensure Python doesn't complain about these not being defined when not on a pi
+    status_led = object
+    buzzer = object
+    gpioctrl_motor = object
+    gpioctrl_chemical_valve = object
+    gpioctrl_water_valve = object
+    gpioctrl_float_switch = object
+    gpioctrl_reset_button = object
     adc = object
     hx = object
 
@@ -54,27 +78,27 @@ ADC_B_VACUUM = SENSOR_ZERO * ADC_SLOPE_VACUUM
 
 # calibration functions
 def calibrate_scale():
-    if utils.onpi:
+    if onpi:
         return hx.tare()
     else:
         return -1
 
 def calibrate_line_in():
-    if utils.onpi:
+    if onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
         return (ADC_SLOPE_LINE_IN * current_pressure) - ATMOSPHERE_PSI
     else:
         return -1
 
 def calibrate_line_out():
-    if utils.onpi:
+    if onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
         return (ADC_SLOPE_LINE_OUT * current_pressure) - ATMOSPHERE_PSI
     else:
         return -1
 
 def calibrate_vacuum():
-    if utils.onpi:
+    if onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
         return (ADC_SLOPE_VACUUM * current_pressure)
     else:
@@ -82,21 +106,21 @@ def calibrate_vacuum():
 
 # on board sensors
 def read_current_line_in_pressure_psi():
-    if utils.onpi:
+    if onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_IN_PRESSURE, gain=ADC_GAIN)
         return (ADC_SLOPE_LINE_IN * current_pressure) - config.get_config()["device"]["line_in_offset_psi"]
     else:
         return -1
 
 def read_current_line_out_pressure_psi():
-    if utils.onpi:
+    if onpi:
         current_pressure = adc.read_adc(constants.ADC_CHANNEL_LINE_OUT_PRESSURE, gain=ADC_GAIN)
         return (ADC_SLOPE_LINE_OUT * current_pressure) - config.get_config()["device"]["line_out_offset_psi"]
     else:
         return -1
 
 def read_current_vacuum_pressure_kpa():
-    if utils.onpi:
+    if onpi:
         current_vacuum = adc.read_adc(constants.ADC_CHANNEL_VACUUM, gain=ADC_GAIN)
         return (ADC_SLOPE_VACUUM * current_vacuum) - config.get_config()["device"]["vacuum_offset_kpa"]
         return (current_vacuum - SENSOR_ZERO)/(SENSOR_MAX-SENSOR_ZERO)*SENSOR_VACUUM_MAX_NEG_KPA
@@ -104,7 +128,7 @@ def read_current_vacuum_pressure_kpa():
         return -1
 
 def read_current_weight():
-    if utils.onpi:
+    if onpi:
         weight = hx.get_weight(3)   # TODO not sure if this needs to be configurable at some point
         time.sleep(0.1)
         return weight
@@ -113,45 +137,45 @@ def read_current_weight():
 
 # Manage LED
 def status_led_ready():
-    if utils.onpi:
-        utils.status_led.on()
+    if onpi:
+        status_led.on()
     else:
         "LED: ready"
 
 def status_led_disable():
-    if utils.onpi:
-        utils.status_led.off()
+    if onpi:
+        status_led.off()
     else:
         "LED: disabled"
 
 def status_led_running():
-    if utils.onpi:
-        utils.status_led.blink(on_color=(0,1,0.5))
+    if onpi:
+        status_led.blink(on_color=(0,1,0.5))
     else:
         "LED: running"
 
 def status_led_error():
-    if utils.onpi:
-        utils.status_led.blink(on_color=(1,0,0))
+    if onpi:
+        status_led.blink(on_color=(1,0,0))
     else:
         "LED: error"
 
 # Manage Buzzer
 def status_buzzer_beep(beepfor_s = 20):
-    if utils.onpi:
-        utils.buzzer.beep()
+    if onpi:
+        buzzer.beep()
     else:
         "BUZZER: beep start"
     sleep(beepfor_s)
-    if utils.onpi:
-        utils.buzzer.off()
+    if onpi:
+        buzzer.off()
     else:
         "BUZZER: beep end"
     
 
 def status_buzzer_off():
-    if utils.onpi:
-        utils.buzzer.off()
+    if onpi:
+        buzzer.off()
     else:
         "BUZZER: off"
 
@@ -175,10 +199,10 @@ def rundiagnostics():
         print("Current Line Out Pressure: ", read_current_line_out_pressure_psi())
         print("Current Vacuum: ", read_current_vacuum_pressure_kpa())
         print("Current Weight in OZ: ", read_current_weight())
-        if utils.onpi:
-            print("Reset Button: ", utils.gpioctrl_reset_button.value)
-            print("Float Switch: ", utils.gpioctrl_float_switch.value)
-            print("Float Signal: ", utils.float_switch_signal.is_set())
+        if onpi:
+            print("Reset Button: ", gpioctrl_reset_button.value)
+            print("Float Switch: ", gpioctrl_float_switch.value)
+            print("Float Signal: ", float_switch_signal.is_set())
         else:
             print("Skipping buttons, not on pi")
         sleep(4)
