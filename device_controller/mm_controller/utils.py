@@ -6,7 +6,6 @@ from pathlib import Path
 import io
 import logging
 from logging.handlers import TimedRotatingFileHandler
-import subprocess, time
 import re
 
 from mm_controller import constants
@@ -110,6 +109,13 @@ class Config(object):
     @property
     def device_password(self):
         return self.get_config()["device"]["password"]
+
+    @property
+    def owner_filename(self):
+        if onpi:
+            return Path("/tmp").joinpath(constants.owner_filename)
+        else:
+            return Path().cwd().joinpath(constants.owner_filename)
 
     @property
     def configfile(self):

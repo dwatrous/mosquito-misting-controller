@@ -1,5 +1,5 @@
 from time import sleep, time
-from bottle import app, request, Bottle
+from bottle import app, HTTPResponse, request, Bottle
 from multiprocessing import Process, Queue
 import subprocess
 
@@ -20,8 +20,19 @@ def configure():
 
     # update WiFi
     # https://www.raspberrypi.com/documentation/computers/configuration.html#wireless-lan-2
-    # TODO think about errors, like bad ssid/passkey
-    subprocess.run(["sudo", "raspi-config", "nonint", "do_wifi_ssid_passphrase", configuration["ssid"], configuration["passkey"]]) 
+
+    # confirm that SSID is valid for this environment
+    wifilist = subprocess.run(["nmcli", "dev", "wifi", "list"], capture_output=True)
+    wifilist_stdout = wifilist.stdout.decode("utf-8")
+    if wifilist_stdout.find(configuration["ssid"]) < 0:
+        return HTTPResponse(status=404, body="WiFi SSID not available")
+
+    # attempt to connect to the provided ssid/passkey
+    connected = subprocess.run(["sudo", "nmcli", "device", "wifi", "connect", configuration["ssid"], "password", configuration["passkey"], "ifname", "wlan0"], capture_output=True)
+    connected_stderr = connected.stderr.decode("utf-8")
+    if connected_stderr.find("Timeout") > 0:
+        subprocess.run(["sudo", "nmcli", "connection", "up", "mm_hotspot"])
+        return HTTPResponse(status=400, body="WiFi connection failed") # never returned
     subprocess.run(["sudo", "nmcli", "connection", "delete", "mm_hotspot"])
 
     # notify device to update device with "owner": [uid]
