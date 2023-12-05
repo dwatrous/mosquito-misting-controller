@@ -27,10 +27,10 @@ if onpi:
     gpioctrl_motor = DigitalOutputDevice(constants.GPIO_MOTOR, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
     gpioctrl_chemical_valve = DigitalOutputDevice(constants.GPIO_CHEMICAL_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
     gpioctrl_water_valve = DigitalOutputDevice(constants.GPIO_WATER_VALVE, active_high=constants.GPIO_RELAY_ACTIVE_HIGH)
-    gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH)
-    gpioctrl_float_switch.when_pressed = float_switch_signal.set
-    gpioctrl_float_switch.when_released = float_switch_signal.clear
-    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, hold_time=10)
+    gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH, pull_up=True)
+    gpioctrl_float_switch.when_pressed = float_switch_signal.clear
+    gpioctrl_float_switch.when_released = float_switch_signal.set
+    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, pull_up=True, hold_time=10)
     gpioctrl_reset_button.when_held = start_hotspot
     # setup ADS1115
     import Adafruit_ADS1x15
