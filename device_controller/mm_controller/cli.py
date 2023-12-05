@@ -1,12 +1,24 @@
 import argparse
 import sys
 from importlib.metadata import version
+import subprocess
 
-from mm_controller import device_sensors, calibrate_device, controller, register_device
+try:
+    service_status = subprocess.run(["sudo", "systemctl", "status", "mmctrl.service"], capture_output=True)
+except FileNotFoundError:
+    service_status = subprocess.run(["sudo", "systemctl", "status", "mmctrl.service"], capture_output=True, shell=True)
+service_running = "Active: active (running)" in service_status.stdout.decode("utf-8")
 
+def restart_service_if_running():
+    """Restarts the service if it is running."""
+    if service_running:
+        try:
+            subprocess.run(["sudo", "systemctl", "restart", "mmctrl.service"])
+        except FileNotFoundError:
+            subprocess.run(["sudo", "systemctl", "restart", "mmctrl.service"], shell=True)
 
 def cli():
-    parser = argparse.ArgumentParser(prog='MosquitoMax Controller',
+    parser = argparse.ArgumentParser(prog='mmctrl',
                     description='The is the MosquitoMax Controller. Use it to calibrate the device, run diagnostics and start the controller',
                     epilog='Contact MosquitoMax with questions')
 
@@ -21,25 +33,36 @@ def cli():
     args = parser.parse_args()
 
     print("Log level: %s" % args.loglevel)
+    print("Service running: %s" % service_running)
     if args.version:
         print(version('mm_controller'))
         sys.exit(0)
     if args.calibrate:
         print("Running calibration...")
+        from mm_controller import calibrate_device
         calibrate_device.calibrate_all()
+        restart_service_if_running()
     if args.register:
         print("Running registration...")
+        from mm_controller import register_device
         register_device.register()
+        restart_service_if_running()
     if args.diagnostics:
         print("Running diagnostics...")
+        from mm_controller import device_sensors
         device_sensors.rundiagnostics()
+        restart_service_if_running()
     if args.validate == "cloud":
        pass
     elif args.validate == "weather":
        pass
     if args.start:
-        print("Run controller")
-        controller.run()
+        if not service_running:
+            print("Run controller")
+            from mm_controller import controller
+            controller.run()
+        else:
+            print("Controller is running. Use systemctl.")
     sys.exit(0)
 
 if __name__ == "__main__":
