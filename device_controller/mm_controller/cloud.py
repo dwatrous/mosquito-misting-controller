@@ -144,19 +144,19 @@ class Cloud(object):
     #         if event.event in ["put", "patch"]:
     #             self.message_capture(event.data)
     async def message_reader(self):
-        async with sse_client.EventSource(self.listen_for_messages_url()) as event_source:
-            try:
+        try:
+           async with sse_client.EventSource(self.listen_for_messages_url()) as event_source:
                 async for event in event_source:
                     app_log.debug("Received SSE %s with data %s" % (event.type, event.data))
                     # only process put and patch events
                     if event.type in ["put", "patch"]:
                         self.message_capture(event.data)
-            except ConnectionError as connerr:
-                app_log.error("ConnectionError: %s" % connerr)
-            except TimeoutError as timeerr:
-                app_log.error("TimeoutError: %s" % timeerr)
-            except Exception as err:
-                app_log.error("UnexpectedError: %s" % err.__traceback__)
+        except ConnectionError as connerr:
+            app_log.error("ConnectionError: %s" % connerr.__traceback__)
+        except TimeoutError as timeerr:
+            app_log.error("TimeoutError: %s" % timeerr.__traceback__)
+        except Exception as err:
+            app_log.error("UnexpectedError: %s" % err.__traceback__)
 
     def archive_message(self, key, message):
         self.db.child("processed").child(datetime.date.today()).push(message, token=self.idtoken)
