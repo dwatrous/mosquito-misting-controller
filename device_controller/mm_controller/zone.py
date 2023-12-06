@@ -181,11 +181,12 @@ class zone:
         sensordata.put(readings)
 
     # execute spray
-    def execute_spray(self, skip_override=False):
+    def execute_spray(self, skip_override=False, spray_event="SCHEDULE"):
         # clear and begin capturing data
         spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
         self.spraydata = {
             "start_time": spray_start_time,
+            "spray_event": spray_event,
             "valve_executions": []
         }
         sensorreadings = multiprocessing.Queue()
