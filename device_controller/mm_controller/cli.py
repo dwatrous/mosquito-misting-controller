@@ -2,28 +2,48 @@ import argparse
 import sys
 from importlib.metadata import version
 import subprocess
+from datetime import datetime, timedelta
+import re
 
-try:
-    service_status = subprocess.run(["sudo", "systemctl", "status", "mmctrl.service"], capture_output=True)
-except FileNotFoundError:
-    service_status = subprocess.run(["sudo", "systemctl", "status", "mmctrl.service"], capture_output=True, shell=True)
-service_running = "Active: active (running)" in service_status.stdout.decode("utf-8")
+# Define the log file path
+# TODO this may get out of sync with config
+log_file = "/home/mm/device.log"
+
+# Regular expression to extract timestamp
+timestamp_regex = r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3})"
+
+def service_is_running(minutes_back=2):
+    with open(log_file, "r") as f:
+        # Read the last line
+        last_line = f.readlines()[-1].strip()
+
+        # Extract the timestamp
+        match = re.search(timestamp_regex, last_line)
+        if match:
+            timestamp_str = match.group(1)
+
+            # Parse the timestamp into datetime object
+            try:
+                log_time = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S,%f")
+            except ValueError:
+                print(f"Error parsing timestamp: {timestamp_str}")
+
+    # Get the current time
+    current_time = datetime.now()
+
+    # Check if the log time is within the past 2 minutes
+    time_diff = current_time - log_time
+
+    return time_diff < timedelta(minutes=minutes_back)
 
 def restart_service_if_running():
     """Restarts the service if it is running."""
-    if service_running:
-        try:
-            subprocess.run(["sudo", "systemctl", "restart", "mmctrl.service"])
-        except FileNotFoundError:
-            subprocess.run(["sudo", "systemctl", "restart", "mmctrl.service"], shell=True)
+    if service_is_running():
+        subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "restart", "mmctrl.service"])
 
 def enable_service():
-    """Restarts the service if it is running."""
-    if service_running:
-        try:
-            subprocess.run(["sudo", "enable", "--now", "mmctrl.service"])
-        except FileNotFoundError:
-            subprocess.run(["sudo", "enable", "--now", "mmctrl.service"], shell=True)
+    """Enable and start the service (usually after registration)."""
+    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "enable", "--now", "mmctrl.service"])
 
 def cli():
     parser = argparse.ArgumentParser(prog='mmctrl',
@@ -41,7 +61,7 @@ def cli():
     args = parser.parse_args()
 
     print("Log level: %s" % args.loglevel)
-    print("Service running: %s" % service_running)
+    print("Service running: %s" % service_is_running())
     if args.version:
         print(version('mm_controller'))
         sys.exit(0)
@@ -69,12 +89,12 @@ def cli():
     elif args.validate == "weather":
        pass
     if args.start:
-        if not service_running:
+        if not service_is_running():
             print("Run controller")
             from mm_controller import controller
             controller.run()
         else:
-            print("Controller is running. Use systemctl.")
+            print("Controller is running. Use /usr/bin/systemctl.")
     sys.exit(0)
 
 if __name__ == "__main__":
