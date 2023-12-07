@@ -17,6 +17,14 @@ def restart_service_if_running():
         except FileNotFoundError:
             subprocess.run(["sudo", "systemctl", "restart", "mmctrl.service"], shell=True)
 
+def enable_service():
+    """Restarts the service if it is running."""
+    if service_running:
+        try:
+            subprocess.run(["sudo", "enable", "--now", "mmctrl.service"])
+        except FileNotFoundError:
+            subprocess.run(["sudo", "enable", "--now", "mmctrl.service"], shell=True)
+
 def cli():
     parser = argparse.ArgumentParser(prog='mmctrl',
                     description='The is the MosquitoMax Controller. Use it to calibrate the device, run diagnostics and start the controller',
@@ -45,8 +53,12 @@ def cli():
     if args.register:
         print("Running registration...")
         from mm_controller import register_device
-        register_device.register()
-        restart_service_if_running()
+        if not register_device.is_registered():
+            register_device.register()
+            enable_service()
+        else:
+            print("Device password exists. Skipping...")
+            restart_service_if_running()
     if args.diagnostics:
         print("Running diagnostics...")
         from mm_controller import device_sensors

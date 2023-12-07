@@ -14,6 +14,13 @@ apipath = "/api/v1/device/register"
 device_info = {"device_email": config.device_email,"serial_number": config.device_serial_number, "mac_address": config.device_mac_address, "name": "My Mister"}
 url = apihost + apipath
 
+def is_registered():
+    # check for existing password in config.json
+    with config.configfile.open("r") as configreader:
+        configfile_contents = json.loads(configreader.read())
+
+    return configfile_contents["device"]["password"] != ""
+
 def register():
     # call API to register device
     try:

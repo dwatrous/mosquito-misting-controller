@@ -8,12 +8,13 @@ from pathlib import Path
 import logging
 
 from mm_controller import constants
-from mm_controller.utils import onpi, Config
+from mm_controller.utils import onpi, Config, app_log
 
 def start_hotspot():
     status_led_hotspot()
     configurator_path = Path("/home/mm/.ctrlenv/bin/configurate")
-    subprocess.run(["python", configurator_path])
+    app_log.debug("About to subprocess.run(%s)" % configurator_path)
+    subprocess.run([configurator_path])
     status_led_ready()
 
 # create a signal for the float switch, set when FALLING, clear with RISING
@@ -30,7 +31,7 @@ if onpi:
     gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH, pull_up=True)
     gpioctrl_float_switch.when_pressed = float_switch_signal.clear
     gpioctrl_float_switch.when_released = float_switch_signal.set
-    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, pull_up=True, hold_time=10)
+    gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, pull_up=True, hold_time=7)
     gpioctrl_reset_button.when_held = start_hotspot
     # setup ADS1115
     import Adafruit_ADS1x15
