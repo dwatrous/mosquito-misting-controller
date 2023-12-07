@@ -61,7 +61,6 @@ def cli():
     args = parser.parse_args()
 
     print("Log level: %s" % args.loglevel)
-    print("Service running: %s" % service_is_running())
     if args.version:
         print(version('mm_controller'))
         sys.exit(0)
