@@ -135,8 +135,8 @@ class device:
                     schedule.run_pending()
                     time.sleep(interval)
 
-        continuous_thread = ScheduleThread()
-        continuous_thread.start()
+        self.schedule_thread = ScheduleThread()
+        self.schedule_thread.start()
 
     def schedule_daysofweek(self, daystospray, spraytime, dofunc, tag):
         logging.info({"schedule_daysofweek": {"daystospray": daystospray, "spraytime": spraytime, "dofunc": dofunc, "tag": tag}})

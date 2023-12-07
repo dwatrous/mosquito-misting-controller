@@ -51,6 +51,7 @@ def register():
         mydevice["config"] = new_default_device.get_devicedefinition()
         reg_cloud.device_update(mydevice)
         new_default_device.schedule_thread_kill_signal.set()
+        new_default_device.schedule_thread.join()
         del new_default_device
 
     app_log.info("Device Registerd")
