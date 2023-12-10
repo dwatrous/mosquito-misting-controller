@@ -1,5 +1,6 @@
 # Import Firebase REST API 
 import json
+from string import Template
 import threading
 from time import sleep
 import firebase
@@ -114,7 +115,9 @@ class Cloud(object):
         app_log.info("Sent message with event: %s" % event)
 
     def listen_for_messages_url(self):
-        url = self.config.get_config()["firebase"]["databaseURL"] + "/messages.json?auth=" + self.idtoken
+        message_path_template = Template("/messages.json?auth=$idtoken&orderBy=\"$orderby\"&equalTo=\"$equalto\"")
+        message_path = message_path_template.substitute(idtoken=self.idtoken, orderby="recipient", equalto=self.device_get()["uid"] )
+        url = self.config.get_config()["firebase"]["databaseURL"] + message_path
         return url
     
     def listen_for_messages(self, callback):

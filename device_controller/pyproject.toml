@@ -1,6 +1,6 @@
 [project]
 name = "mm-controller"
-version = "0.1.22"
+version = "0.1.23"
 description = "MosquitoMax Controller"
 authors = [
     {name = "Daniel Watrous", email = "dwmaillist@gmail.com"},
