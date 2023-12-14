@@ -45,6 +45,17 @@ def enable_service():
     """Enable and start the service (usually after registration)."""
     subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "enable", "--now", "mmctrl.service"])
 
+def get_loglevel(loglevel_arg):
+    import logging
+    if loglevel_arg == "DEBUG":
+        return logging.DEBUG
+    elif loglevel_arg == "INFO":
+        return logging.INFO
+    elif loglevel_arg == "WARN":
+        return logging.WARN
+    elif loglevel_arg == "ERROR":
+        return logging.ERROR
+
 def cli():
     parser = argparse.ArgumentParser(prog='mmctrl',
                     description='The is the MosquitoMax Controller. Use it to calibrate the device, run diagnostics and start the controller',
@@ -56,19 +67,22 @@ def cli():
     parser.add_argument("-c", "--calibrate", action="store_true", help="Calibrate connected devices.")
     parser.add_argument("-r", "--register", action="store_true", help=argparse.SUPPRESS) # TODO secure this so consumers can't register devices
     parser.add_argument("--validate", choices=["cloud", "weather"], help="Run various exercises to validate connectivity.")
-    parser.add_argument("-l", "--loglevel", choices=["DEBUG", "INFO", "WARN", "ERROR"], default="INFO", help="Set logging level.")
+    parser.add_argument("-l", "--loglevel", choices=["DEBUG", "INFO", "WARN", "ERROR"], default="DEBUG", help="Set logging level.")
 
     args = parser.parse_args()
 
-    print("Log level: %s" % args.loglevel)
     if args.version:
         print(version('mm_controller'))
         sys.exit(0)
-    if args.calibrate:
-        print("Running calibration...")
-        from mm_controller import calibrate_device
-        calibrate_device.calibrate_all()
+    
+    try:
+        if args.calibrate:
+            print("Running calibration...")
+            from mm_controller import calibrate_device
+            calibrate_device.calibrate_all()
+    except KeyboardInterrupt:
         restart_service_if_running()
+        
     if args.register:
         print("Running registration...")
         from mm_controller import register_device
@@ -78,17 +92,26 @@ def cli():
         else:
             print("Device password exists. Skipping...")
             restart_service_if_running()
-    if args.diagnostics:
-        print("Running diagnostics...")
-        from mm_controller import device_sensors
-        device_sensors.rundiagnostics()
+
+    try:
+        if args.diagnostics:
+            print("Running diagnostics...")
+            from mm_controller import device_sensors
+            device_sensors.rundiagnostics()
+            restart_service_if_running()
+    except KeyboardInterrupt:
         restart_service_if_running()
+        
     if args.validate == "cloud":
        pass
     elif args.validate == "weather":
        pass
-    if args.start:
+    if args.start:        
         if not service_is_running():
+            print("Log level: %s" % args.loglevel)
+            from mm_controller.utils import my_handler
+            my_handler.setLevel(get_loglevel(args.loglevel))
+            
             print("Run controller")
             from mm_controller import controller
             controller.run()
