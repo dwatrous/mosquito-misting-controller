@@ -31,6 +31,10 @@ if onpi:
     gpioctrl_float_switch = Button(constants.GPIO_FLOAT_SWITCH, pull_up=True)
     gpioctrl_float_switch.when_pressed = float_switch_signal.clear
     gpioctrl_float_switch.when_released = float_switch_signal.set
+    if gpioctrl_float_switch.value:
+        float_switch_signal.clear()
+    else:
+        float_switch_signal.set()
     gpioctrl_reset_button = Button(constants.GPIO_RESET_BUTTON, pull_up=True, hold_time=7)
     gpioctrl_reset_button.when_held = start_hotspot
     # setup ADS1115
