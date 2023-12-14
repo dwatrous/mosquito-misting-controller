@@ -90,6 +90,9 @@ class device:
             self.load_devicedefinition_from_cloud(reload=True)
             self.schedule_sprays()
             self.send_status_update()
+        if message["message"]["event"] == "SKIPNEXT":
+            self.cancel_next_spray()
+            self.send_status_update()
         return True
 
     def check_system(self):
@@ -102,7 +105,7 @@ class device:
                             {
                                 "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
                                 "solution_weight": device_sensors.read_current_weight(),
-                                "next_spray": self.get_next_spray(),
+                                "next_spray": self.get_next_spraytime(),
                                 "timestamp": datetime.datetime.utcnow()
                             }
                         }
@@ -186,15 +189,26 @@ class device:
                     self.schedule_daysofweek(sprayoccurence["daysofweek"], spraytime, spray_zone.execute_spray, "relativetime")
         self.schedule_status_updates()
 
+    def get_next_spraytime(self):
+        return self.get_next_spray().astimezone(datetime.timezone.utc)
+
     def get_next_spray(self):
         if schedule.next_run('fixedtime') > schedule.next_run('relativetime'):
             nextspray = schedule.next_run('relativetime')
         else:
             nextspray = schedule.next_run('fixedtime')
-        return nextspray.astimezone(datetime.timezone.utc)
-        
+        return nextspray
+    
+    def cancel_next_spray(self):
+        nextspray = self.get_next_spray()
+        for pendingjob in schedule.get_jobs():
+            if pendingjob.next_run == nextspray:
+                schedule.cancel_job(pendingjob)
+
 if __name__ == '__main__':
     mydevice = device()
     mydevice.schedule_sprays()
-    print(mydevice.get_next_spray())
+    print(mydevice.get_next_spraytime())
+    mydevice.cancel_next_spray()
+    print(mydevice.get_next_spraytime())
     mydevice.send_status_update()
