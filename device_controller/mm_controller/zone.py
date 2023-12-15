@@ -1,6 +1,5 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
-import logging
 import datetime
 from math import floor
 import sched, time
@@ -10,7 +9,7 @@ import json
 from mm_controller.environment import environment
 from mm_controller import constants
 from mm_controller import device_sensors
-from mm_controller import utils
+from mm_controller.utils import onpi, app_log
 from mm_controller import cloud
 
 class zone:
@@ -19,6 +18,7 @@ class zone:
     zonecloud = cloud.Cloud()
 
     def __init__(self, zonedefinition=None, low_temp_threshold_f=50, rain_threshold_in=0.5) -> None:
+        self.spraying = False
         self.env = environment()
         self.spraydata = {}
         self.sensordata = []
@@ -92,19 +92,19 @@ class zone:
         open_time = int(time.time()*self.ms_in_second)
         try:
             # open valve
-            if valve == constants.VALVE_WATER and utils.onpi:
+            if valve == constants.VALVE_WATER and onpi:
                 device_sensors.gpioctrl_water_valve.on()
-            elif valve == constants.VALVE_CHEMICAL and utils.onpi:
+            elif valve == constants.VALVE_CHEMICAL and onpi:
                 device_sensors.gpioctrl_chemical_valve.on()
             else:
-                if utils.onpi:
-                    logging.error("Invalid valve: %d" % valve)
+                if onpi:
+                    app_log.error("Invalid valve: %d" % valve)
                 else:
-                    logging.info("Opened valve %d (not on pi)" % valve)
+                    app_log.info("Opened valve %d (not on pi)" % valve)
             
             # leave valve open for close_after_ms
             while int(time.time()*self.ms_in_second) < (open_time+close_after_ms):
-                if device_sensors.float_switch_signal.is_set() and valve != constants.GPIO_CHEMICAL_VALVE and utils.onpi:
+                if device_sensors.float_switch_signal.is_set() and valve != constants.GPIO_CHEMICAL_VALVE and onpi:
                     device_sensors.gpioctrl_chemical_valve.off()
                 time.sleep(0.001)
 
@@ -112,15 +112,15 @@ class zone:
             device_sensors.gpioctrl_water_valve.off()
             device_sensors.gpioctrl_chemical_valve.off()
         finally:
-            if valve == constants.VALVE_WATER and utils.onpi:
+            if valve == constants.VALVE_WATER and onpi:
                 device_sensors.gpioctrl_water_valve.off()
-            elif valve == constants.VALVE_CHEMICAL and utils.onpi:
+            elif valve == constants.VALVE_CHEMICAL and onpi:
                 device_sensors.gpioctrl_chemical_valve.off()
             else:
-                if utils.onpi:
-                    logging.error("Invalid valve: %d" % valve)
+                if onpi:
+                    app_log.error("Invalid valve: %d" % valve)
                 else:
-                    logging.info("Closed valve %d (not on pi)" % valve)
+                    app_log.info("Closed valve %d (not on pi)" % valve)
 
         # record close time in ms
         close_time = int(time.time()*self.ms_in_second)
@@ -131,23 +131,23 @@ class zone:
             "total_valve_time_ms": close_time-open_time
         }
         self.spraydata["valve_executions"].append(valve_opening)
-        logging.info(valve_opening)
+        app_log.info(valve_opening)
 
     def run_motor(self, close_after_ms):
         motor_start_time = int(time.time()*self.ms_in_second)
 
         try:
-            if utils.onpi: device_sensors.gpioctrl_motor.on()
+            if onpi: device_sensors.gpioctrl_motor.on()
             while int(time.time()*self.ms_in_second) < (motor_start_time+close_after_ms):
-                if device_sensors.float_switch_signal.is_set() and utils.onpi:
+                if device_sensors.float_switch_signal.is_set() and onpi:
                     device_sensors.gpioctrl_motor.off()
                 else:
                     device_sensors.gpioctrl_motor.on()
                 time.sleep(0.001)
         except:
-            if utils.onpi: device_sensors.gpioctrl_motor.off()
+            if onpi: device_sensors.gpioctrl_motor.off()
         finally:
-            if utils.onpi: device_sensors.gpioctrl_motor.off()
+            if onpi: device_sensors.gpioctrl_motor.off()
 
         motor_shutoff_time = int(time.time()*self.ms_in_second)
         self.spraydata["motor_timing"] = {
@@ -155,7 +155,7 @@ class zone:
             "motor_shutoff_time": motor_shutoff_time,
             "total_motor_run_time": motor_shutoff_time-motor_start_time
         }
-        logging.info(self.spraydata["motor_timing"])
+        app_log.info(self.spraydata["motor_timing"])
 
     # capture data from all sensors
     def capture_sensor_data(self, signal, sensordata, spray_start_time):
@@ -176,98 +176,102 @@ class zone:
                 )
             except Exception as ioerr:
                 # just pass and miss a reading
-                utils.app_log.error(ioerr)
+                app_log.error(ioerr)
             time.sleep(self.sensor_capture_interval_s)
         sensordata.put(readings)
 
     # execute spray
     def execute_spray(self, skip_override=False, spray_event="SCHEDULE"):
-        # clear and begin capturing data
-        spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
-        self.spraydata = {
-            "start_time": spray_start_time,
-            "spray_event": spray_event,
-            "valve_executions": []
-        }
-        sensorreadings = multiprocessing.Queue()
-        stop_reading_sensors = multiprocessing.Event()
-        # decide whether to spray at all
-        low_temp_last_24hr = self.env.get_low_temp_last_24hr()
-        low_temp_next_24hr = self.env.get_low_temp_next_24hr()
-        rain_prediction_next_24hr = self.env.get_rain_prediction_next_24hr()["inches"]
-        self.spraydata["low_temp_last_24hr"] = low_temp_last_24hr
-        self.spraydata["low_temp_next_24hr"] = low_temp_next_24hr
-        self.spraydata["rain_prediction_next_24hr"] = rain_prediction_next_24hr
-        if (low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f) and not skip_override:
-            # handle temperature skip
-            self.spraydata["skip"] = True
-            self.spraydata["skip_reason"] = "temperature"
-            logging.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
-            self.zonecloud.send_message("SKIP_SPRAY")
+        if not self.spraying:
+            # clear and begin capturing data
+            spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
+            self.spraydata = {
+                "start_time": spray_start_time,
+                "spray_event": spray_event,
+                "valve_executions": []
+            }
+            sensorreadings = multiprocessing.Queue()
+            stop_reading_sensors = multiprocessing.Event()
+            # decide whether to spray at all
+            low_temp_last_24hr = self.env.get_low_temp_last_24hr()
+            low_temp_next_24hr = self.env.get_low_temp_next_24hr()
+            rain_prediction_next_24hr = self.env.get_rain_prediction_next_24hr()["inches"]
+            self.spraydata["low_temp_last_24hr"] = low_temp_last_24hr
+            self.spraydata["low_temp_next_24hr"] = low_temp_next_24hr
+            self.spraydata["rain_prediction_next_24hr"] = rain_prediction_next_24hr
+            if (low_temp_last_24hr < self.low_temp_threshold_f or low_temp_next_24hr < self.low_temp_threshold_f) and not skip_override:
+                # handle temperature skip
+                self.spraydata["skip"] = True
+                self.spraydata["skip_reason"] = "temperature"
+                app_log.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
+                self.zonecloud.send_message("SKIP_SPRAY")
+                self.zonecloud.write_spray_occurence_ds(self.spraydata)
+                return
+            if rain_prediction_next_24hr > self.rain_threshold_in and not skip_override:
+                # handle rain skip
+                self.spraydata["skip"] = True
+                self.spraydata["skip_reason"] = "rain"
+                app_log.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
+                self.zonecloud.send_message("SKIP_SPRAY")
+                self.zonecloud.write_spray_occurence_ds(self.spraydata)
+                return
+            if False and not skip_override:   # TODO implement wind skip
+                # handle wind skip
+                pass
+            else:
+                self.spraydata["skip"] = False
+                self.spraydata["skip_reason"] = "skip override" if skip_override else None
+
+            # notify user and message spray execution
+            self.zonecloud.send_message("EXECUTE_SPRAY")
+            device_sensors.status_buzzer_beep(self.beep_duration)
+
+            # indicate running
+            device_sensors.status_led_running()
+            # calculate valve openings
+            valve_openings = self.calculate_valve_openings()
+            self.spraydata["valve_openings"] = valve_openings
+            water_valve_open = multiprocessing.Event()
+            # start motor
+            spray_start_time = int(time.time()*self.ms_in_second)
+            capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings, spray_start_time))
+            activate_motor = multiprocessing.Process(target=self.run_motor, kwargs={"close_after_ms": self.sprayduration_ms})
+            activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms + constants.WATER_REFILL_TIME_MS, "signal": water_valve_open})
+            # schedule valve openings
+            for valve_opening in valve_openings:
+                # the multiple of self.ms_in_second are to convert between seconds and milliseconds
+                self.valve_scheduler.enter(valve_opening["open_at_ms"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for_ms"]})
+            # start everything
+            capture_sensors.start()
+            time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
+            # start scheduled processes and threads
+            activate_watervalve.start()
+            activate_motor.start()
+            water_valve_open.wait()     # wait for water valve process to start before running chem valves
+            self.valve_scheduler.run()  # runs synchronously
+            #wait for everything to complete
+            activate_motor.join()
+            activate_watervalve.join()
+            spray_end_time = int(time.time()*self.ms_in_second)
+            time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data after everything finishes
+            stop_reading_sensors.set()
+            sensordata = sensorreadings.get()
+            capture_sensors.join()
+            self.spraydata["spray_timing"] = {
+                "spray_start_time": spray_start_time,
+                "spray_end_time": spray_end_time,
+                "total_spray_time_ms": spray_end_time-spray_start_time
+            }
+            self.spraydata["sensor_data"] = sensordata
+            # write spraydata to cloud
             self.zonecloud.write_spray_occurence_ds(self.spraydata)
-            return
-        if rain_prediction_next_24hr > self.rain_threshold_in and not skip_override:
-            # handle rain skip
-            self.spraydata["skip"] = True
-            self.spraydata["skip_reason"] = "rain"
-            logging.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
-            self.zonecloud.send_message("SKIP_SPRAY")
-            self.zonecloud.write_spray_occurence_ds(self.spraydata)
-            return
-        if False and not skip_override:   # TODO implement wind skip
-            # handle wind skip
-            pass
+            app_log.info(self.spraydata["spray_timing"])
+            app_log.debug(self.spraydata["sensor_data"])
+            # indicate ready
+            device_sensors.status_led_ready()
+            self.spraying = False
         else:
-            self.spraydata["skip"] = False
-            self.spraydata["skip_reason"] = "skip override" if skip_override else None
-
-        # notify user and message spray execution
-        self.zonecloud.send_message("EXECUTE_SPRAY")
-        device_sensors.status_buzzer_beep(self.beep_duration)
-
-        # indicate running
-        device_sensors.status_led_running()
-        # calculate valve openings
-        valve_openings = self.calculate_valve_openings()
-        self.spraydata["valve_openings"] = valve_openings
-        water_valve_open = multiprocessing.Event()
-        # start motor
-        spray_start_time = int(time.time()*self.ms_in_second)
-        capture_sensors = multiprocessing.Process(target=self.capture_sensor_data, args=(stop_reading_sensors, sensorreadings, spray_start_time))
-        activate_motor = multiprocessing.Process(target=self.run_motor, kwargs={"close_after_ms": self.sprayduration_ms})
-        activate_watervalve = multiprocessing.Process(target=self.open_valve, kwargs={"valve": constants.VALVE_WATER, "close_after_ms": self.sprayduration_ms + constants.WATER_REFILL_TIME_MS, "signal": water_valve_open})
-        # schedule valve openings
-        for valve_opening in valve_openings:
-            # the multiple of self.ms_in_second are to convert between seconds and milliseconds
-            self.valve_scheduler.enter(valve_opening["open_at_ms"]/self.ms_in_second, 1, self.open_valve, kwargs={"valve": constants.VALVE_CHEMICAL, "close_after_ms": valve_opening["open_for_ms"]})
-        # start everything
-        capture_sensors.start()
-        time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data before everything starts
-        # start scheduled processes and threads
-        activate_watervalve.start()
-        activate_motor.start()
-        water_valve_open.wait()     # wait for water valve process to start before running chem valves
-        self.valve_scheduler.run()  # runs synchronously
-        #wait for everything to complete
-        activate_motor.join()
-        activate_watervalve.join()
-        spray_end_time = int(time.time()*self.ms_in_second)
-        time.sleep(self.sensor_capture_buffer_s)   # let the sensors capture some data after everything finishes
-        stop_reading_sensors.set()
-        sensordata = sensorreadings.get()
-        capture_sensors.join()
-        self.spraydata["spray_timing"] = {
-            "spray_start_time": spray_start_time,
-            "spray_end_time": spray_end_time,
-            "total_spray_time_ms": spray_end_time-spray_start_time
-        }
-        self.spraydata["sensor_data"] = sensordata
-        # write spraydata to cloud
-        self.zonecloud.write_spray_occurence_ds(self.spraydata)
-        logging.info(self.spraydata["spray_timing"])
-        logging.debug(self.spraydata["sensor_data"])
-        # indicate ready
-        device_sensors.status_led_ready()
+            app_log.info("Already spraying. Ignore spray request.")
 
     # Functions to add sprayoccurrences
     def add_spray_occurrence (self, daysofweek, timeofday):
