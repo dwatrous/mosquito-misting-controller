@@ -5,6 +5,8 @@
 # gcloud source repos clone MosquitoMax
 # cd MosquitoMax/device_controller
 
+# https://pdm-project.org/latest/#installation
+
 # curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller V10.0 | bash
 
 # https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2023-10-10/
