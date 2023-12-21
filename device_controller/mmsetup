@@ -64,7 +64,7 @@ else
     mv /home/mm/config.json.template /home/mm/config.json
     echo 'export PATH="/home/mm/.ctrlenv/bin:$PATH"' >> /home/mm/.bashrc
     runuser -l mm -c 'python -m venv /home/mm/.ctrlenv'
-    runuser -l mm -c '/home/mm/.ctrlenv/bin/pip install /home/mm/mm_controller-0.1.27-py3-none-any.whl'
+    runuser -l mm -c '/home/mm/.ctrlenv/bin/pip install /home/mm/mm_controller-0.1.28-py3-none-any.whl'
     # systemctl daemon-reload
     # systemctl enable --now mmctrl.service
     logtoboth "* Plugin $pfx: Complete Phase post-install"
