@@ -6,6 +6,7 @@
 # cd MosquitoMax/device_controller
 
 # https://pdm-project.org/latest/#installation
+pdm build -v
 
 # curl -L https://raw.githubusercontent.com/gitbls/sdm/master/EZsdmInstaller V10.0 | bash
 
