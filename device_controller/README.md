@@ -53,6 +53,7 @@ export MM_WIFISSID='SSID'
 export MM_WIFIPASSWORD='PASSWORD'
 export MM_HOSTNAME='mmdevice'
 export MM_VERSION='0.1.0'
+export MM_USERPASSWORD='secretpass'
 ```
 
 For convenience, the above lines can be saved to a file called `factoryenv.sh`. This file can be sourced using `source factoryenv.sh`. Check that the environment variables are set correctly by running `env| grep MM_`.
@@ -122,7 +123,7 @@ sudo sdm --customize \
   --plugin copyfile:"filelist=sdmfilelist" \
   --plugin disables:piwiz \
   --plugin L10n:host \
-  --plugin user:"adduser=mm|password=secret" \
+  --plugin user:"adduser=mm|password=$MM_USERPASSWORD" \
   --plugin user:"deluser=pi" \
   --plugin network:"netman=nm|wifissid='$MM_WIFISSID'|wifipassword='$MM_WIFIPASSWORD'|wificountry=US|noipv6" \
   --plugin apps:"apps=python3-pip,python3-venv,python3-dev" \
