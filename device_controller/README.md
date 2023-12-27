@@ -81,7 +81,7 @@ The file `~/MosquitoMax/mmsetup` is a custom plugin for SDM that performs parts 
 
 ```
 cd ~/MosquitoMax
-sudo sudo cp mmsetup /usr/local/sdm/local-plugins/
+sudo cp mmsetup /usr/local/sdm/local-plugins/
 sudo chmod +x /usr/local/sdm/local-plugins/mmsetup
 ```
 
