@@ -192,3 +192,29 @@ The device MAC address can be found with this:
 ```
 cat /sys/class/net/wlan0/address
 ```
+### Check on the service
+mm_controller runs as a Linux system service. You can see the current status using this command (which includes some sample output):
+
+```
+mm@mmdwatrous:~ $ sudo systemctl status mmctrl.service
+● mmctrl.service - MosquitoMax Controller Service
+     Loaded: loaded (/etc/systemd/system/mmctrl.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2023-12-24 07:16:11 CST; 3 days ago
+   Main PID: 5246 (mmctrl)
+      Tasks: 11 (limit: 389)
+        CPU: 1h 53min 7.489s
+     CGroup: /system.slice/mmctrl.service
+             └─5246 /home/mm/.ctrlenv/bin/python /home/mm/.ctrlenv/bin/mmctrl --start
+```
+
+You can see the logs using this command:
+
+```
+sudo journalctl -f -u mmctrl.service
+```
+
+The service can be restarted with this command:
+
+```
+sudo systemctl restart mmctrl.service
+```
