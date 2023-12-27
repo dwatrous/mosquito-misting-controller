@@ -80,8 +80,14 @@ dist/mm_controller-0.1.0-py3-none-any.whl
 The file `~/MosquitoMax/mmsetup` is a custom plugin for SDM that performs parts of the mm-controller setup (see https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md for more information about plugins). This file must be copied into the SDM plugins directory.
 
 ```
-sudo cp ~/MosquitoMax/mmsetup /usr/local/sdm/local-plugins/
+cd ~/MosquitoMax
+sudo sudo cp mmsetup /usr/local/sdm/local-plugins/
 sudo chmod +x /usr/local/sdm/local-plugins/mmsetup
+```
+
+Verify that you have the first file using `cat` as follows
+```
+cat /usr/local/sdm/local-plugins/mmsetup
 ```
 
 ### SDM components
