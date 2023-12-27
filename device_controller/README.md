@@ -97,6 +97,20 @@ unxz -k 2023-10-10-raspios-bookworm-armhf-lite.img.xz
 ```
 NOTE: On Windows, 7-zip is much faster than unxz and can to extract the .xz file.
 
+#### Faster clean up on Linux
+To make cleanup faster on Linux, you can create a copy of the .img file and use that to avoid decompressing the .xz file. Store the original with this command:
+
+```
+cp 2023-10-10-raspios-bookworm-armhf-lite.img 2023-10-10-raspios-bookworm-armhf-lite.img.copy
+```
+
+Clean up like this
+```
+rm 2023-10-10-raspios-bookworm-armhf-lite.img
+rm mm.img
+cp 2023-10-10-raspios-bookworm-armhf-lite.img.copy 2023-10-10-raspios-bookworm-armhf-lite.img
+```
+
 ### Build the image
 Before you run this, double check that the environment variables are set (see [Setup the environment](#setup-the-environment)))
 
