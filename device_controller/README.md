@@ -1,6 +1,9 @@
 This file explains how to deliver the mm-controller service
 
 ## Tools required to deliver mm-controller
+The following tools are used to build and deliver the mm_controller service
+
+### Required tools
 
 * git
   * Linux: `sudo apt install git fdisk`
@@ -134,7 +137,7 @@ sudo sdm --customize \
   --plugin network:"netman=nm|wifissid='$MM_WIFISSID'|wifipassword='$MM_WIFIPASSWORD'|wificountry=US|noipv6" \
   --plugin apps:"apps=python3-pip,python3-venv,python3-dev" \
   --plugin mmsetup:"version=$MM_VERSION" \
-  --extend --xmb 500 \
+  --extend --xmb 1000 \
   --restart \
   --host $MM_HOSTNAME \
   2023-10-10-raspios-bookworm-armhf-lite.img
@@ -174,3 +177,18 @@ sed -i -E "s/[0-9]+\.[0-9]+\.[0-9]+/$MM_VERSION/g" pyproject.toml sdmfilelist
 1. Build a new wheel (see [Build the Python wheel](#build-the-python-wheel))
 1. Build a new SD card image (see [Build the SD card image](#build-the-sd-card-image))
 1. Use Raspberry Pi imager to write the SD card
+
+## Device details
+If needed, various details can be captured directly from the device. 
+
+To find the serial number of the device, this can be run while logged in to the device.
+
+```
+cat /sys/firmware/devicetree/base/serial-number
+```
+
+The device MAC address can be found with this:
+
+```
+cat /sys/class/net/wlan0/address
+```
