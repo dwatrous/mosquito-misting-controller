@@ -49,22 +49,26 @@ Next, get the raspios image. You can download it here: https://downloads.raspber
 Set the 'factory' WiFi credentials as environment variables. The SSID needs to reference a 2.4GHz network.
 
 ```
-export WIFISSID='SSID'
-export WIFIPASSWORD='PASSWORD'
-export HOSTNAME='mmdevice'
-export VERSION='0.1.0'
+export MM_WIFISSID='SSID'
+export MM_WIFIPASSWORD='PASSWORD'
+export MM_HOSTNAME='mmdevice'
+export MM_VERSION='0.1.0'
 ```
+
+For convenience, the above lines can be saved to a file called `factoryenv.sh`. This file can be sourced using `source factoryenv.sh`. Check that the environment variables are set correctly by running `env| grep MM_`.
 
 ## Build the Python wheel
 
 A python wheel provides a way to package an installable python application: https://realpython.com/python-wheels/. The PDM tool is makes it possible to bundle all the mm-controller files into wheel package. These can then be installed using pip: https://realpython.com/what-is-pip/. The files `~/MosquitoMax/pyproject.toml` contains the instructions used by PDM to build the wheel. Build the wheel package as follows:
+
+NOTE: Before running this, make sure the MM_VERSION is correct and all files are updated (see [Version numbers](#version-numbers]))
 
 ```
 cd ~/MosquitoMax/device_controller
 pdm build -v
 ```
 
-This produces the following two files, where `0.1.0` is the version number (see below for more about the version number).
+This produces the following two files, where `0.1.0` represents the version number.
 ```
 dist/mm_controller-0.1.0.tgz
 dist/mm_controller-0.1.0-py3-none-any.whl
@@ -94,11 +98,26 @@ unxz -k 2023-10-10-raspios-bookworm-armhf-lite.img.xz
 NOTE: On Windows, 7-zip is much faster than unxz and can to extract the .xz file.
 
 ### Build the image
+Before you run this, double check that the environment variables are set (see [Setup the environment](#setup-the-environment)))
+
 SDM can now be used to build the SD card image. This will take a few minutes.
 ```
-sudo sdm --customize --plugin raspiconfig:"i2c=0" --plugin copyfile:"filelist=sdmfilelist" --plugin disables:piwiz --plugin L10n:host --plugin user:"adduser=mm|password=secret" --plugin user:"deluser=pi" --plugin network:"netman=nm|wifissid='$WIFISSID'|wifipassword='$WIFIPASSWORD'|wificountry=US|noipv6" --plugin apps:"apps=python3-pip,python3-venv,python3-dev" --plugin mmsetup:"version=$VERSION" --extend --xmb 500 --restart --host $HOSTNAME 2023-10-10-raspios-bookworm-armhf-lite.img
+cd ~/MosquitoMax
+sudo sdm --customize \
+  --plugin raspiconfig:"i2c=0" \
+  --plugin copyfile:"filelist=sdmfilelist" \
+  --plugin disables:piwiz \
+  --plugin L10n:host \
+  --plugin user:"adduser=mm|password=secret" \
+  --plugin user:"deluser=pi" \
+  --plugin network:"netman=nm|wifissid='$MM_WIFISSID'|wifipassword='$MM_WIFIPASSWORD'|wificountry=US|noipv6" \
+  --plugin apps:"apps=python3-pip,python3-venv,python3-dev" \
+  --plugin mmsetup:"version=$MM_VERSION" \
+  --extend --xmb 500 \
+  --restart \
+  --host $MM_HOSTNAME \
+  2023-10-10-raspios-bookworm-armhf-lite.img
 ```
-
 
 ### Burn the image
 The image can be 'burned' to a file and written to an SD card using the Raspberry Pi imager. This method is perferred for Windows, because WSL doesn't have direct access to SD card readers.
@@ -117,20 +136,15 @@ xz -k mm.img
 gsutil cp mm.img.xz gs://sdm-builds
 ```
 
-OPTIONAL: If you want to copy a new version of the whl file to an existing image, you can use the copyfile plugin.
-```
-sudo sdm --plugin copyfile:"from=dist/mm_controller-0.1.0-py3-none-any.whldist/mm_controller-0.1.0-py3-none-any.whl|to=/home/mm/controller" 2023-10-10-raspios-bookworm-armhf-lite.img
-```
-
 ## Version numbers
 The version number is indicated in three places:
 1. pyproject.toml
 1. sdmfilelist
-1. in the VERSION environment variable (see [Setup the environment](#setup-the-environment))
+1. in the MM_VERSION environment variable (see [Setup the environment](#setup-the-environment))
 
-If you have updated the VERSION environment variable, you can use the following sed command to update both files.
+If you have updated the MM_VERSION environment variable, you can use the following sed command to update both files.
 ```
-sed -i -E "s/[0-9]+\.[0-9]+\.[0-9]+/$VERSION/g" pyproject.toml sdmfilelist
+sed -i -E "s/[0-9]+\.[0-9]+\.[0-9]+/$MM_VERSION/g" pyproject.toml sdmfilelist
 ```
 
 ## Creating a new release of mm_controller
