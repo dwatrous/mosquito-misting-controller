@@ -85,9 +85,15 @@ class device:
             # TODO need to change this when implementing multiple zones
             self.zones[0].execute_spray(skip_override=True, spray_event="USER")
             self.send_status_update()
+        if message["message"]["event"] == "SPRAYWATER":
+            # TODO need to change this when implementing multiple zones
+            self.zones[0].execute_spray(skip_override=True, spray_event="USER", water_only=True)
+            self.send_status_update()
         if message["message"]["event"] == "REFRESHCONFIG":
             self.load_devicedefinition_from_cloud(reload=True)
             self.schedule_sprays()
+            self.send_status_update()
+        if message["message"]["event"] == "STATUS":
             self.send_status_update()
         if message["message"]["event"] == "SKIPNEXT":
             self.cancel_next_spray()
