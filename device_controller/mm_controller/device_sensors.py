@@ -11,11 +11,16 @@ from mm_controller import constants
 from mm_controller.utils import onpi, Config, app_log
 
 def start_hotspot():
-    status_led_hotspot()
-    configurator_path = Path("/home/mm/.ctrlenv/bin/configurate")
-    app_log.debug("About to subprocess.run(%s)" % configurator_path)
-    subprocess.run([configurator_path])
-    status_led_ready()
+    try:
+        status_led_hotspot()
+        configurator_path = Path("/home/mm/.ctrlenv/bin/configurate")
+        app_log.debug("About to subprocess.run(%s)" % configurator_path)
+        subprocess.run([configurator_path], shell=False)
+    except Exception as err:
+        app_log.error("Failed to run configurator")
+        app_log.error(err.with_traceback)
+    finally:
+        status_led_ready()
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()
