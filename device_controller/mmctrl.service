@@ -9,8 +9,8 @@ WorkingDirectory=/home/mm/
 Environment="PATH=/home/mm/.ctrlenv/bin"
 ExecStart=/home/mm/.ctrlenv/bin/mmctrl --start
 ExecReload=/bin/kill -s HUP $MAINPID
-Restart=always
-RestartSec=5
+Restart=on-failure
+RestartSec=60
 
 [Install]
 WantedBy=multi-user.target
