@@ -181,7 +181,7 @@ class zone:
         sensordata.put(readings)
 
     # execute spray
-    def execute_spray(self, skip_override=False, spray_event="SCHEDULE"):
+    def execute_spray(self, skip_override=False, spray_event="SCHEDULE", water_only=False):
         if not self.spraying:
             # clear and begin capturing data
             spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
@@ -228,6 +228,7 @@ class zone:
 
             # indicate running
             device_sensors.status_led_running()
+            self.spraydata["water_only"] = water_only
             # calculate valve openings
             valve_openings = self.calculate_valve_openings()
             self.spraydata["valve_openings"] = valve_openings
@@ -248,7 +249,8 @@ class zone:
             activate_watervalve.start()
             activate_motor.start()
             water_valve_open.wait()     # wait for water valve process to start before running chem valves
-            self.valve_scheduler.run()  # runs synchronously
+            if not water_only:  # don't open chemical valve for water only spray
+                self.valve_scheduler.run()  # runs synchronously
             #wait for everything to complete
             activate_motor.join()
             activate_watervalve.join()
