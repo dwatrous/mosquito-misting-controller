@@ -1,6 +1,6 @@
 [project]
 name = "mm-controller"
-version = "0.1.30"
+version = "0.1.31"
 description = "MosquitoMax Controller"
 authors = [
     {name = "Daniel Watrous", email = "dwmaillist@gmail.com"},
@@ -22,6 +22,7 @@ dependencies = [
     "gpiozero",
     "rpi-gpio",
     "lgpio",
+    "psutil",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

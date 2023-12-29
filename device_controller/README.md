@@ -218,3 +218,12 @@ The service can be restarted with this command:
 ```
 sudo systemctl restart mmctrl.service
 ```
+
+### Device log
+Device logs are located in `/home/mm` and can be views like this.
+
+```
+tail -f device.log
+```
+
+Logs rollover each day, with old logs having the date in the filename, like `device.log.2023-12-22`.
