@@ -6,6 +6,7 @@ import schedule
 import json
 import time
 import datetime
+from importlib.metadata import version
 
 from mm_controller import zone
 from mm_controller import device_sensors
@@ -111,7 +112,8 @@ class device:
                                 "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
                                 "solution_weight": device_sensors.read_current_weight(),
                                 "next_spray": self.get_next_spraytime(),
-                                "timestamp": datetime.datetime.utcnow()
+                                "timestamp": datetime.datetime.utcnow(),
+                                "version": version('mm_controller')
                             }
                         }
         self.device_cloud.device_update(status_update)
