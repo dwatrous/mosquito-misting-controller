@@ -78,6 +78,18 @@ dist/mm_controller-0.1.0.tgz
 dist/mm_controller-0.1.0-py3-none-any.whl
 ```
 
+### Push to cloud for broader distribution
+Using gsutil, this new build can be pushed to the cloud and installed on individual devices. Use this command:
+
+Windows
+```
+gsutil cp .\dist\mm_controller-0.1.32-py3-none-any.whl gs://mm_controller_releases/
+```
+
+```
+gsutil cp dist/mm_controller-0.1.32-py3-none-any.whl gs://mm_controller_releases/
+```
+
 ## Build the SD card image
 ### Setup
 The file `~/MosquitoMax/mmsetup` is a custom plugin for SDM that performs parts of the mm-controller setup (see https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md for more information about plugins). This file must be copied into the SDM plugins directory.
