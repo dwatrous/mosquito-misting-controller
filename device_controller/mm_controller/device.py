@@ -99,6 +99,12 @@ class device:
         if message["message"]["event"] == "SKIPNEXT":
             self.cancel_next_spray()
             self.send_status_update()
+        if message["message"]["event"] == "CALIBRATE":
+            pass
+            # use subprocess to run calibrate and then restart
+        if message["message"]["event"] == "UPGRADE":
+            self.device_cloud.download_latest_release(path="/home/mm")
+            # use subprocess to pip install and then restart
         return True
 
     def check_system(self):
@@ -107,13 +113,17 @@ class device:
             device_sensors.status_led_ready()
     
     def send_status_update(self):
+        try:
+            software_version = version('mm_controller')
+        except:
+            software_version = "0.0.0"
         status_update = {"status": 
                             {
                                 "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
                                 "solution_weight": device_sensors.read_current_weight(),
                                 "next_spray": self.get_next_spraytime(),
                                 "timestamp": datetime.datetime.utcnow(),
-                                "version": version('mm_controller')
+                                "version": software_version
                             }
                         }
         self.device_cloud.device_update(status_update)

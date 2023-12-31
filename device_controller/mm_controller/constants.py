@@ -16,6 +16,12 @@ visualcrossing_api = {
 }
 visualcrossing_refresh_threshold = 60 * 60 * 6  # 6 hours in seconds
 
+# mm_api
+mm_api_host = "https://mm-api-shbeom7lea-uc.a.run.app"
+mm_api_register = "/api/v1/device/register"
+mm_api_latest_release = "/api/v1/latest_release"
+mm_api_latest_release_download = "/api/v1/latest_release/download"
+
 # device constants
 email_representation_domain = "mosquitomax.com"
 

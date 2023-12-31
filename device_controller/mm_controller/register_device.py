@@ -4,15 +4,13 @@ import json
 from mm_controller.utils import Config, app_log
 from mm_controller import cloud
 from mm_controller.device import device
+from mm_controller.constants import mm_api_host, mm_api_register
 
 config = Config()
 reg_cloud = cloud.Cloud()
 
-apihost = "https://mm-api-shbeom7lea-uc.a.run.app"
-apipath = "/api/v1/device/register"
-
 device_info = {"device_email": config.device_email,"serial_number": config.device_serial_number, "mac_address": config.device_mac_address, "name": "My Mister"}
-url = apihost + apipath
+url = mm_api_host + mm_api_register
 
 def is_registered():
     # check for existing password in config.json
@@ -42,7 +40,6 @@ def register():
 
     # authenticate and confirm device registration
     config.reload = True
-    device_account = reg_cloud.get_authenticated_device_account()
 
     # create default device config and save
     mydevice = reg_cloud.device_get()

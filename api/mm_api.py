@@ -1,20 +1,3 @@
-# ┌────────────────┐               ┌─────────────┐               ┌───────────────────┐
-# │                │               │             │               │                   │
-# │  Smart Device  │               │   Backend   │               │   Firebase Auth   │
-# │                │               │             │               │                   │
-# └────────────────┘               └─────────────┘               └───────────────────┘
-
-
-#             device_email/password              /v1/accounts:signInWithPassword
-#          ─────────────────────────►          ─────────────────────────────►
-
-#                                                                 ┌──────────────────┐
-#          ◄──────────────────────────        ◄────────────────── │ ID/Refresh token │
-#                                                                 └──────────────────┘
-#            request action/resource
-#              (ID Token)                       auth.verify_id_token
-#          ──────────────────────────►        ──────────────────────────────►
-
 # docker build -t mmapi .
 # docker run -p 8080:8080 -v C:\Users\Daniel\Documents\mosquito-controller\MosquitoMax\api\creds:/creds mmapi
 # gcloud builds submit --config cloudbuild.yaml
@@ -27,20 +10,16 @@ import re
 import requests
 import json
 import random
+from google.cloud import storage
+from google.auth import default
 
 #Initialize Firestore
-try:
-    cred = credentials.Certificate("/creds/credfile.json")
-except:
-    # this case is for local development
-    import os
-    dirname = os.path.dirname(__file__)
-    filename = os.path.join(dirname, 'creds/credfile.json')
-    cred = credentials.Certificate(filename)
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app()
 
 # api key
 apikey = "FIREBASE_API_KEY_PLACEHOLDER"
+
+release_bucket_name = "mm_controller_releases"
 
 # Get a reference to the collection
 db = firestore.client()
@@ -48,6 +27,23 @@ device_collection = db.collection("devices")
 accounts_collection = db.collection("accounts")
 
 app = Flask(__name__)
+
+def get_latest_release():
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(release_bucket_name)
+
+    latest_release_url = None
+    latest_version = None
+
+    for blob in bucket.list_blobs():
+        match = re.match(r"mm_controller-(.*)-py3-none-any.whl", blob.name)
+        if match:
+            version = match.group(1)
+            if latest_version is None or version > latest_version:
+                latest_version = version
+                latest_release_url = f"gs://{release_bucket_name}/{blob.name}"
+
+    return {"version": latest_version, "bucket": release_bucket_name, "object": blob.name, "url": latest_release_url}
 
 # function to validate serial number for RPi
 def validate_rpi_serial_number(number):
@@ -90,54 +86,6 @@ def device_register():
     device_config = {"device_password": password}
     return device_config
 
-# Authenticate a new device
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"password": "3cc8d7f404a1580c7c6b7ed40d0e4a9d8bc3c7b5bc268493ceb7799f790a", "device_email": "000000003d1d1c36@mosquitomax.com"}' http://127.0.0.1:8080/api/v1/device/auth
-@app.post("/api/v1/device/auth")
-def device_auth():
-    # get credentials in request
-    device_creds = request.get_json()
-    # TODO validate the the values make sense, e.g. the device_email is a valid email address
-    # TODO consider sanitizing the input
-    # sign in with provided device_email and password
-    url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+apikey
-
-    headers = {"Content-Type": "application/json"}
-
-    data = {
-        "email": device_creds["device_email"],
-        "password": device_creds["password"],
-        "returnSecureToken": True
-    }
-
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-
-    # verify that device_email matches
-    if response.status_code == 200:
-        return response.content
-    else:
-        return "Something went wrong. Auth failed", 400
-
-# Refresh an ID token
-# TEST: curl -X POST -H 'Content-Type: application/json' -d '{"refresh_token": "AMf-vBwyo_hTtL2Gy5VfVGp-bsefl9X-lRUr5ThndhtINsu8NSqVjYLW__BwJbtlARADcrmhS5KCwuao_iEObPYeO2mOjMel_eKxxbK3CrLlYUKrRL0T1KjQn13XrJRxXvs5JzIxW7-SOQk5fXkLpj7ZYeKk3Y6ZORgbJb-_z4SHRgVfXFKD1JnL8vxM5vruZAjcUMeeho1jd8Ald_meu2JyTS5ItMz2RNyn436y0tjZ7PYKR1V6mz4"}' http://127.0.0.1:8080/api/v1/device/auth/refresh
-@app.post("/api/v1/device/auth/refresh")
-def device_auth_refresh():
-    # get credentials in request
-    refresh_token = request.get_json()
-    # TODO consider sanitizing the input
-    # sign in with provided device_email and password
-    url = "https://securetoken.googleapis.com/v1/token?key="+apikey
-
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-
-    data = "grant_type=refresh_token&refresh_token="+refresh_token["refresh_token"]
-
-    response = requests.post(url, headers=headers, data=data)
-
-    if response.status_code == 200:
-        return response.content
-    else:
-        return "Something went wrong. Auth refresh failed", 400
-
 def authenticate(function):
 
     @wraps(function)
@@ -156,22 +104,30 @@ def authenticate(function):
 
     return wrapper
 
-# get details about a device
-# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNTAzOTI1LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI2MTk3MjMsImV4cCI6MTY5MjYyMzMyMywiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Rrbz41ECUgJWjLIi2Snmwysm9l0N-LXTspi4xtmpYrq_TyoK6Ag2UskfutY6NT6sYo6zrWL2xb9ayMII1mUIRBf1n1u144n3XTjYEibFbAGlcmG8xWpl2EkThJHUbZA09XAOLaD9zmkkpMLm_NG2qK-r7Yn3FCzuyE4FWSimX0JM-k47UAUESSWo13GV0vtbqEffJHwCZcv0hLnPErXnLzzlTItONj5KmcggnSaEVvU3Q6hto9HL9ExTapIh6tR9v1X1dKQShSfeVcxZuIobObcFT2fXp3RvVkxSqtCGRbN_yuFKSauZ_W8UMXeNrWnWxvMg1bHNlZh378t4rhnoKg' http://127.0.0.1:8080/api/v1/device
-@app.get("/api/v1/device")
+# get the latest release available for controller devices
+# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNTAzOTI1LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI2MTk3MjMsImV4cCI6MTY5MjYyMzMyMywiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Rrbz41ECUgJWjLIi2Snmwysm9l0N-LXTspi4xtmpYrq_TyoK6Ag2UskfutY6NT6sYo6zrWL2xb9ayMII1mUIRBf1n1u144n3XTjYEibFbAGlcmG8xWpl2EkThJHUbZA09XAOLaD9zmkkpMLm_NG2qK-r7Yn3FCzuyE4FWSimX0JM-k47UAUESSWo13GV0vtbqEffJHwCZcv0hLnPErXnLzzlTItONj5KmcggnSaEVvU3Q6hto9HL9ExTapIh6tR9v1X1dKQShSfeVcxZuIobObcFT2fXp3RvVkxSqtCGRbN_yuFKSauZ_W8UMXeNrWnWxvMg1bHNlZh378t4rhnoKg' http://127.0.0.1:8080/api/v1/latest_release
+@app.get("/api/v1/latest_release")
 @authenticate
-def device_details(device_email):
-    # check for device
-    device_ref = device_collection.document(device_email)
-    device = device_ref.get()
-    # Check if the document exists
-    if device.exists:
-        # Get the data from the document
-        device = device.to_dict()
-    else:
-        # TODO return 404 Device not found
-        return "No such device", 404
-    return device
+def latest_release(device_email):
+    # get latest release
+    latest_release = get_latest_release()
+    return {"version": latest_release["version"]}
+
+# credentials, project_id = default()
+# storage_client = storage.Client(credentials=credentials, project=project_id)
+
+# download the latest release available for controller devices
+# TEST: curl -H 'X-ID-Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IjYzODBlZjEyZjk1ZjkxNmNhZDdhNGNlMzg4ZDJjMmMzYzIzMDJmZGUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vbW9zcXVpdG9tYXgtMzY0MDEyIiwiYXVkIjoibW9zcXVpdG9tYXgtMzY0MDEyIiwiYXV0aF90aW1lIjoxNjkyNTAzOTI1LCJ1c2VyX2lkIjoidld6M0hJTUtXUU5iaEdxQk1hTUNVbDRaZGV2MSIsInN1YiI6InZXejNISU1LV1FOYmhHcUJNYU1DVWw0WmRldjEiLCJpYXQiOjE2OTI2MTk3MjMsImV4cCI6MTY5MjYyMzMyMywiZW1haWwiOiJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZmlyZWJhc2UiOnsiaWRlbnRpdGllcyI6eyJlbWFpbCI6WyJkZXZpY2VfaWRkQG1vc3F1aXRvbWF4LmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Rrbz41ECUgJWjLIi2Snmwysm9l0N-LXTspi4xtmpYrq_TyoK6Ag2UskfutY6NT6sYo6zrWL2xb9ayMII1mUIRBf1n1u144n3XTjYEibFbAGlcmG8xWpl2EkThJHUbZA09XAOLaD9zmkkpMLm_NG2qK-r7Yn3FCzuyE4FWSimX0JM-k47UAUESSWo13GV0vtbqEffJHwCZcv0hLnPErXnLzzlTItONj5KmcggnSaEVvU3Q6hto9HL9ExTapIh6tR9v1X1dKQShSfeVcxZuIobObcFT2fXp3RvVkxSqtCGRbN_yuFKSauZ_W8UMXeNrWnWxvMg1bHNlZh378t4rhnoKg' http://127.0.0.1:8080/api/v1/latest_release/download
+@app.get("/api/v1/latest_release/download")
+@authenticate
+def latest_release_download(device_email):
+    # download latest release
+    latest_release = get_latest_release()
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(latest_release["bucket"])
+    blob = bucket.blob(latest_release["object"])
+    content = blob.download_as_bytes()
+    return content
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080)

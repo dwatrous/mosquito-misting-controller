@@ -1,5 +1,6 @@
 # Import Firebase REST API 
 import json
+import os
 from string import Template
 import threading
 from time import sleep
@@ -8,10 +9,13 @@ import datetime
 # from aiosseclient import aiosseclient
 import asyncio
 from aiohttp_sse_client2 import client as sse_client
+import requests
+import urllib.request
 # import logging
 # sse_client._LOGGER.setLevel(logging.INFO)
 
 from mm_controller.utils import Config, app_log
+from mm_controller.constants import mm_api_host, mm_api_latest_release, mm_api_latest_release_download
 
 class Cloud(object):
     # get Config
@@ -49,6 +53,7 @@ class Cloud(object):
 
     # Authentication
     def get_authenticated_device_account(self):
+        # TODO errors here cause the entire app to stop responding
         # handle initial authentication
         if self.authenticated_device_account == None:
             app_log.info("Perform initial device authentication")
@@ -67,7 +72,7 @@ class Cloud(object):
             device = self.auth.refresh(self.authenticated_device_account['refreshToken'])
             self.authenticated_device_account["idToken"] = device["idToken"]
             self.authenticated_device_account["expiresAt"] = device["expiresAt"]
-        # finally, return authenticated_device_account, which may just be the cached values
+        # return authenticated_device_account, which may just be the cached values
         return self.authenticated_device_account
         # TODO handle error case
 
@@ -75,6 +80,29 @@ class Cloud(object):
     def idtoken(self):
         return self.get_authenticated_device_account()["idToken"]
     
+    # mm_api
+    def get_latest_release(self):
+        headers = {"X-ID-Token": self.idtoken, "Content-Type": "application/json"}
+        try:
+            latest_release = requests.get(mm_api_host + mm_api_latest_release, headers=headers)
+            version = latest_release.json()
+        except:
+            app_log.error("Call to %s failed" % mm_api_host + mm_api_latest_release)
+            app_log.error(latest_release.content)
+        return version["version"]
+
+    def download_latest_release(self, path=None):
+        filename = Template(r"mm_controller-$version-py3-none-any.whl")
+        version = self.get_latest_release()
+        if path != None:
+            filepath = os.path.join(path, filename.substitute(version=version))
+        else:
+            filepath = filename.substitute(version=version)
+        opener = urllib.request.build_opener()
+        opener.addheaders = [("X-ID-Token", self.idtoken)]
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(mm_api_host + mm_api_latest_release_download, filepath)
+
     # Firestore
     def device_get(self):
         # handle initial authentication
@@ -211,12 +239,17 @@ if __name__ == '__main__':
                         {
                             "line_in_pressure": 50,
                             "solution_weight": 12.5,
+                            "version": "0.1.0",
                             "next_spray": datetime.datetime.now(),
                             "timestamp": datetime.datetime.now()
                         }
     }
     cloud.device_update(status_update)
-                     
+
+    # test getting version and download
+    version = cloud.get_latest_release()
+    print(version)
+    cloud.download_latest_release()
 
     # test messages
     def message_processor(message):
