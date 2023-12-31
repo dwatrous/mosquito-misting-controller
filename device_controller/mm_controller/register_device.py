@@ -25,7 +25,7 @@ def register():
         credentials = requests.post(url, json=device_info)
         creds = credentials.json()
     except:
-        app_log.error("Call to %s failed" % apipath)
+        app_log.error("Call to %s failed" % url)
         app_log.error(credentials.content)
         exit(1)
 
