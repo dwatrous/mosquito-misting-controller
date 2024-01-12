@@ -179,7 +179,7 @@ def status_led_error():
 
 def status_led_hotspot():
     if onpi:
-        status_led.blink(on_color=(0,1,0))
+        status_led.blink(on_color=(0,0,1))
     else:
         "LED: hotspot"
 
