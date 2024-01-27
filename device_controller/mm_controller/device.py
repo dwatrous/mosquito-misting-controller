@@ -1,6 +1,7 @@
 # Copyright MosquitoMax 2022, all rights reserved
 
 import logging
+import subprocess
 import threading
 import schedule
 import json
@@ -100,11 +101,12 @@ class device:
             self.cancel_next_spray()
             self.send_status_update()
         if message["message"]["event"] == "CALIBRATE":
-            pass
             # use subprocess to run calibrate and then restart
+            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-c", message["message"]["info"]])
         if message["message"]["event"] == "UPGRADE":
-            self.device_cloud.download_latest_release(path="/home/mm")
             # use subprocess to pip install and then restart
+            self.device_cloud.download_latest_release(path="/home/mm")
+            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-u"])
         return True
 
     def check_system(self):

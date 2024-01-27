@@ -52,7 +52,7 @@ def cli():
     parser.add_argument("-s", "--start", action="store_true", help="Start the controller.")
     parser.add_argument("-v", "--version", action="store_true", help="Print version and exit.")
     parser.add_argument("-d", "--diagnostics", action="store_true", help="Run diagnostics.")
-    parser.add_argument("-c", "--calibrate", choices=["SCALE", "LINE_IN", "LINE_OUT", "VACUUM", "ALL"], default="ALL", help="Calibrate connected devices.")
+    parser.add_argument("-c", "--calibrate", choices=["SCALE", "LINE_IN", "LINE_OUT", "VACUUM", "ALL"], nargs="*", help="Calibrate connected devices.")
     parser.add_argument("-r", "--register", action="store_true", help=argparse.SUPPRESS) # TODO secure this so consumers can't register devices
     parser.add_argument("-n", "--clean", action="store_true", help="Remove WiFi and logs from device.")
     parser.add_argument("--validate", choices=["cloud", "weather"], help="Run various exercises to validate connectivity.")
@@ -72,18 +72,23 @@ def cli():
             stop_service()
             print("Running calibration...")
             from mm_controller import calibrate_device
-            if args.calibrate == "SCALE" or args.calibrate == "ALL":
+            if "SCALE" in args.calibrate or "ALL" in args.calibrate:
+                print("Calibrating Scale")
                 calibrate_device.calibrate(scale=True)
-            if args.calibrate == "LINE_IN" or args.calibrate == "ALL":
+            if "LINE_IN" in args.calibrate or "ALL" in args.calibrate:
+                print("Calibrating Line IN")
                 calibrate_device.calibrate(line_in=True)
-            if args.calibrate == "LINE_OUT" or args.calibrate == "ALL":
+            if "LINE_OUT" in args.calibrate or "ALL" in args.calibrate:
+                print("Calibrating Line OUT")
                 calibrate_device.calibrate(line_out=True)
-            if args.calibrate == "VACUUM" or args.calibrate == "ALL":
+            if "VACUUM" in args.calibrate or "ALL" in args.calibrate:
+                print("Calibrating Vacuum")
                 calibrate_device.calibrate(vacuum=True)
         except KeyboardInterrupt:
             print("Calibration aborted.")
         finally:
             start_service()
+            sys.exit(0)
 
     # Clean the device
     if args.clean:
