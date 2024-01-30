@@ -11,6 +11,7 @@ import asyncio
 from aiohttp_sse_client2 import client as sse_client
 import requests
 import urllib.request
+import traceback
 # import logging
 # sse_client._LOGGER.setLevel(logging.INFO)
 
@@ -53,28 +54,31 @@ class Cloud(object):
 
     # Authentication
     def get_authenticated_device_account(self):
-        # TODO errors here cause the entire app to stop responding
-        # handle initial authentication
-        if self.authenticated_device_account == None:
-            app_log.info("Perform initial device authentication")
-            device = self.auth.sign_in_with_email_and_password(self.config.device_email, self.config.device_password)
-            self.authenticated_device_account = {
-                "uid": device["localId"],
-                "serial_number": device["displayName"],
-                "serial_number_as_email": device["email"],
-                "idToken": device["idToken"],
-                "refreshToken": device["refreshToken"],
-                "expiresAt": device["expiresAt"]
-            }
-        # handle refresh
-        if datetime.datetime.now() > datetime.datetime.fromtimestamp(self.authenticated_device_account["expiresAt"]):
-            app_log.info("Refreshing authentication at %s" % datetime.datetime.now())
-            device = self.auth.refresh(self.authenticated_device_account['refreshToken'])
-            self.authenticated_device_account["idToken"] = device["idToken"]
-            self.authenticated_device_account["expiresAt"] = device["expiresAt"]
-        # return authenticated_device_account, which may just be the cached values
-        return self.authenticated_device_account
+        try:
+            # TODO errors here cause the entire app to stop responding
+            # handle initial authentication
+            if self.authenticated_device_account == None:
+                app_log.info("Perform initial device authentication")
+                device = self.auth.sign_in_with_email_and_password(self.config.device_email, self.config.device_password)
+                self.authenticated_device_account = {
+                    "uid": device["localId"],
+                    "serial_number": device["displayName"],
+                    "serial_number_as_email": device["email"],
+                    "idToken": device["idToken"],
+                    "refreshToken": device["refreshToken"],
+                    "expiresAt": device["expiresAt"]
+                }
+            # handle refresh
+            if datetime.datetime.now() > datetime.datetime.fromtimestamp(self.authenticated_device_account["expiresAt"]):
+                app_log.info("Refreshing authentication at %s" % datetime.datetime.now())
+                device = self.auth.refresh(self.authenticated_device_account['refreshToken'])
+                self.authenticated_device_account["idToken"] = device["idToken"]
+                self.authenticated_device_account["expiresAt"] = device["expiresAt"]
+            # return authenticated_device_account, which may just be the cached values
+            return self.authenticated_device_account
         # TODO handle error case
+        except:
+            app_log.error("Error: %s" % traceback.format_exc())
 
     @property
     def idtoken(self):
@@ -98,10 +102,11 @@ class Cloud(object):
             filepath = os.path.join(path, filename.substitute(version=version))
         else:
             filepath = filename.substitute(version=version)
-        opener = urllib.request.build_opener()
-        opener.addheaders = [("X-ID-Token", self.idtoken)]
-        urllib.request.install_opener(opener)
-        urllib.request.urlretrieve(mm_api_host + mm_api_latest_release_download, filepath)
+        if not os.path.exists(filepath):
+            opener = urllib.request.build_opener()
+            opener.addheaders = [("X-ID-Token", self.idtoken)]
+            urllib.request.install_opener(opener)
+            urllib.request.urlretrieve(mm_api_host + mm_api_latest_release_download, filepath)
 
     # Firestore
     def device_get(self):
@@ -182,12 +187,12 @@ class Cloud(object):
                     # only process put and patch events
                     if event.type in ["put", "patch"]:
                         self.message_capture(event.data)
-        except ConnectionError as connerr:
-            app_log.error("ConnectionError: %s" % connerr.__traceback__)
-        except TimeoutError as timeerr:
-            app_log.error("TimeoutError: %s" % timeerr.__traceback__)
-        except Exception as err:
-            app_log.error("UnexpectedError: %s" % err.__traceback__)
+        except ConnectionError:
+            app_log.error("ConnectionError: %s" % traceback.format_exc())
+        except TimeoutError:
+            app_log.error("TimeoutError: %s" % traceback.format_exc())
+        except Exception:
+            app_log.error("UnexpectedError: %s" % traceback.format_exc())
 
     def archive_message(self, key, message):
         self.db.child("processed").child(datetime.date.today()).push(message, token=self.idtoken)

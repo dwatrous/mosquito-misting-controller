@@ -7,31 +7,32 @@ import subprocess
 from datetime import datetime, timedelta
 import psutil
 
-# Define the log file path
-# TODO this may get out of sync with config
-log_file = "/home/mm/device.log"
-
 def is_instance_running():
     """Checks if another instance of the script is already running."""
     my_pid = os.getpid()
     print("my_pid: %s" % my_pid)
     for proc in psutil.process_iter():
         if proc.cmdline() == ['/home/mm/.ctrlenv/bin/python', '/home/mm/.ctrlenv/bin/mmctrl', '--start'] and proc.pid != my_pid:
+            print("proc.pid: %d == my_pid: %d" % (proc.pid, my_pid))
             return True
     return False
 
 def start_service():
-    """Restarts the service if it is running."""
-    if is_instance_running():
-        subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "restart", "mmctrl.service"])
+    """Ensure the service is (re)started if it is running."""
+    # if is_instance_running():
+    status = subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "restart", "mmctrl.service"], capture_output=True)
+    print("return code: %d " % status.returncode)
+    sys.exit(0)
 
 def enable_service():
     """Enable and start the service (usually after registration)."""
-    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "enable", "--now", "mmctrl.service"])
+    status = subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "enable", "--now", "mmctrl.service"], capture_output=True)
+    print("return code: %d " % status.returncode)
 
 def stop_service():
     """Stop the service"""
-    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "stop", "mmctrl.service"])
+    status = subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "stop", "mmctrl.service"], capture_output=True)
+    print("return code: %d " % status.returncode)
 
 def get_loglevel(loglevel_arg):
     import logging
@@ -45,6 +46,7 @@ def get_loglevel(loglevel_arg):
         return logging.ERROR
 
 def cli():
+    nohelp = False
     parser = argparse.ArgumentParser(prog='mmctrl',
                     description='The is the MosquitoMax Controller. Use it to calibrate the device, run diagnostics and start the controller',
                     epilog='Contact MosquitoMax with questions')
@@ -63,11 +65,13 @@ def cli():
 
     # Print version and exit
     if args.version:
+        nohelp = True
         print(version('mm_controller'))
-        sys.exit(0)
+        parser.exit()
     
     # Calibrate the device
     if args.calibrate:
+        nohelp = True
         try:
             stop_service()
             print("Running calibration...")
@@ -88,10 +92,10 @@ def cli():
             print("Calibration aborted.")
         finally:
             start_service()
-            sys.exit(0)
 
     # Clean the device
     if args.clean:
+        nohelp = True
         print("Cleaning device...")
         # from mm_controller import clean_device
         # remove WiFi creds
@@ -101,6 +105,7 @@ def cli():
 
     # Register the device
     if args.register:
+        nohelp = True
         print("Running registration...")
         stop_service()
         from mm_controller import register_device
@@ -113,6 +118,7 @@ def cli():
 
     # Run diagnostics
     if args.diagnostics:
+        nohelp = True
         try:
             stop_service()
             print("Running diagnostics...")
@@ -123,15 +129,30 @@ def cli():
             start_service()
         
     if args.validate == "cloud":
-       pass
+        nohelp = True
+        pass
     elif args.validate == "weather":
-       pass
+        nohelp = True
+        pass
 
     # Upgrade the controller package
     if args.upgrade:
-        print("Upgrading...")
-        print("Current version: %s" % version('mm_controller'))
+        nohelp = True
+        # use Cloud to retrieve newer version, if available
+        from mm_controller import cloud
+        from mm_controller.utils import app_log
+        upgrade_cloud = cloud.Cloud()
+        current_version = version('mm_controller')
+        print("Current version: %s" % current_version)
+        app_log.info("Current version: %s" % current_version)
+        latest_version = upgrade_cloud.get_latest_release()
+        print("Latest version: %s" % latest_version)
+        app_log.info("Latest version: %s" % latest_version)
+        if latest_version > current_version:
+            upgrade_cloud.download_latest_release()
+        # handle upgrade, if present
         print("Looking for upgrades...")
+        app_log.info("Looking for upgrades...")
         path = "/home/mm"
         dir_list = os.listdir(path)
         for filename in dir_list:
@@ -141,19 +162,25 @@ def cli():
                 if version_match > version('mm_controller'):
                     try:
                         print("Upgrading to %s" % version_match)
-                        stop_service()
-                        subprocess.run([".ctrlenv/bin/pip", "install", os.path.join(path, filename)])
+                        app_log.info("Upgrading to %s" % version_match)
+                        status = subprocess.run(["/home/mm/.ctrlenv/bin/pip", "install", os.path.join(path, filename)], capture_output=True)
+                        print(status.stdout)
+                        app_log.debug(status.stdout)
                         print("Upgrade complete.")
+                        app_log.info("Upgrade complete.")
                     except:
                         print("Upgrade failed.")
+                        app_log.error("Upgrade failed.")
                     finally:
+                        app_log.info("Restarting service.")
                         start_service()
-                    sys.exit(0)
         print("No upgrades found.")
-        sys.exit(0)
+        app_log.debug("No upgrades found.",)
+        parser.exit()
 
     # Start the controller
     if args.start:        
+        nohelp = True
         if not is_instance_running():
             print("Log level: %s" % args.loglevel)
             from mm_controller.utils import my_handler
@@ -166,8 +193,9 @@ def cli():
             print("Controller is running. Use /usr/bin/systemctl.")
 
     # Print help if nothing else happened yet
-    parser.print_help()
-    parser.exit()
+    if not nohelp:
+        parser.print_help()
+        parser.exit()
 
 if __name__ == "__main__":
    cli()

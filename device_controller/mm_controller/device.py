@@ -13,6 +13,7 @@ from mm_controller import zone
 from mm_controller import device_sensors
 from mm_controller import constants
 from mm_controller import cloud
+from mm_controller import calibrate_device
 from mm_controller.environment import environment
 from mm_controller.utils import app_log
 
@@ -101,12 +102,22 @@ class device:
             self.cancel_next_spray()
             self.send_status_update()
         if message["message"]["event"] == "CALIBRATE":
-            # use subprocess to run calibrate and then restart
-            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-c", message["message"]["info"]])
+            if "SCALE" in message["message"]["info"]:
+                app_log.info("Calibrating Scale")
+                calibrate_device.calibrate(scale=True)
+            if "LINE_IN" in message["message"]["info"]:
+                app_log.info("Calibrating Line IN")
+                calibrate_device.calibrate(line_in=True)
+            if "LINE_OUT" in message["message"]["info"]:
+                app_log.info("Calibrating Line OUT")
+                calibrate_device.calibrate(line_out=True)
+            if "VACUUM" in message["message"]["info"]:
+                app_log.info("Calibrating Vacuum")
+                calibrate_device.calibrate(vacuum=True)
+            self.send_status_update()
         if message["message"]["event"] == "UPGRADE":
             # use subprocess to pip install and then restart
-            self.device_cloud.download_latest_release(path="/home/mm")
-            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-u"])
+            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-u"], start_new_session=True)
         return True
 
     def check_system(self):
@@ -117,6 +128,7 @@ class device:
     def send_status_update(self):
         try:
             software_version = version('mm_controller')
+            latest_version = self.device_cloud.get_latest_release()
         except:
             software_version = "0.0.0"
         status_update = {"status": 
@@ -125,7 +137,9 @@ class device:
                                 "solution_weight": device_sensors.read_current_weight(),
                                 "next_spray": self.get_next_spraytime(),
                                 "timestamp": datetime.datetime.utcnow(),
-                                "version": software_version
+                                "version": software_version,
+                                "latest_version": latest_version,
+                                "upgrade_available": latest_version > software_version
                             }
                         }
         self.device_cloud.device_update(status_update)

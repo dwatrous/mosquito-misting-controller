@@ -34,6 +34,10 @@ def run():
     # listen for messages from the cloud
     controller_cloud.listen_for_messages(this_device.message_handler)
 
+    # open water valve for 30 seconds
+    # TODO need to adjust for multiple zones in the future
+    this_device.zones[0].open_valve(constants.VALVE_WATER, 30000)
+
     while True:
         # MESSAGES: reload configuration, spray now, skip next spray, get device status
         # check and send device status (hourly?) (may include error state that will be handled from the cloud)
