@@ -117,7 +117,7 @@ class device:
             self.send_status_update()
         if message["message"]["event"] == "UPGRADE":
             # use subprocess to pip install and then restart
-            subprocess.run(["/home/mm/.ctrlenv/bin/mmctrl", "-u"], start_new_session=True)
+            subprocess.Popen(["/home/mm/.ctrlenv/bin/mmctrl", "-u"])
         return True
 
     def check_system(self):
@@ -131,6 +131,7 @@ class device:
             latest_version = self.device_cloud.get_latest_release()
         except:
             software_version = "0.0.0"
+            latest_version = "0.0.0"
         status_update = {"status": 
                             {
                                 "line_in_pressure": device_sensors.read_current_line_in_pressure_psi(),
