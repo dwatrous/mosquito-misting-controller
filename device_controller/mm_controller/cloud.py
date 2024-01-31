@@ -191,6 +191,8 @@ class Cloud(object):
             app_log.error("ConnectionError: %s" % traceback.format_exc())
         except TimeoutError:
             app_log.error("TimeoutError: %s" % traceback.format_exc())
+        except RuntimeError:
+            app_log.error("RuntimeError: %s" % traceback.format_exc())
         except Exception:
             app_log.error("UnexpectedError: %s" % traceback.format_exc())
 
