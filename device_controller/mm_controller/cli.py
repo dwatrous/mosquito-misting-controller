@@ -175,7 +175,8 @@ def cli():
                         app_log.info("Restarting service.")
                         start_service()
         print("No upgrades found.")
-        app_log.debug("No upgrades found.",)
+        app_log.debug("No upgrades found.")
+        start_service()
         parser.exit()
 
     # Start the controller
