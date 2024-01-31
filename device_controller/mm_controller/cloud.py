@@ -131,9 +131,13 @@ class Cloud(object):
     # Firebase realtime database (used for messaging)
     # TODO this fails when the device is not associated with a user: KeyError on ["onwer"]
     def _build_message(self, event, info, action):
+        try:
+            owner = self.device_get()["owner"]
+        except:
+            owner = "00000000"
         msg = {
             "sender": self.get_authenticated_device_account()["uid"],
-            "recipient": self.device_get()["owner"],
+            "recipient": owner,
             "message": {
                 "event": event,
                 "info": info

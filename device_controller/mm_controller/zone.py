@@ -130,8 +130,10 @@ class zone:
             "close_time": close_time,
             "total_valve_time_ms": close_time-open_time
         }
-        self.spraydata["valve_executions"].append(valve_opening)
-        app_log.info(valve_opening)
+        try:
+            self.spraydata["valve_executions"].append(valve_opening)
+        except:
+            app_log.info(valve_opening)
 
     def run_motor(self, close_after_ms):
         motor_start_time = int(time.time()*self.ms_in_second)
