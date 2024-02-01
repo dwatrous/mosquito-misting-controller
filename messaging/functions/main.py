@@ -36,7 +36,7 @@ def send_fcm_message(sender, recipient, message):
             token_details = token.to_dict()
             print("Token: ", token_details)
 
-            notification = messaging.Notification(title=message["event"], body=message["info"], image="https://storage.googleapis.com/flutterflow-io-6f20.appspot.com/projects/mosquito-max-vuftce/assets/sfm7sqxp5hor/mm-app-icon.png")
+            notification = messaging.Notification(title=message["event"], body=message["info"])
             msg = messaging.Message(
                 notification=notification,
                 token=token_details["fcm_token"]
