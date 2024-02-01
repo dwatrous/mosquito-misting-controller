@@ -206,7 +206,7 @@ class zone:
                 self.spraydata["skip"] = True
                 self.spraydata["skip_reason"] = "temperature"
                 app_log.info("SKIP: Temperature [low_last24: %s, low_next24 %s]" % (self.spraydata["low_temp_last_24hr"], self.spraydata["low_temp_next_24hr"]))
-                self.zonecloud.send_message("SKIP_SPRAY")
+                self.zonecloud.send_message("Spray Skipped", "The scheduled spray was skipped due to weather conditions (low temperature).")
                 self.zonecloud.write_spray_occurence_ds(self.spraydata)
                 return
             if rain_prediction_next_24hr > self.rain_threshold_in and not skip_override:
@@ -214,7 +214,7 @@ class zone:
                 self.spraydata["skip"] = True
                 self.spraydata["skip_reason"] = "rain"
                 app_log.info("SKIP: Rain [inches_next24: %s]" % self.spraydata["rain_prediction_next_24hr"])
-                self.zonecloud.send_message("SKIP_SPRAY")
+                self.zonecloud.send_message("Spray Skipped", "The scheduled spray was skipped due to weather conditions (heavy rain)")
                 self.zonecloud.write_spray_occurence_ds(self.spraydata)
                 return
             if False and not skip_override:   # TODO implement wind skip
@@ -225,7 +225,7 @@ class zone:
                 self.spraydata["skip_reason"] = "skip override" if skip_override else None
 
             # notify user and message spray execution
-            self.zonecloud.send_message("EXECUTE_SPRAY")
+            self.zonecloud.send_message("Spray Executed", "A spray just ran to rid your yard of mosquitos. Enjoy!")
             device_sensors.status_buzzer_beep(self.beep_duration)
 
             # indicate running
