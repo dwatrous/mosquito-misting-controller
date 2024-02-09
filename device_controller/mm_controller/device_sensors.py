@@ -24,6 +24,7 @@ def start_hotspot():
 
 # create a signal for the float switch, set when FALLING, clear with RISING
 float_switch_signal = multiprocessing.Event()
+config = Config()
 
 if onpi:
     # setup gpio
@@ -48,7 +49,6 @@ if onpi:
     # reduce logging from I2C
     adc._device._logger.setLevel(logging.INFO)
     # setup HX711 scale
-    config = Config()
     from mm_controller.hx711 import HX711
     hx = HX711(constants.GPIO_WEIGHT_DATA, constants.GPIO_WEIGHT_SCK)
     # hx.reset()    # This doesn't seem to be needed/helpful
@@ -82,15 +82,12 @@ SENSOR_MAX_ADC = 32767
 SENSOR_ZERO = 0.5/ADC_MAX_V * SENSOR_MAX_ADC
 SENSOR_MAX = 4.5/ADC_MAX_V * SENSOR_MAX_ADC
 # PSI calculation should be (OUT - 3641)/(32767-3641)
-SENSOR_PRESSURE_LINE_OUT_MAX_PSI = 300
-SENSOR_PRESSURE_LINE_IN_MAX_PSI = 100
-SENSOR_VACUUM_MAX_NEG_KPA = 40
 ATMOSPHERE_PSI = 14.696 # https://en.wikipedia.org/wiki/Atmospheric_pressure
-ADC_SLOPE_LINE_OUT = (SENSOR_PRESSURE_LINE_OUT_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_SLOPE_LINE_OUT = (config.get_config()["device"]["line_out_sensor_max_psi"]-0)/(SENSOR_MAX-SENSOR_ZERO)
 ADC_B_LINE_OUT = SENSOR_ZERO * ADC_SLOPE_LINE_OUT
-ADC_SLOPE_LINE_IN = (SENSOR_PRESSURE_LINE_IN_MAX_PSI-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_SLOPE_LINE_IN = (config.get_config()["device"]["line_in_sensor_max_psi"]-0)/(SENSOR_MAX-SENSOR_ZERO)
 ADC_B_LINE_IN = SENSOR_ZERO * ADC_SLOPE_LINE_IN
-ADC_SLOPE_VACUUM = (SENSOR_VACUUM_MAX_NEG_KPA-0)/(SENSOR_MAX-SENSOR_ZERO)
+ADC_SLOPE_VACUUM = (config.get_config()["device"]["vacuum_sensor_max_kpa"]-0)/(SENSOR_MAX-SENSOR_ZERO)
 ADC_B_VACUUM = SENSOR_ZERO * ADC_SLOPE_VACUUM
 
 # calibration functions
