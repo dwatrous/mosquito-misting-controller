@@ -15,7 +15,7 @@ from mm_controller import constants
 from mm_controller import cloud
 from mm_controller import calibrate_device
 from mm_controller.environment import environment
-from mm_controller.utils import app_log
+from mm_controller.utils import app_log, Config
 
 class device:
 
@@ -24,6 +24,7 @@ class device:
         self.env = environment()
         self.schedule_thread_kill_signal = threading.Event()
         self.device_cloud = cloud.Cloud()
+        self.global_config = Config()
 
         devicerecord = self.device_cloud.device_get()
 
@@ -34,6 +35,7 @@ class device:
             self.low_temp_threshold_f = constants.default_low_temp_threshold_f
             self.rain_threshold_in = constants.default_rain_threshold_in
             self.timezone = constants.default_timezone
+            self.solution_capacity = constants.default_solution_capacity
             self.zones.append(zone.zone())
         else:
             self.load_devicedefinition_from_cloud()
@@ -63,6 +65,7 @@ class device:
         self.low_temp_threshold_f = self.devicedefinition["low_temp_threshold_f"]
         self.rain_threshold_in = self.devicedefinition["rain_threshold_in"]
         self.timezone = self.devicedefinition["timezone"]
+        self.solution_capacity = self.devicedefinition["solution_capacity"]
         self.zones = [zone.zone(devicezone, low_temp_threshold_f=self.low_temp_threshold_f, rain_threshold_in=self.rain_threshold_in) for devicezone in self.devicedefinition["zones"]]
 
     def get_devicedefinition(self):
@@ -73,6 +76,7 @@ class device:
             "low_temp_threshold_f": self.low_temp_threshold_f,
             "rain_threshold_in": self.rain_threshold_in,
             "timezone": self.timezone,
+            "solution_capacity": self.solution_capacity,
             "zones": [devicezone.get_zonedefinition() for devicezone in self.zones]
         }
         return devicedefinition
@@ -140,7 +144,8 @@ class device:
                                 "timestamp": datetime.datetime.utcnow(),
                                 "version": software_version,
                                 "latest_version": latest_version,
-                                "upgrade_available": latest_version > software_version
+                                "upgrade_available": latest_version > software_version,
+                                "wifi_signal_strength": self.global_config.wifi_signal_strength
                             }
                         }
         self.device_cloud.device_update(status_update)
@@ -227,7 +232,11 @@ class device:
         return self.get_next_spray().astimezone(datetime.timezone.utc)
 
     def get_next_spray(self):
-        if schedule.next_run('fixedtime') > schedule.next_run('relativetime'):
+        if not isinstance(schedule.next_run('fixedtime'), datetime.datetime) and isinstance(schedule.next_run('relativetime'), datetime.datetime):
+            nextspray = schedule.next_run('fixedtime')
+        elif not isinstance(schedule.next_run('relativetime'), datetime.datetime) and isinstance(schedule.next_run('fixedtime'), datetime.datetime):
+            nextspray = schedule.next_run('fixedtime')
+        elif schedule.next_run('fixedtime') > schedule.next_run('relativetime'):
             nextspray = schedule.next_run('relativetime')
         else:
             nextspray = schedule.next_run('fixedtime')

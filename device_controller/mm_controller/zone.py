@@ -166,14 +166,16 @@ class zone:
             "capture_interval": self.sensor_capture_interval_s,
             "readings": []
         }
+        first_capture_s = time.time()
         while not signal.is_set():
             try:
                 readings["readings"].append(
                     {
+                        "captured_at_s": time.time()-first_capture_s,
                         "pressure_line_in_psi": device_sensors.read_current_line_in_pressure_psi(),
                         "pressure_line_out_psi": device_sensors.read_current_line_out_pressure_psi(),
                         "vacuum_kpa": device_sensors.read_current_vacuum_pressure_kpa(),
-                        "weight": device_sensors.read_current_weight()
+                        "weight_oz": device_sensors.read_current_weight()
                     }
                 )
             except Exception as ioerr:
@@ -186,9 +188,9 @@ class zone:
     def execute_spray(self, skip_override=False, spray_event="SCHEDULE", water_only=False):
         if not self.spraying:
             # clear and begin capturing data
-            spray_start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
+            start_time = datetime.datetime.now().astimezone(datetime.timezone.utc)
             self.spraydata = {
-                "start_time": spray_start_time,
+                "start_time": start_time,
                 "spray_event": spray_event,
                 "valve_executions": []
             }

@@ -215,6 +215,7 @@ default_low_temp_threshold_f = 50   # degrees F
 default_rain_threshold_in = 0.5     # inches
 default_nozzlecount = 30
 default_sprayduration_ms = 45000
+default_solution_capacity = 128
 # sprayoccurrence
 # [
 #   {

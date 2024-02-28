@@ -1,3 +1,4 @@
+import subprocess
 from time import sleep
 import json
 import logging
@@ -78,6 +79,19 @@ class Config(object):
             except:
                 self.mac_address = "00:00:00:00:00:00"
         return self.mac_address
+
+    @property
+    def wifi_signal_strength(self):
+        if onpi:
+            try:
+                wifisignalstrength_cmd = subprocess.run(["/usr/bin/nmcli", "-f", "SIGNAL", "-m", "multiline", "device", "wifi"], capture_output=True)
+                wifisignalstrength_stdout = wifisignalstrength_cmd.stdout.decode("utf-8")
+                wifisignalstrength = wifisignalstrength_stdout.split()[1]
+                return int(wifisignalstrength)
+            except:
+                return -1
+        else:
+            return 0
 
     @property
     def device_password(self):
