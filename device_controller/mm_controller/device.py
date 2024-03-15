@@ -40,12 +40,13 @@ class device:
         else:
             self.load_devicedefinition_from_cloud()
 
-        # schedule sprays and start schedule thread
-        self.check_system()
-        # TODO if system isn't ready, signal error and don't schedule sprays
-        self.schedule_sprays()
-        self.start_schedule_thread()
-        self.send_status_update()
+        # schedule sprays and start schedule thread (skip on register)
+        if initialize == False:
+            self.check_system()
+            # TODO if system isn't ready, signal error and don't schedule sprays
+            self.schedule_sprays()
+            self.start_schedule_thread()
+            self.send_status_update()
 
     def load_devicedefinition_from_cloud(self, reload=False):
         if reload:
