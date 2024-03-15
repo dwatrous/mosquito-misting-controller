@@ -276,6 +276,7 @@ class zone:
             # indicate ready
             device_sensors.status_led_ready()
             self.spraying = False
+            # TODO call for a status update after every spray (may need to move from device to cloud/util)
         else:
             app_log.info("Already spraying. Ignore spray request.")
 
