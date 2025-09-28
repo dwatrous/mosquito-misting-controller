@@ -1,1 +1,5 @@
 .vscode/launch.json
+api/__pycache__
+api/creds
+*.log*
+messaging/functions/venv/

@@ -65,6 +65,7 @@ else
     echo 'export PATH="/home/mm/.ctrlenv/bin:$PATH"' >> /home/mm/.bashrc
     runuser -l mm -c 'python -m venv /home/mm/.ctrlenv'
     runuser -l mm -c "/home/mm/.ctrlenv/bin/pip install /home/mm/mm_controller-$version-py3-none-any.whl"
+    # TODO https://diode.io/blog/running-forever-with-the-raspberry-pi-hardware-watchdog
     # systemctl daemon-reload
     # systemctl enable --now mmctrl.service
     logtoboth "* Plugin $pfx: Complete Phase post-install"

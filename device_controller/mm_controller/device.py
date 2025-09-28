@@ -123,6 +123,9 @@ class device:
         if message["message"]["event"] == "UPGRADE":
             # use subprocess to pip install and then restart
             subprocess.Popen(["/home/mm/.ctrlenv/bin/mmctrl", "-u"])
+        if message["message"]["event"] == "RESTART":
+            # restart
+            subprocess.Popen(["/home/mm/.ctrlenv/bin/mmctrl", "--restart"])
         return True
 
     def check_system(self):

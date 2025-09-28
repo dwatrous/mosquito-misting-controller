@@ -40,12 +40,12 @@ gcloud source repos clone MosquitoMax
 cd ~/MosquitoMax/device_controller
 ```
 
-Next, get the raspios image. You can download it here: https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2023-10-10/
+Next, get the raspios image. You can download it here: https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2024-03-15/
 
 1. Linux:
     ```
-    curl -o 2023-10-10-raspios-bookworm-armhf-lite.img.xz https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2023-10-10/2023-10-10-raspios-bookworm-armhf-lite.img.xz
-    unxz -k 2023-10-10-raspios-bookworm-armhf-lite.img.xz
+    curl -o 2024-03-15-raspios-bookworm-armhf-lite.img.xz https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2024-03-15/2024-03-15-raspios-bookworm-armhf-lite.img.xz
+    unxz -k 2024-03-15-raspios-bookworm-armhf-lite.img.xz
     ```
 1. Windows: Use the link above to download and extract with 7-zip (see requirements above).
 
@@ -92,10 +92,10 @@ gsutil cp dist/mm_controller-0.1.32-py3-none-any.whl gs://mm_controller_releases
 
 ## Build the SD card image
 ### Setup
-The file `~/MosquitoMax/mmsetup` is a custom plugin for SDM that performs parts of the mm-controller setup (see https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md for more information about plugins). This file must be copied into the SDM plugins directory.
+The file `~/MosquitoMax/device_controller/mmsetup` is a custom plugin for SDM that performs parts of the mm-controller setup (see https://github.com/gitbls/sdm/blob/master/Docs/Plugins.md for more information about plugins). This file must be copied into the SDM plugins directory.
 
 ```
-cd ~/MosquitoMax
+cd ~/MosquitoMax/device_controller
 sudo cp mmsetup /usr/local/sdm/local-plugins/
 sudo chmod +x /usr/local/sdm/local-plugins/mmsetup
 ```
@@ -113,9 +113,9 @@ The following commands modify the img file directly, which means that each time 
 
 ```
 cd ~/MosquitoMax/device_controller
-rm 2023-10-10-raspios-bookworm-armhf-lite.img
+rm 2024-03-15-raspios-bookworm-armhf-lite.img
 rm mm.img
-unxz -k 2023-10-10-raspios-bookworm-armhf-lite.img.xz
+unxz -k 2024-03-15-raspios-bookworm-armhf-lite.img.xz
 ```
 NOTE: On Windows, 7-zip is much faster than unxz and can to extract the .xz file.
 
@@ -123,14 +123,14 @@ NOTE: On Windows, 7-zip is much faster than unxz and can to extract the .xz file
 To make cleanup faster on Linux, you can create a copy of the .img file and use that to avoid decompressing the .xz file. Store the original with this command:
 
 ```
-cp 2023-10-10-raspios-bookworm-armhf-lite.img 2023-10-10-raspios-bookworm-armhf-lite.img.copy
+cp 2024-03-15-raspios-bookworm-armhf-lite.img 2024-03-15-raspios-bookworm-armhf-lite.img.copy
 ```
 
 Clean up like this
 ```
-rm 2023-10-10-raspios-bookworm-armhf-lite.img
+rm 2024-03-15-raspios-bookworm-armhf-lite.img
 rm mm.img
-cp 2023-10-10-raspios-bookworm-armhf-lite.img.copy 2023-10-10-raspios-bookworm-armhf-lite.img
+cp 2024-03-15-raspios-bookworm-armhf-lite.img.copy 2024-03-15-raspios-bookworm-armhf-lite.img
 ```
 
 ### Build the image
@@ -152,18 +152,18 @@ sudo sdm --customize \
   --extend --xmb 1000 \
   --restart \
   --host $MM_HOSTNAME \
-  2023-10-10-raspios-bookworm-armhf-lite.img
+  2024-03-15-raspios-bookworm-armhf-lite.img
 ```
 
 ### Burn the image
 The image can be 'burned' to a file and written to an SD card using the Raspberry Pi imager. This method is perferred for Windows, because WSL doesn't have direct access to SD card readers.
 ```
-sudo sdm --burnfile mm.img --expand-root 2023-10-10-raspios-bookworm-armhf-lite.img
+sudo sdm --burnfile mm.img --expand-root 2024-03-15-raspios-bookworm-armhf-lite.img
 ```
 
 When using SDM on a Linux host, SDM can burn the image directly to the SD card.
 ```
-sudo sdm --burn /dev/sde --expand-root 2023-10-10-raspios-bookworm-armhf-lite.img
+sudo sdm --burn /dev/sde --expand-root 2024-03-15-raspios-bookworm-armhf-lite.img
 ```
 
 OPTIONAL: If you run this on a Google Cloud VM, you will want to compress and copy the image to Google Cloud Storage. This makes it easier to download the image.

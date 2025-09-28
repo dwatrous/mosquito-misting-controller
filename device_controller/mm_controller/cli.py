@@ -5,7 +5,9 @@ import sys
 from importlib.metadata import version
 import subprocess
 from datetime import datetime, timedelta
+from time import sleep
 import psutil
+import threading
 
 def is_instance_running():
     """Checks if another instance of the script is already running."""
@@ -52,6 +54,7 @@ def cli():
                     epilog='Contact MosquitoMax with questions')
 
     parser.add_argument("-s", "--start", action="store_true", help="Start the controller.")
+    parser.add_argument("-x", "--restart", action="store_true", help="Restart the controller.")
     parser.add_argument("-v", "--version", action="store_true", help="Print version and exit.")
     parser.add_argument("-d", "--diagnostics", action="store_true", help="Run diagnostics.")
     parser.add_argument("-c", "--calibrate", choices=["SCALE", "LINE_IN", "LINE_OUT", "VACUUM", "ALL"], nargs="*", help="Calibrate connected devices.")
@@ -60,6 +63,7 @@ def cli():
     parser.add_argument("--validate", choices=["cloud", "weather"], help="Run various exercises to validate connectivity.")
     parser.add_argument("-u", "--upgrade", action="store_true", help="Upgrade the controller package (considers all whl files in /home/mm)")
     parser.add_argument("-l", "--loglevel", choices=["DEBUG", "INFO", "WARN", "ERROR"], default="DEBUG", help="Set logging level.")
+    parser.add_argument("-o", "--openvalves", action="store_true", help="Open all valves for 30 seconds")
 
     args = parser.parse_args()
 
@@ -127,13 +131,68 @@ def cli():
             start_service()
         except KeyboardInterrupt:
             start_service()
-        
+
+    # Perform restart
+    if args.restart:
+        nohelp = True
+        try:
+            print("Restarting the controller...")
+            stop_service()
+            sleep(2)
+            start_service()
+        except KeyboardInterrupt:
+            start_service()
+
     if args.validate == "cloud":
         nohelp = True
         pass
     elif args.validate == "weather":
         nohelp = True
         pass
+
+    # Open valves
+    if args.openvalves:
+        from mm_controller import device_sensors
+        
+        def open_water_valve():
+            """Function to control the water valve."""
+            try:
+                print("Water valve opening.")
+                device_sensors.gpioctrl_water_valve.on()
+                sleep(30)  # Keep valve open for 30 seconds
+            finally:
+                print("Water valve closing.")
+                device_sensors.gpioctrl_water_valve.off()
+
+        def open_chemical_valve():
+            """Function to control the chemical valve."""
+            try:
+                print("Chemical valve opening.")
+                device_sensors.gpioctrl_chemical_valve.on()
+                sleep(30)  # Keep valve open for 30 seconds
+            finally:
+                print("Chemical valve closing.")
+                device_sensors.gpioctrl_chemical_valve.off()
+        
+        # Create threads for each valve function
+        water_thread = threading.Thread(target=open_water_valve)
+        chemical_thread = threading.Thread(target=open_chemical_valve)
+        
+        try:
+            # stop_service()
+            print("Stopping service and opening valves concurrently.")
+            
+            # Start both threads
+            water_thread.start()
+            chemical_thread.start()
+            
+            # Wait for both threads to complete
+            water_thread.join()
+            chemical_thread.join()
+            
+        finally:
+            print("Valves have been closed. Restarting service.")
+            start_service()
 
     # Upgrade the controller package
     if args.upgrade:
