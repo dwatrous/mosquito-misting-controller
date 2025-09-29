@@ -1,0 +1,21 @@
+{
+    "device": {
+        "password": "",
+        "scale_offset": -1,
+        "line_in_sensor_max_psi": 100,
+        "line_in_offset_psi": -1,
+        "line_out_sensor_max_psi": 300,
+        "line_out_offset_psi": -1,
+        "vacuum_sensor_max_kpa": 40,
+        "vacuum_offset_kpa": -1
+    },
+    "firebase": {
+        "apiKey": "FIREBASE_API_KEY_PLACEHOLDER",
+        "authDomain": "FIREBASE_PROJECT.firebaseapp.com",
+        "databaseURL": "https://FIREBASE_PROJECT-default-rtdb.firebaseio.com",
+        "projectId": "FIREBASE_PROJECT",
+        "storageBucket": "FIREBASE_PROJECT.appspot.com",
+        "messagingSenderId": "messagingSenderId",
+        "appId": "appId"
+    }
+}

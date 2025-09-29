@@ -1,0 +1,250 @@
+{
+    "name": "My Device",
+    "street1": null,
+    "street2": null,
+    "city": null,
+    "state": "TX",
+    "zip": 77449,
+    "timezone": "US/Central",
+    "environment_city": "Houston",
+    "low_temp_threshold_f": 50,
+    "rain_threshold_in": 0.5,
+    "zones": [
+        {
+            "name": "Default Zone",
+            "valve_activation_interval_ms": 5000,
+            "valve_first_open_offset_ms": 500,
+            "chemicalclass": 2,
+            "low_temp_threshold_f": 50,
+            "rain_threshold_in": 0.5,
+            "nozzlecount": 30,
+            "sprayduration_ms": 45000,
+            "sprayoccurrences": [
+                {
+                    "dayofweek": 0,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 0,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 0,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 1,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 1,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 1,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 2,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 2,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 2,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 3,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 3,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 3,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 4,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 4,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 4,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 5,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 5,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 5,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 6,
+                    "timeofday": {
+                        "value": [
+                            23,
+                            0
+                        ],
+                        "type": "fixedtime"
+                    }
+                },
+                {
+                    "dayofweek": 6,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "sunrise",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                },
+                {
+                    "dayofweek": 6,
+                    "timeofday": {
+                        "value": {
+                            "sunevent": "dusk",
+                            "sunposition": "before",
+                            "deltaminutes": 5
+                        },
+                        "type": "relativetime"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+[project]
+name = "mm-controller"
+version = "0.1.67"
+description = "MosquitoMax Controller"
+authors = [
+    {name = "Daniel Watrous", email = "dwmaillist@gmail.com"},
+]
+dependencies = [
+    "requests",
+    "aiosseclient",
+    "aiohttp-sse-client2",
+    "astral",
+    "noaa-sdk",
+    "schedule",
+    "time-machine",
+    "pytz",
+    "firebase-admin",
+    "firebase-rest-api",
+    "pyjwt",
+    "Adafruit-ADS1x15",
+    "bottle",
+    "gpiozero",
+    "rpi-gpio",
+    "lgpio",
+    "psutil",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "Proprietary"}
+
+[[tool.pdm.source]]
+name = "mm_controller"
+
+[project.scripts]
+mmctrl = "mm_controller.cli:cli"
+configurate = "mm_controller.configurator:configurate"
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

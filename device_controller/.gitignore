@@ -1,0 +1,7 @@
+__pycache__
+zonedefinition.json
+config.json
+deviceconfig.json
+*.img
+*.xz
+.pdm-python
