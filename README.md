@@ -16,7 +16,7 @@ The cloud backend consists of a Flask-based API and a Firebase Cloud Function.
 
 ### Device Controller
 
-The device controller (`device_controller/`) is a Python application designed to run on a Raspberry Pi connected to the mosquito misting hardware. [View the wiring diagram here](https://app.diagrams.net/?title=mm-controller-wiring.drawio&lightbox=1&page-id=ExfFsV7imJmsYadceNe3&client=1).
+The device controller (`device_controller/`) is a Python application designed to run on a Raspberry Pi connected to the mosquito misting hardware. [View the wiring diagram here](https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=mm-controller-wiring.drawio&dark=auto#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fdwatrous%2Fmosquito-misting-controller%2Fmain%2Fdiagrams%2Fmm-controller-wiring.drawio).
 
 *   **Hardware Interaction**: The controller uses libraries like `gpiozero` and `Adafruit-ADS1x15` to interact with the hardware, including valves, pumps, and sensors.
 
@@ -31,7 +31,7 @@ The device controller (`device_controller/`) is a Python application designed to
 
 ## Getting Started
 
-[See manufacturing flow here](https://app.diagrams.net/?title=manufacturing-timeline.drawio&lightbox=1&page-id=_6-SYJj8GeqR0tBw9vdf&client=1)
+[See manufacturing flow here](https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=manufacturing-timeline.drawio&dark=auto#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fdwatrous%2Fmosquito-misting-controller%2Fmain%2Fdiagrams%2Fmanufacturing-timeline.drawio)
 
 ### Prerequisites
 
