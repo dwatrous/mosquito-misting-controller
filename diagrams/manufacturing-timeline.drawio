@@ -1,0 +1,401 @@
+<mxfile host="app.diagrams.net" modified="2024-04-03T03:17:00.423Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36" etag="oHQ5fHs4Tw2vPF8MfuYo" version="24.2.0" type="google" pages="2">
+  <diagram id="_6-SYJj8GeqR0tBw9vdf" name="mfg + consumer sequence">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-11" value="unbox" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="rappBuVn2xcZzMfxdtEI-1" target="2HTRzaVqQ2KYLljj5VqZ-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rappBuVn2xcZzMfxdtEI-1" value="Raspberry Pi zero 2 W&lt;br&gt;(in the box)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="1">
+          <mxGeometry x="138.86" y="260" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="rappBuVn2xcZzMfxdtEI-2" target="2HTRzaVqQ2KYLljj5VqZ-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rappBuVn2xcZzMfxdtEI-2" value="MFG computer" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Laptop.svg;" vertex="1" parent="1">
+          <mxGeometry x="130" y="80.6" width="78.86" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rappBuVn2xcZzMfxdtEI-3" value="Device PCB" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="1">
+          <mxGeometry x="421.71000000000004" y="150" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="rappBuVn2xcZzMfxdtEI-5" target="rappBuVn2xcZzMfxdtEI-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rappBuVn2xcZzMfxdtEI-5" value="new SD card" style="pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#4495D1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.sd_card;" vertex="1" parent="1">
+          <mxGeometry x="60" y="100.6" width="32.4" height="38.8" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-1" value="MFG WiFi" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wifi;pointerEvents=1" vertex="1" parent="1">
+          <mxGeometry x="470" y="61.2" width="56.57" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-9" value="inserted in" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-4" target="2HTRzaVqQ2KYLljj5VqZ-6">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="322" y="121" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-14" value="includes MFG WiFi credentials" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.525;entryY=-0.014;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;curved=1;dashed=1;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-4" target="2HTRzaVqQ2KYLljj5VqZ-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="266" y="40" />
+              <mxPoint x="500" y="40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-4" value="imaged SD card" style="pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#4495D1;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;shape=mxgraph.veeam.sd_card;" vertex="1" parent="1">
+          <mxGeometry x="250" y="101.19999999999999" width="32.4" height="38.8" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-10" value="connects to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1.015;entryY=0.46;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="EREeUeVmENVEAvjcl1l2-10" target="2HTRzaVqQ2KYLljj5VqZ-1">
+          <mxGeometry x="-0.0625" relative="1" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="595" y="140" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-17" value="add to&lt;br&gt;device" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-6" target="2HTRzaVqQ2KYLljj5VqZ-15">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="688" y="300" as="sourcePoint" />
+            <mxPoint x="600" y="300" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-6" value="Raspberry Pi zero 2 W&lt;br&gt;(with SD card)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="1">
+          <mxGeometry x="282.4" y="260" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-16" value="attached to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.25;exitDx=0;exitDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-15" target="rappBuVn2xcZzMfxdtEI-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-24" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="EREeUeVmENVEAvjcl1l2-3" target="2HTRzaVqQ2KYLljj5VqZ-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="830" y="300" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-1" value="register&lt;br style=&quot;border-color: var(--border-color);&quot;&gt;(device creation)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.005;entryY=0.63;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="EREeUeVmENVEAvjcl1l2-10" target="2HTRzaVqQ2KYLljj5VqZ-20">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="790" y="260" as="sourcePoint" />
+            <Array as="points">
+              <mxPoint x="617" y="88" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-54" value="messages to/from app" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1.007;entryY=0.448;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=classic;startFill=1;exitX=0.807;exitY=0.862;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-20" target="2HTRzaVqQ2KYLljj5VqZ-46">
+          <mxGeometry x="0.7335" y="-12" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1041" y="592" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-20" value="" style="sketch=0;html=1;dashed=0;whitespace=wrap;fillColor=#2875E2;strokeColor=#ffffff;points=[[0.005,0.63,0],[0.1,0.2,0],[0.9,0.2,0],[0.5,0,0],[0.995,0.63,0],[0.72,0.99,0],[0.5,1,0],[0.28,0.99,0]];verticalLabelPosition=bottom;align=center;verticalAlign=top;shape=mxgraph.kubernetes.icon;prIcon=api" vertex="1" parent="1">
+          <mxGeometry x="960" y="19.1" width="100" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-27" value="Unboxed" style="group;verticalAlign=bottom;align=right;fontStyle=0" connectable="0" vertex="1" parent="1">
+          <mxGeometry x="110" y="490" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-28" value="Unboxed" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=bottom;fontStyle=0" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-27">
+          <mxGeometry width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-29" value="Device" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-27">
+          <mxGeometry x="30" y="10" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-30" value="Raspberry Pi zero 2 W" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-27">
+          <mxGeometry x="30" y="120" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-31" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Manufacturing&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" vertex="1" parent="1">
+          <mxGeometry x="-60" y="250" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-32" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Consumer&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;rotation=-90;" vertex="1" parent="1">
+          <mxGeometry x="-60" y="570" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-44" value="connect to" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.02;entryY=0.457;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-34" target="2HTRzaVqQ2KYLljj5VqZ-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-34" value="Initial power on" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=bottom;fontStyle=0" vertex="1" parent="1">
+          <mxGeometry x="310" y="490" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-35" value="Device" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="1">
+          <mxGeometry x="340" y="500" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-36" value="Raspberry Pi zero 2 W" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="1">
+          <mxGeometry x="340" y="610" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-37" value="" style="sketch=0;html=1;dashed=0;whitespace=wrap;fillColor=#2875E2;strokeColor=#ffffff;points=[[0.005,0.63,0],[0.1,0.2,0],[0.9,0.2,0],[0.5,0,0],[0.995,0.63,0],[0.72,0.99,0],[0.5,1,0],[0.28,0.99,0]];verticalLabelPosition=bottom;align=center;verticalAlign=top;shape=mxgraph.kubernetes.icon;prIcon=api" vertex="1" parent="1">
+          <mxGeometry x="405" y="600" width="45" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-38" value="" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wifi;pointerEvents=1" vertex="1" parent="1">
+          <mxGeometry x="413.36" y="580" width="28.29" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-42" value="connect to&lt;br&gt;device WiFi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.992;entryY=0.957;entryDx=0;entryDy=0;exitX=0.025;exitY=0.615;exitDx=0;exitDy=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-52" target="2HTRzaVqQ2KYLljj5VqZ-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-43" value="write Consumer&lt;br&gt;WiFi credentials &lt;br&gt;+ User ID" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=-0.025;exitY=0.282;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1.012;entryY=0.731;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-52" target="2HTRzaVqQ2KYLljj5VqZ-34">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="510" y="664" />
+              <mxPoint x="510" y="673" />
+            </Array>
+            <mxPoint x="450" y="610" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-40" value="Consumer WiFi" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#0080F0;shadow=0;dashed=0;shape=mxgraph.ios7.icons.wifi;pointerEvents=1" vertex="1" parent="1">
+          <mxGeometry x="573.65" y="470" width="70.72" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-45" value="Unboxed" style="group;verticalAlign=bottom;align=right;fontStyle=0" connectable="0" vertex="1" parent="1">
+          <mxGeometry x="720" y="480" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-46" value="Connected" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=bottom;fontStyle=0" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-45">
+          <mxGeometry width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-47" value="Device" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-45">
+          <mxGeometry x="30" y="10" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-48" value="Raspberry Pi zero 2 W" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="2HTRzaVqQ2KYLljj5VqZ-45">
+          <mxGeometry x="30" y="120" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-49" value="connected" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1.005;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-46" target="2HTRzaVqQ2KYLljj5VqZ-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-50" value="register (associate&lt;br&gt;device with user)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.72;entryY=0.99;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-46" target="2HTRzaVqQ2KYLljj5VqZ-20">
+          <mxGeometry x="-0.6931" y="23" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1032" y="542" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-53" value="setup and control device" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.893;entryY=0.709;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-52" target="2HTRzaVqQ2KYLljj5VqZ-20">
+          <mxGeometry x="-0.5894" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1050" y="750" />
+              <mxPoint x="1050" y="97" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-52" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shadow=0;dashed=0;strokeWidth=1;shape=mxgraph.android.phone2;strokeColor=#c0c0c0;" vertex="1" parent="1">
+          <mxGeometry x="569" y="620" width="80" height="156" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-2" value="" style="group" connectable="0" vertex="1" parent="1">
+          <mxGeometry x="720" y="139.4" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-3" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="EREeUeVmENVEAvjcl1l2-2">
+          <mxGeometry width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-4" value="Device" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="EREeUeVmENVEAvjcl1l2-2">
+          <mxGeometry x="30" y="10" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-5" value="Raspberry Pi zero 2 W&lt;br&gt;(calibrate and diags)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="EREeUeVmENVEAvjcl1l2-2">
+          <mxGeometry x="30" y="120" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="3_XKQKIbmAIE_FWWQeuR-3" value="calibrate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.806;entryY=1.007;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryPerimeter=0;" edge="1" parent="EREeUeVmENVEAvjcl1l2-2" source="EREeUeVmENVEAvjcl1l2-3" target="EREeUeVmENVEAvjcl1l2-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="35" y="271" />
+              <mxPoint x="113" y="271" />
+            </Array>
+            <mxPoint x="-158" y="250.6" as="sourcePoint" />
+            <mxPoint x="-88" y="250.6" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-15" target="EREeUeVmENVEAvjcl1l2-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="560" y="265" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-15" value="Raspberry Pi zero 2 W&lt;br&gt;(assembled)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="1">
+          <mxGeometry x="420.00000000000006" y="260" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-13" value="install in&lt;br&gt;enclosure" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="EREeUeVmENVEAvjcl1l2-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="264" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-15" value="" style="group" connectable="0" vertex="1" parent="1">
+          <mxGeometry x="880" y="140" width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-25" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="EREeUeVmENVEAvjcl1l2-15">
+          <mxGeometry width="140" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-22" value="Device" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="EREeUeVmENVEAvjcl1l2-15">
+          <mxGeometry x="30" y="10" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="2HTRzaVqQ2KYLljj5VqZ-23" value="Raspberry Pi zero 2 W&lt;br&gt;(prepare)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="EREeUeVmENVEAvjcl1l2-15">
+          <mxGeometry x="30" y="120" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-14" value="Ready&lt;br&gt;to&lt;br&gt;Ship" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn2.iconfinder.com/data/icons/boxicons-regular-vol-3/24/bx-package-128.png" vertex="1" parent="EREeUeVmENVEAvjcl1l2-15">
+          <mxGeometry x="92" y="92" width="48" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="2HTRzaVqQ2KYLljj5VqZ-28" target="2HTRzaVqQ2KYLljj5VqZ-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-17" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="560" y="61.2" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-18" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="692" y="61.60000000000001" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="AW7mKYYzNDVskBBEl-be-1" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="500.00000000000006" y="740" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="AW7mKYYzNDVskBBEl-be-2" value="2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="501.7099999999999" y="630" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="AW7mKYYzNDVskBBEl-be-3" value="3" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="489.7099999999999" y="500" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-1" value="&lt;font face=&quot;Courier New&quot;&gt;mmctrl -c&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="740" y="416" width="110" height="16" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-2" value="&lt;font face=&quot;Courier New&quot;&gt;mmctrl -r&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="710" y="43.60000000000002" width="110" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-3" value="&lt;font face=&quot;Courier New&quot;&gt;mmctrl -d&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="740" y="432" width="110" height="15" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-4" value="4" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="740" y="420" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-5" value="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="126.86" y="52.19999999999999" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-6" value="&lt;a href=&quot;https://source.cloud.google.com/mosquitomax-364012/MosquitoMax/+/master:device_controller/README.md&quot;&gt;Follow README.md&lt;/a&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="142" y="43.19999999999999" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="EREeUeVmENVEAvjcl1l2-10" target="EREeUeVmENVEAvjcl1l2-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="EREeUeVmENVEAvjcl1l2-10" target="EREeUeVmENVEAvjcl1l2-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-10" value="Device PCB" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn0.iconfinder.com/data/icons/octicons/1024/circuit-board-128.png" vertex="1" parent="1">
+          <mxGeometry x="557" y="150" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EREeUeVmENVEAvjcl1l2-11" value="Raspberry Pi zero 2 W&lt;br&gt;(Initial power on)" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://cdn1.iconfinder.com/data/icons/fruit-136/64/Fruit_iconfree_Filled_Outline_raspberry-healthy-organic-food-fruit_icon-128.png" vertex="1" parent="1">
+          <mxGeometry x="557" y="260" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="mffoovdQtc5DxTsnuNKi-12" value="&lt;font face=&quot;Courier New&quot;&gt;mmctrl -n&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="895" y="401" width="110" height="15" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="DfeSB-K8MPAX86OK0JnR" name="consumer setup app flow">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="vknHuXQ1hQmmTv8hNad_-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="vknHuXQ1hQmmTv8hNad_-1" target="vknHuXQ1hQmmTv8hNad_-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vknHuXQ1hQmmTv8hNad_-1" value="User plug in device, wait for solid white LED" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="205" y="50" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="vknHuXQ1hQmmTv8hNad_-2" target="PahIFVY987cNCxwHOM6D-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vknHuXQ1hQmmTv8hNad_-2" value="User press reset button until LED flashes blue" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="205" y="160" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="vknHuXQ1hQmmTv8hNad_-3" target="PahIFVY987cNCxwHOM6D-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vknHuXQ1hQmmTv8hNad_-3" value="User selects desired WiFi the device should connect to and provides the password" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="168.75" y="360" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="vknHuXQ1hQmmTv8hNad_-4" target="PahIFVY987cNCxwHOM6D-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vknHuXQ1hQmmTv8hNad_-4" value="app connects to &quot;mm_device&quot;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="205.63" y="470" width="116.25" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-1" target="vknHuXQ1hQmmTv8hNad_-3">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="270" y="370" />
+              <mxPoint x="270" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-1" value="Show user available SSIDs and let them choose which SSID the device should connect to" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="161.25" y="260" width="207.5" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-2" target="PahIFVY987cNCxwHOM6D-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-2" target="vknHuXQ1hQmmTv8hNad_-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-2" value="Ask the user for the password for the chosen network" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="401" y="360" width="127.5" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.513;exitY=0.888;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-4" target="PahIFVY987cNCxwHOM6D-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="770" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-4" value="Save SSID and password for later" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
+          <mxGeometry x="578.5" y="360" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-10" value="[fail]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-6" target="PahIFVY987cNCxwHOM6D-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-15" value="[success]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-6" target="PahIFVY987cNCxwHOM6D-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-6" value="" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="248.75" y="570" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-7" target="PahIFVY987cNCxwHOM6D-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-7" value="phone connected to &quot;mm_device&quot;" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="205" y="640" width="116.25" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-8" target="PahIFVY987cNCxwHOM6D-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-8" value="show instructions and provide link to settings to user can connect to mm_device" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="358.75" y="547.5" width="180" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-17" target="PahIFVY987cNCxwHOM6D-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-17" value="Call API to configure device" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="205" y="740" width="116.25" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-20" target="PahIFVY987cNCxwHOM6D-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-20" value="Device will not respond to phone, so the app should show a spinning icon" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="175.63" y="840" width="175" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-22" target="PahIFVY987cNCxwHOM6D-25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-22" value="Phone should check for owner record to be updated in cloud" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="191.57" y="950" width="144.37" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-30" value="[fail/timeout]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-25" target="PahIFVY987cNCxwHOM6D-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-33" value="[success]" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-25" target="PahIFVY987cNCxwHOM6D-32">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-25" value="" style="rhombus;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="248.13" y="1040" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="PahIFVY987cNCxwHOM6D-29" target="PahIFVY987cNCxwHOM6D-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-29" value="Display error message and start over" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="41.31999999999999" y="1025" width="116.25" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="PahIFVY987cNCxwHOM6D-32" value="Display success message then navigate to MyDevices" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="374.94" y="1025" width="154.06" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
