@@ -116,3 +116,9 @@ The `diagrams/` directory contains diagrams that illustrate the system's design 
 *   `manufacturing-timeline.drawio`: A timeline of the manufacturing process.
 *   `mm-controller-wiring.drawio`: A wiring diagram for the device controller.
 *   `MosquitoMax-smart-design.drawio`: A high-level design of the smart mosquito misting system.
+
+## Printed Circuit Board (PCB)
+
+The files in the `pcb` directory can be uploaded to https://jlcpcb.com/. You may need to preorder parts from the BOM before ordering the boards to ensure assembly is possible during manufacturing.
+
+The site referenced requires a minimum order of five boards; maybe create an issue on this repository to see if anyone else needs one too and order them together, or if you order five, create an issue offering the surplus to people who need them.
