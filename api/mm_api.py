@@ -86,6 +86,23 @@ def device_register():
     device_config = {"device_password": password}
     return device_config
 
+@app.post("/api/v1/device/reset_password")
+def device_password_reset():
+    # TODO consider adding a key validation step to prevent unauthorized device registrations
+    # TODO add error handling around this rather optimistic getting of JSON (expecting {"serial_no": "", "mac_address": ""})
+    device_info = request.get_json()
+    # generate a new password for this device
+    password = secrets.token_hex(random.randint(32,43))
+    
+    try:
+        user = auth.get_user_by_email(device_info["device_email"])
+        auth.update_user(user.uid, password=password)
+    except auth.UserNotFoundError:
+        return "User not found", 404
+    
+    device_config = {"device_password": password}
+    return device_config
+
 def authenticate(function):
 
     @wraps(function)

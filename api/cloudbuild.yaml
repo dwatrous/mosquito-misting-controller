@@ -1,7 +1,9 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1:latest', '.']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/mm-api/apiv1:latest', '.']
   - name: 'gcr.io/cloud-builders/docker' 
-    args: ['push', 'us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1:latest']
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/mm-api/apiv1:latest']
   - name: 'gcr.io/cloud-builders/gcloud'
-    args: ['run', 'deploy', 'mm-api', '--region=us-central1', '--service-account=FIREBASE_SERVICE_ACCOUNT_PLACEHOLDER', '--image=us-central1-docker.pkg.dev/FIREBASE_PROJECT/mm-api/apiv1', '--allow-unauthenticated', '--max-instances=2']
+    args: ['run', 'deploy', 'mm-api', '--region=us-central1', '--service-account=${_SERVICE_ACCOUNT}', '--image=us-central1-docker.pkg.dev/$PROJECT_ID/mm-api/apiv1', '--allow-unauthenticated', '--max-instances=2']
+substitutions:
+  _SERVICE_ACCOUNT: FIREBASE_SERVICE_ACCOUNT_PLACEHOLDER
