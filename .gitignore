@@ -3,3 +3,4 @@ api/__pycache__
 api/creds
 *.log*
 messaging/functions/venv/
+/device_controller/config.local.yaml

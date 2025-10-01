@@ -49,17 +49,42 @@ Next, get the raspios image. You can download it here: https://downloads.raspber
     ```
 1. Windows: Use the link above to download and extract with 7-zip (see requirements above).
 
-Set the 'factory' WiFi credentials as environment variables. The SSID needs to reference a 2.4GHz network.
+### Local Configuration File
 
-```
-export MM_WIFISSID='SSID'
-export MM_WIFIPASSWORD='PASSWORD'
-export MM_HOSTNAME='mmdevice'
-export MM_VERSION='0.1.0'
-export MM_USERPASSWORD='secretpass'
+For local development, you can create a `config.local.yaml` file in the `device_controller` directory. This file allows you to keep your secrets and local configuration in one place. This file is ignored by git.
+
+Here is the format of the `config.local.yaml` file:
+
+```yaml
+# Local configuration for mosquito-misting-controller
+# This file is intended for local development and should not be checked into version control.
+
+# Values from replacement-map files
+firebase:
+  project: "PROJECT_ID"
+  api_key: "API_KEY"
+  service_account: "firebase-adminsdk-blxt8@PROJECT_ID.iam.gserviceaccount.com"
+
+# MM_ environment variables
+mm_env:
+  wifi_ssid: "YOUR_WIFI_SSID"
+  wifi_password: "YOUR_WIFI_PASSWORD"
+  hostname: "mmdevice"
+  version: "0.1.67" # This should match the version in pyproject.toml
+  user_password: "YOUR_USER_PASSWORD"
 ```
 
-For convenience, the above lines can be saved to a file called `factoryenv.sh`. This file can be sourced using `source factoryenv.sh`. Check that the environment variables are set correctly by running `env| grep MM_`.
+### Setting Environment Variables
+
+To set the required `MM_` environment variables for your shell session, you can use the `set_env.sh` script located in the project root. This script reads the values from `device_controller/config.local.yaml`.
+
+From the project root, run the following command:
+
+```bash
+source set_env.sh
+```
+
+After running the script, you can verify that the variables are set correctly by running `env | grep MM_`.
 
 ## Build the Python wheel
 
@@ -83,11 +108,12 @@ Using gsutil, this new build can be pushed to the cloud and installed on individ
 
 Windows
 ```
-gsutil cp .\dist\mm_controller-0.1.32-py3-none-any.whl gs://mm_controller_releases/
+gsutil cp .\dist\mm_controller-$MM_VERSION-py3-none-any.whl gs://mm_controller_releases/
 ```
 
+Linux
 ```
-gsutil cp dist/mm_controller-0.1.32-py3-none-any.whl gs://mm_controller_releases/
+gsutil cp dist/mm_controller-$MM_VERSION-py3-none-any.whl gs://mm_controller_releases/
 ```
 
 ## Build the SD card image

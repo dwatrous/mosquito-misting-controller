@@ -48,7 +48,6 @@ def get_loglevel(loglevel_arg):
         return logging.ERROR
 
 def cli():
-    nohelp = False
     parser = argparse.ArgumentParser(prog='mmctrl',
                     description='The is the MosquitoMax Controller. Use it to calibrate the device, run diagnostics and start the controller',
                     epilog='Contact MosquitoMax with questions')
@@ -70,13 +69,11 @@ def cli():
 
     # Print version and exit
     if args.version:
-        nohelp = True
         print(version('mm_controller'))
         parser.exit()
     
     # Calibrate the device
     if args.calibrate:
-        nohelp = True
         try:
             stop_service()
             print("Running calibration...")
@@ -100,7 +97,6 @@ def cli():
 
     # Clean the device
     if args.clean:
-        nohelp = True
         print("Cleaning device...")
         # from mm_controller import clean_device
         # remove WiFi creds
@@ -110,7 +106,6 @@ def cli():
 
     # Register the device
     if args.register:
-        nohelp = True
         print("Running registration...")
         stop_service()
         from mm_controller import register_device
@@ -123,7 +118,6 @@ def cli():
 
     # Reset the device password
     if args.reset_password:
-        nohelp = True
         print("Running password reset...")
         stop_service()
         from mm_controller import register_device
@@ -132,7 +126,6 @@ def cli():
 
     # Run diagnostics
     if args.diagnostics:
-        nohelp = True
         try:
             stop_service()
             print("Running diagnostics...")
@@ -144,7 +137,6 @@ def cli():
 
     # Perform restart
     if args.restart:
-        nohelp = True
         try:
             print("Restarting the controller...")
             stop_service()
@@ -154,10 +146,15 @@ def cli():
             start_service()
 
     if args.validate == "cloud":
-        nohelp = True
-        pass
-    elif args.validate == "weather":
-        nohelp = True
+        from mm_controller import cloud
+        from mm_controller.utils import app_log
+
+        upgrade_cloud = cloud.Cloud()
+        latest_version = upgrade_cloud.get_latest_release()
+        print("Latest version: %s" % latest_version)
+        app_log.info("Latest version: %s" % latest_version)
+
+    if args.validate == "weather":
         pass
 
     # Open valves
@@ -206,7 +203,6 @@ def cli():
 
     # Upgrade the controller package
     if args.upgrade:
-        nohelp = True
         # use Cloud to retrieve newer version, if available
         from mm_controller import cloud
         from mm_controller.utils import app_log
@@ -249,8 +245,7 @@ def cli():
         parser.exit()
 
     # Start the controller
-    if args.start:        
-        nohelp = True
+    if args.start:
         if not is_instance_running():
             print("Log level: %s" % args.loglevel)
             from mm_controller.utils import my_handler
@@ -263,7 +258,7 @@ def cli():
             print("Controller is running. Use /usr/bin/systemctl.")
 
     # Print help if nothing else happened yet
-    if not nohelp:
+    if not any(vars(args).values()):
         parser.print_help()
         parser.exit()
 
