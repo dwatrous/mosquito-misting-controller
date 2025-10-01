@@ -21,6 +21,7 @@ mm_api_host = "https://mm-api-shbeom7lea-uc.a.run.app"
 mm_api_register = "/api/v1/device/register"
 mm_api_latest_release = "/api/v1/latest_release"
 mm_api_latest_release_download = "/api/v1/latest_release/download"
+mm_api_password_reset = "/api/v1/device/reset_password"
 
 # device constants
 email_representation_domain = "mosquitomax.com"

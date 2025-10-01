@@ -59,6 +59,7 @@ def cli():
     parser.add_argument("-d", "--diagnostics", action="store_true", help="Run diagnostics.")
     parser.add_argument("-c", "--calibrate", choices=["SCALE", "LINE_IN", "LINE_OUT", "VACUUM", "ALL"], nargs="*", help="Calibrate connected devices.")
     parser.add_argument("-r", "--register", action="store_true", help=argparse.SUPPRESS) # TODO secure this so consumers can't register devices
+    parser.add_argument("--reset-password", action="store_true", help=argparse.SUPPRESS) # TODO secure this so consumers can't reset passwords
     parser.add_argument("-n", "--clean", action="store_true", help="Remove WiFi and logs from device.")
     parser.add_argument("--validate", choices=["cloud", "weather"], help="Run various exercises to validate connectivity.")
     parser.add_argument("-u", "--upgrade", action="store_true", help="Upgrade the controller package (considers all whl files in /home/mm)")
@@ -119,6 +120,15 @@ def cli():
         else:
             print("Device password exists. Skipping...")
             start_service()
+
+    # Reset the device password
+    if args.reset_password:
+        nohelp = True
+        print("Running password reset...")
+        stop_service()
+        from mm_controller import register_device
+        register_device.reset_password()
+        start_service()
 
     # Run diagnostics
     if args.diagnostics:
